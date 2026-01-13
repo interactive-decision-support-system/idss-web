@@ -157,7 +157,7 @@ export default function Home() {
             </svg>
           )}
         </button>
-        <h1 className="text-2xl font-bold text-[#8C1515] flex-1 text-center">IDSS Recommendation System</h1>
+        <h1 className="text-2xl font-bold text-[#8C1515] flex-1 text-center">Interactive Decision Support System</h1>
       </header>
 
       {/* Main Content Area */}
