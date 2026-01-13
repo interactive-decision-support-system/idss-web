@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import ChatInput from '@/components/ChatInput';
-import RecommendationCard from '@/components/RecommendationCard';
+import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
 import { ChatMessage, Product } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { currentDomainConfig } from '@/config/domain-config';
+import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
 export default function Home() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -95,13 +96,21 @@ export default function Home() {
         setSessionId(response.session_id);
       }
 
+      // Convert API recommendations to Product format if present
+      let productRecommendations: Product[][] | undefined;
+      if (response.recommendations) {
+        productRecommendations = convertAPIVehiclesToProducts(response.recommendations);
+      }
+
       // Add assistant response
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: response.message,
         timestamp: new Date(),
-        recommendations: response.recommendations,
+        recommendations: productRecommendations,
+        bucket_labels: response.bucket_labels,
+        diversification_dimension: response.diversification_dimension,
         quick_replies: response.quick_replies,
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
@@ -198,10 +207,12 @@ export default function Home() {
                     {message.content}
                   </div>
 
-                  {/* Show recommendation card if present */}
+                  {/* Show stacked recommendation cards if present */}
                   {message.recommendations && message.recommendations.length > 0 && (
-                    <RecommendationCard 
-                      products={message.recommendations} 
+                    <StackedRecommendationCards
+                      recommendations={message.recommendations}
+                      bucket_labels={message.bucket_labels}
+                      diversification_dimension={message.diversification_dimension}
                       onItemSelect={setSelectedProduct}
                       onToggleFavorite={toggleFavorite}
                       isFavorite={isFavorite}

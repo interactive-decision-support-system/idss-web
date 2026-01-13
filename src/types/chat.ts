@@ -1,9 +1,39 @@
+// API vehicle structure (matches backend)
+export interface APIVehicle {
+  vehicle: {
+    make: string;
+    model: string;
+    year: number;
+    body_type?: string;
+    fuel_type?: string;
+    mileage?: number;
+    transmission?: string;
+    drivetrain?: string;
+    engine?: string;
+    color?: string;
+    vin?: string;
+    [key: string]: unknown;
+  };
+  retailListing: {
+    price: number;
+    miles?: number;
+    photo_url?: string;
+    listing_id?: string;
+    dealer_name?: string;
+    location?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  recommendations?: Product[];
+  recommendations?: Product[][]; // 2D array: rows of products
+  bucket_labels?: string[]; // Labels for each row
+  diversification_dimension?: string; // Dimension used for diversification
   quick_replies?: string[];
 }
 
@@ -17,7 +47,12 @@ export interface ChatResponse {
   message: string;
   session_id: string;
   quick_replies?: string[];
-  recommendations?: Product[];
+  recommendations?: APIVehicle[][]; // 2D array from API
+  bucket_labels?: string[];
+  diversification_dimension?: string;
+  filters?: Record<string, unknown>;
+  preferences?: Record<string, unknown>;
+  question_count?: number;
 }
 
 export interface Product {
