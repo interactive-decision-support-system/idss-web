@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "IDSS Recommendation System | Stanford LDR Lab",
+  title: "Interactive Decision Support System | Stanford LDR Lab",
   description: "Interactive Decision Support System for recommendations",
 };
 
