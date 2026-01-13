@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --stanford-cardinal: #8C1515;
+  --stanford-cardinal-dark: #750013;
+  --stanford-gray: #8b959e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: #ffffff;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+html {
+  background: #ffffff;
+}
+
+/* Chat message styling */
+.chat-message {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
