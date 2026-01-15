@@ -90,7 +90,7 @@ export default function RecommendationCard({ products, onItemSelect, onToggleFav
           
           {/* Navigation Arrows and Counter - below image, only show if multiple products */}
           {hasMultiple && (
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center justify-center gap-2 mt-4">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
