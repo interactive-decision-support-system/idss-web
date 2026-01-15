@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Product } from '@/types/chat';
 
 interface FavoritesPageProps {
@@ -38,24 +39,24 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
                   {/* Image */}
                   <div className="aspect-[3/2] bg-gradient-to-br from-[#750013]/30 to-white rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
                     {hasValidImage(product) ? (
-                      <>
-                        <img
-                          src={primaryImage(product)}
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent && !parent.querySelector('.fallback-text')) {
-                              const fallback = document.createElement('div');
-                              fallback.className = 'fallback-text text-[#8b959e] text-sm absolute inset-0 flex items-center justify-center text-center px-2';
-                              fallback.textContent = 'No Image Found';
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      </>
+                      <Image
+                        src={primaryImage(product)!}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.fallback-text')) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'fallback-text text-[#8b959e] text-sm absolute inset-0 flex items-center justify-center text-center px-2';
+                            fallback.textContent = 'No Image Found';
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                        unoptimized
+                      />
                     ) : (
                       <div className="text-[#8b959e] text-sm flex items-center justify-center text-center px-2">
                         No Image Found
