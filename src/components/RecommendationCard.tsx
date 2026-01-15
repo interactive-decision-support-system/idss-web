@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Product } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
 
@@ -70,16 +71,18 @@ export default function RecommendationCard({ products, onItemSelect, onToggleFav
       <div className="flex gap-4">
         {/* Product Image Container */}
         <div className="w-48 flex-shrink-0">
-          <div className="h-32 bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden">
+          <div className="h-32 bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
             {currentProduct.image_url ? (
-              <img
+              <Image
                 src={currentProduct.image_url}
                 alt={currentProduct.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
+                unoptimized
               />
             ) : (
               <div className="text-[#8b959e] text-sm text-center px-2">

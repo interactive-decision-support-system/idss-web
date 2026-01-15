@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Product } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
 
@@ -70,14 +71,16 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
             <div className="space-y-4">
               <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
                 {product.image_url ? (
-                  <img
+                  <Image
                     src={product.image_url}
                     alt={product.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                     }}
+                    unoptimized
                   />
                 ) : (
                   <div className="text-[#8b959e] text-sm text-center px-2">
