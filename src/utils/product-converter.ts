@@ -43,18 +43,18 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       || vehicle.id as string 
       || `${make}-${model}-${year}-${Date.now()}`,
     title,
-    price,
-    price_text: price ? `$${price.toLocaleString()}` : undefined,
     image_url: imageUrl,
     brand: make, // For vehicles, brand = make
     source,
     // Include all vehicle and retailListing fields for domain-specific access
     ...vehicle,
     ...retailListing,
-    // Explicitly map common fields
+    // Explicitly map common fields (after spreads to avoid overwriting)
     make,
     model,
     year,
+    price, // Set after spreads to ensure our computed value is used
+    price_text: price ? `$${price.toLocaleString()}` : undefined,
     mileage,
     body_style: vehicle.body_type as string || vehicle.body_style as string,
     fuel_type: vehicle.fuel_type as string,
