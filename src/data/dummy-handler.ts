@@ -17,8 +17,8 @@ function createDiversifiedRecommendations(
   // Sort vehicles by the diversification dimension
   const sorted = [...vehicles].sort((a, b) => {
     if (dimension === 'price') {
-      const priceA = a.retailListing?.price || a.vehicle?.price || 0;
-      const priceB = b.retailListing?.price || b.vehicle?.price || 0;
+      const priceA = Number(a.retailListing?.price || a.vehicle?.price || 0);
+      const priceB = Number(b.retailListing?.price || b.vehicle?.price || 0);
       return priceA - priceB;
     }
     // For other dimensions, just group by value
@@ -43,7 +43,7 @@ function createDiversifiedRecommendations(
       
       // Generate label based on dimension
       if (dimension === 'price') {
-        const prices = bucket.map(v => v.retailListing?.price || v.vehicle?.price || 0);
+        const prices = bucket.map(v => Number(v.retailListing?.price || v.vehicle?.price || 0));
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
         if (i === 0) {
@@ -192,7 +192,7 @@ export async function dummyChatHandler(
 
   if (lowerMessage.includes('under') && (lowerMessage.includes('30000') || lowerMessage.includes('30'))) {
     const filtered = dummyAPIVehicles.filter(v => 
-      (v.retailListing?.price || v.vehicle?.price || 0) < 30000
+      Number(v.retailListing?.price || v.vehicle?.price || 0) < 30000
     );
     const diversified = createDiversifiedRecommendations(filtered, 'price');
     return {
