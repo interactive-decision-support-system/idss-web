@@ -14,8 +14,10 @@ export async function POST(request: NextRequest) {
     }
 
     // For now, use dummy handler until backend is ready
+    // The dummy handler returns data in API format (APIVehicle[][])
     const response = await dummyChatHandler(message, session_id);
 
+    // Return in API format - matches what the real backend will return
     return NextResponse.json(response);
   } catch (error) {
     console.error('Error in chat API:', error);
