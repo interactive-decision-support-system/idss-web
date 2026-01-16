@@ -95,6 +95,24 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
                   {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'Price N/A')}
                 </div>
               </div>
+              
+              {/* View Listing Button */}
+              {(() => {
+                const listingUrl = product.listing_url as string | undefined;
+                return listingUrl && config.viewListingButtonText ? (
+                  <a
+                    href={listingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-3 px-4 rounded-lg text-base font-medium transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center space-x-2"
+                  >
+                    <span>{config.viewListingButtonText}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                ) : null;
+              })()}
             </div>
 
             {/* Details */}
