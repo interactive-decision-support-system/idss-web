@@ -20,6 +20,7 @@ export interface DomainConfig {
   welcomeMessage: string;
   inputPlaceholder: string;
   viewDetailsButtonText: string;
+  viewListingButtonText?: string; // e.g., "View Listing", "View on Site", etc.
   dealerLabel?: string; // e.g., "Dealer" for vehicles, "Store" for products
   storeLabel?: string;
   
@@ -75,6 +76,7 @@ export const vehicleConfig: DomainConfig = {
   welcomeMessage: "Welcome! I'm here to help you find the perfect vehicle. What are you looking for today?",
   inputPlaceholder: "What kind of vehicle are you looking for?",
   viewDetailsButtonText: "View Details",
+  viewListingButtonText: "View Listing",
   dealerLabel: "Dealer",
   
   recommendationCardFields: createRecommendationFields("Dealer"),
@@ -199,6 +201,7 @@ export const pcPartsConfig: DomainConfig = {
   welcomeMessage: "Welcome! I'm here to help you find the perfect PC component. What are you looking for today?",
   inputPlaceholder: "What kind of PC part are you looking for?",
   viewDetailsButtonText: "View Details",
+  viewListingButtonText: "View Listing",
   storeLabel: "Retailer",
   
   recommendationCardFields: createPCPartsRecommendationFields(),

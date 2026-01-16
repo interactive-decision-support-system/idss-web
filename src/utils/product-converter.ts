@@ -26,15 +26,26 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     ? `${year} ${make} ${model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`
     : (vehicle.title as string) || 'Product';
   
-  // Extract image URL
-  const imageUrl = retailListing.photo_url as string 
+  // Extract image URL - check primaryImage first (actual API format), then fallback to photo_url
+  const imageUrl = retailListing.primaryImage as string
+    || retailListing.photo_url as string 
     || vehicle.image_url as string 
     || vehicle.photo_url as string;
   
-  // Extract location/dealer info
+  // Extract location/dealer info - check dealer first (actual API format), then fallback to dealer_name
   const location = retailListing.location as string || vehicle.location as string;
-  const dealerName = retailListing.dealer_name as string || vehicle.dealer_name as string;
-  const source = dealerName || location || 'Unknown Dealer';
+  const city = retailListing.city as string;
+  const state = retailListing.state as string;
+  const fullLocation = city && state ? `${city}, ${state}` : location;
+  const dealerName = retailListing.dealer as string 
+    || retailListing.dealer_name as string 
+    || vehicle.dealer_name as string;
+  const source = dealerName || fullLocation || 'Unknown Dealer';
+  
+  // Extract listing URL - check carfaxUrl first, then @id field from root
+  const listingUrl = retailListing.carfaxUrl as string 
+    || (apiVehicle as { '@id'?: string })['@id'] as string
+    || undefined;
   
   // Build Product object (domain-agnostic structure)
   const product: Product = {
@@ -63,7 +74,8 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     engine: vehicle.engine as string,
     exterior_color: vehicle.color as string || vehicle.exterior_color as string,
     vin: vehicle.vin as string,
-    location,
+    location: fullLocation || location,
+    listing_url: listingUrl, // URL to view the actual listing
   };
   
   return product;
