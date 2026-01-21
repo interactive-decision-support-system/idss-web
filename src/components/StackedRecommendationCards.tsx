@@ -87,12 +87,12 @@ function RecommendationRow({
   return (
     <div className="space-y-3">
       {/* Row Label */}
-      <div className="pb-2 border-b border-black/10">
-        <h3 className="text-sm font-semibold text-black uppercase tracking-wide">
+      <div className="pb-2 border-b border-[#6d0f14]/50">
+        <h3 className="text-sm font-semibold text-white uppercase tracking-wide">
           {label}
         </h3>
         {diversification_dimension && (
-          <p className="text-xs text-black/50 mt-1">
+            <p className="text-xs text-white/60 mt-1">
             Diversified by: {diversification_dimension}
           </p>
         )}
@@ -112,14 +112,14 @@ function RecommendationRow({
         {/* Heart Button */}
         <button
           onClick={handleFavorite}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-all duration-200"
           aria-label="Toggle favorite"
         >
           <svg 
             className={`w-5 h-5 transition-all duration-200 ${
               isFavorite && currentProduct && isFavorite(currentProduct.id) 
                 ? 'text-[#ff1323] fill-[#ff1323]' 
-                : 'text-black/40'
+                : 'text-white/60'
             }`}
             fill={isFavorite && currentProduct && isFavorite(currentProduct.id) ? 'currentColor' : 'none'}
             stroke="currentColor" 
@@ -141,7 +141,7 @@ function RecommendationRow({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-xs text-black/50">
+            <span className="text-xs text-white/60">
               {currentIndex + 1} / {row.length}
             </span>
             <button

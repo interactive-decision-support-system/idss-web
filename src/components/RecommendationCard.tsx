@@ -50,8 +50,8 @@ export default function RecommendationCard({
     
     return (
       <div key={fieldConfig.key} className="flex justify-between py-1">
-        <span className="text-black/60">{fieldConfig.label}:</span>
-        <span className={fieldConfig.key === 'price' ? 'font-bold text-[#8C1515]' : 'text-black'}>
+        <span className="text-white/60">{fieldConfig.label}:</span>
+        <span className={fieldConfig.key === 'price' ? 'font-bold text-[#d43f4a]' : 'text-white'}>
           {displayValue}
           {fieldConfig.key === 'rating' && currentProduct.rating_count && (
             ` (${currentProduct.rating_count})`
@@ -62,7 +62,7 @@ export default function RecommendationCard({
   };
 
   return (
-    <div className="bg-white border border-black/10 rounded-xl p-4 hover:border-black/20 transition-all duration-200">
+    <div className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded-xl p-4 hover:border-[#6d0f14]/80 transition-all duration-200">
       <div className="flex gap-4 items-stretch">
         {/* Product Image Container */}
         <div className="w-56 h-56 flex-shrink-0">
@@ -81,14 +81,14 @@ export default function RecommendationCard({
                     const parent = target.parentElement;
                     if (parent && !parent.querySelector('.fallback-text')) {
                       const fallback = document.createElement('div');
-                      fallback.className = 'fallback-text text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
+                      fallback.className = 'fallback-text text-white/50 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
                       fallback.textContent = 'No Image';
                       parent.appendChild(fallback);
                     }
                   }}
                 />
               ) : (
-                <div className="text-black/40 text-xs text-center px-2">
+                <div className="text-white/50 text-xs text-center px-2">
                   No Image
                 </div>
               );
@@ -99,12 +99,12 @@ export default function RecommendationCard({
         {/* Product Details */}
         <div className="flex-1 flex flex-col space-y-2 min-w-0">
           <div>
-            <h4 className="text-base font-bold text-black leading-tight">
+            <h4 className="text-base font-bold text-white leading-tight">
               {currentProduct.title}
             </h4>
 
             {currentProduct.brand && (
-              <p className="text-sm text-black/50">{currentProduct.brand}</p>
+              <p className="text-sm text-white/60">{currentProduct.brand}</p>
             )}
           </div>
 

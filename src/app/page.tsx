@@ -134,16 +134,16 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen bg-white flex overflow-hidden relative">
+    <div className="h-screen bg-[#5a0a0f]/75 flex overflow-hidden relative">
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
         {/* Floating Title - IDA */}
         <div className="absolute top-4 left-4 z-10">
-          <h1 className="text-xl font-semibold text-black">IDA</h1>
+          <h1 className="text-xl font-semibold text-white">IDA</h1>
         </div>
 
         {/* Floating Heart Button - Top Right */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className={`absolute top-4 right-4 ${showFavorites || selectedProduct ? 'z-30' : 'z-10'}`}>
           <button
             onClick={() => {
               setShowFavorites(!showFavorites);
@@ -151,12 +151,12 @@ export default function Home() {
                 setSelectedProduct(null);
               }
             }}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-all duration-200"
             title={showFavorites ? "Hide Favorites" : "View Favorites"}
           >
             {showFavorites ? (
               <svg 
-                className="w-6 h-6 text-black"
+                className="w-6 h-6 text-white"
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -168,7 +168,7 @@ export default function Home() {
                 className={`w-6 h-6 transition-all duration-200 ${
                   favorites.length > 0 
                     ? 'text-[#ff1323] fill-[#ff1323]' 
-                    : 'text-black'
+                    : 'text-white'
                 }`}
                 fill={favorites.length > 0 ? 'currentColor' : 'none'}
                 stroke="currentColor" 
@@ -190,7 +190,7 @@ export default function Home() {
             <div className="max-w-3xl w-full space-y-8">
               {/* Large Welcome Message */}
               <div className="text-center space-y-4">
-                <div className="text-3xl font-semibold text-black leading-tight">
+                <div className="text-3xl font-semibold text-white leading-tight">
                   {config.welcomeMessage}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function Home() {
                   ) : (
                     // Assistant message - no bubble, full width
                     <div className="space-y-4">
-                      <div className="text-base leading-relaxed text-black">
+                      <div className="text-base leading-relaxed text-white">
                         {message.content}
                       </div>
 
@@ -243,7 +243,7 @@ export default function Home() {
                               key={idx}
                               onClick={() => handleChatMessage(reply)}
                               disabled={isLoading}
-                              className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                              className="px-4 py-2 bg-[#5a0a0f]/50 hover:bg-[#5a0a0f]/60 border border-[#6d0f14]/50 hover:border-[#6d0f14]/70 text-white hover:text-white text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
                               {reply}
                             </button>
@@ -259,11 +259,11 @@ export default function Home() {
               {isLoading && (
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[#8C1515] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-[#8b959e]">Thinking...</span>
+                  <span className="text-sm text-white/70">Thinking...</span>
                 </div>
               )}
             </div>
@@ -272,7 +272,7 @@ export default function Home() {
 
         {/* Chat Input - Only show when not in initial state */}
         {!isInitialState && (
-          <div className="border-t border-black/10 bg-white px-8 py-4 flex-shrink-0 pl-20">
+          <div className="border-t border-[#6d0f14]/40 bg-[#5a0a0f]/75 px-8 py-4 flex-shrink-0 pl-20">
             <div className="max-w-4xl mx-auto">
               <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
             </div>
@@ -282,7 +282,7 @@ export default function Home() {
 
       {/* Sidebar - Favorites or Product Detail */}
       {(showFavorites || selectedProduct) && (
-        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
+        <div className="absolute top-4 right-4 bottom-4 w-80 rounded-xl shadow-2xl flex flex-col z-20">
           {showFavorites && (
             <FavoritesPage
               favorites={favorites}
