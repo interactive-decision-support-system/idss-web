@@ -50,8 +50,8 @@ export default function RecommendationCard({
     
     return (
       <div key={fieldConfig.key} className="flex justify-between py-0.5">
-        <span className="text-white/60">{fieldConfig.label}:</span>
-        <span className={fieldConfig.key === 'price' ? 'font-bold text-white' : 'text-white'}>
+        <span className="text-[#8b959e]">{fieldConfig.label}:</span>
+        <span className={fieldConfig.key === 'price' ? 'font-bold text-[#8C1515]' : 'text-black'}>
           {displayValue}
           {fieldConfig.key === 'rating' && currentProduct.rating_count && (
             ` (${currentProduct.rating_count})`
@@ -62,7 +62,7 @@ export default function RecommendationCard({
   };
 
   return (
-    <div className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded-xl p-4 hover:border-[#6d0f14]/80 transition-all duration-200">
+    <div className="bg-white border border-[#8b959e]/30 rounded-xl p-4 hover:border-[#8b959e]/40 transition-all duration-200">
       <div className="flex gap-4 items-stretch">
         {/* Product Image Container */}
         <div className="w-56 h-56 flex-shrink-0">
@@ -81,14 +81,14 @@ export default function RecommendationCard({
                     const parent = target.parentElement;
                     if (parent && !parent.querySelector('.fallback-text')) {
                       const fallback = document.createElement('div');
-                      fallback.className = 'fallback-text text-white/50 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
+                      fallback.className = 'fallback-text text-[#8b959e] text-xs absolute inset-0 flex items-center justify-center text-center px-2';
                       fallback.textContent = 'No Image';
                       parent.appendChild(fallback);
                     }
                   }}
                 />
               ) : (
-                <div className="text-white/50 text-xs text-center px-2">
+                <div className="text-[#8b959e] text-xs text-center px-2">
                   No Image
                 </div>
               );
@@ -99,12 +99,12 @@ export default function RecommendationCard({
         {/* Product Details */}
         <div className="flex-1 flex flex-col space-y-1 min-w-0">
           <div>
-            <h4 className="text-lg font-bold text-white leading-tight">
+            <h4 className="text-lg font-bold text-black leading-tight">
               {currentProduct.title}
             </h4>
 
             {currentProduct.brand && (
-              <p className="text-base text-white/60">{currentProduct.brand}</p>
+              <p className="text-base text-[#8b959e]">{currentProduct.brand}</p>
             )}
           </div>
 
@@ -114,7 +114,7 @@ export default function RecommendationCard({
 
           <button
             onClick={() => onItemSelect && onItemSelect(currentProduct)}
-            className="text-left text-base text-white hover:text-white/80 font-medium mt-1"
+            className="text-left text-base text-[#8C1515] hover:text-[#750013] font-medium mt-1"
           >
             {config.viewDetailsButtonText} →
           </button>

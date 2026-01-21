@@ -87,12 +87,12 @@ function RecommendationRow({
   return (
     <div className="space-y-3">
       {/* Row Label */}
-      <div className="pb-2 border-b border-[#6d0f14]/50">
-        <h3 className="text-base font-semibold text-white uppercase tracking-wide">
+      <div className="pb-2 border-b border-[#8b959e]/20">
+        <h3 className="text-base font-semibold text-[#8C1515] uppercase tracking-wide">
           {label}
         </h3>
         {diversification_dimension && (
-            <p className="text-sm text-white/60 mt-0.5">
+            <p className="text-xs text-[#8b959e] mt-1">
             Diversified by: {diversification_dimension}
           </p>
         )}
@@ -119,7 +119,7 @@ function RecommendationRow({
             className={`w-7 h-7 transition-all duration-200 ${
               isFavorite && currentProduct && isFavorite(currentProduct.id) 
                 ? 'text-[#ff1323] fill-[#ff1323]' 
-                : 'text-white/60'
+                : 'text-[#8b959e]'
             }`}
             fill={isFavorite && currentProduct && isFavorite(currentProduct.id) ? 'currentColor' : 'none'}
             stroke="currentColor" 
@@ -134,19 +134,19 @@ function RecommendationRow({
           <>
               <button
               onClick={prevProduct}
-              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition-all duration-200 text-white/60 hover:text-white"
+              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-[#8C1515] hover:text-[#8C1515]"
               aria-label="Previous product"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-base text-white/60">
+            <span className="text-xs text-[#8b959e]">
               {currentIndex + 1} / {row.length}
             </span>
             <button
               onClick={nextProduct}
-              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition-all duration-200 text-white/60 hover:text-white"
+              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-[#8C1515] hover:text-[#8C1515]"
               aria-label="Next product"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

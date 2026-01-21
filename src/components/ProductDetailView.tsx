@@ -34,29 +34,29 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
       : String(value);
     
     return (
-      <div key={fieldConfig.key} className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded p-3">
-            <div className="text-white/60 text-xs mb-1">{fieldConfig.label}</div>
-            <div className="text-white text-sm font-medium">{displayValue}</div>
+      <div key={fieldConfig.key} className="bg-white border border-[#8b959e]/30 rounded p-3">
+            <div className="text-[#8b959e] text-xs mb-1">{fieldConfig.label}</div>
+            <div className="text-black text-sm font-medium">{displayValue}</div>
       </div>
     );
   };
 
   return (
-    <div className="h-full bg-[#5a0a0f]/50 flex flex-col overflow-hidden rounded-xl">
+    <div className="h-full bg-white flex flex-col overflow-hidden rounded-xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-white truncate">{product.title}</h2>
+          <h2 className="text-lg font-semibold text-black truncate">{product.title}</h2>
           {product.brand && (
-            <p className="text-xs text-white/60 mt-1">{product.brand}</p>
+            <p className="text-xs text-black/50 mt-1">{product.brand}</p>
           )}
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors ml-2 flex-shrink-0"
+          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors ml-2 flex-shrink-0"
           aria-label="Close"
         >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -77,14 +77,14 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
               }}
             />
           ) : (
-            <div className="text-white/50 text-sm text-center px-2">No Image Available</div>
+            <div className="text-[#8b959e] text-sm text-center px-2">No Image Available</div>
           )}
         </div>
 
         {/* Price */}
         {(product.price_text || product.price) && (
-          <div className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded-lg p-4">
-            <div className="text-2xl font-bold text-white">
+          <div className="bg-white border border-[#8b959e]/30 rounded-lg p-4">
+            <div className="text-2xl font-bold text-[#8C1515]">
               {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'Price N/A')}
             </div>
           </div>
@@ -115,9 +115,9 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
 
         {/* Description */}
         {product.description && (
-          <div className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-white mb-2">Description</h3>
-            <p className="text-white/80 text-xs leading-relaxed whitespace-pre-line">
+          <div className="bg-white border border-[#8b959e]/30 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-black mb-2">Description</h3>
+            <p className="text-[#8b959e] text-xs leading-relaxed whitespace-pre-line">
               {product.description}
             </p>
           </div>

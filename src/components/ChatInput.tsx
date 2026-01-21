@@ -27,7 +27,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
         value={inputMessage}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder={config.inputPlaceholder}
-        className="w-full px-4 py-3 pr-12 bg-[#5a0a0f]/40 border border-[#6d0f14]/60 rounded-full focus:ring-2 focus:ring-[#6d0f14]/40 focus:border-[#8C1515] transition-all duration-200 placeholder-white/50 text-white text-base shadow-sm"
+        className="w-full px-4 py-3 pr-12 bg-white border border-[#8b959e]/40 rounded-full focus:ring-2 focus:ring-[#8C1515]/20 focus:border-[#8C1515] transition-all duration-200 placeholder-[#8b959e] text-black text-base shadow-sm"
         disabled={isLoading}
       />
       <button
