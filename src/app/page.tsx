@@ -20,6 +20,9 @@ export default function Home() {
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
   const config = currentDomainConfig;
 
+  // Check if this is the initial state (only welcome message)
+  const isInitialState = chatMessages.length === 1 && chatMessages[0]?.role === 'assistant';
+
   // Load favorites from localStorage on mount
   useEffect(() => {
     const savedFavorites = localStorage.getItem('favorites');
@@ -65,7 +68,7 @@ export default function Home() {
 
   // Auto-scroll chat messages to bottom when new messages arrive
   useEffect(() => {
-    if (chatMessagesContainerRef.current) {
+    if (chatMessagesContainerRef.current && !isInitialState) {
       requestAnimationFrame(() => {
         if (chatMessagesContainerRef.current) {
           chatMessagesContainerRef.current.scrollTo({
@@ -75,7 +78,7 @@ export default function Home() {
         }
       });
     }
-  }, [chatMessages, isLoading]);
+  }, [chatMessages, isLoading, isInitialState]);
 
   const handleChatMessage = async (message: string) => {
     // Add user message immediately
@@ -131,120 +134,131 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-[#8b959e]/30 px-8 py-4 shadow-sm flex items-center justify-between flex-shrink-0">
-        <button
-          onClick={() => setShowFavorites(!showFavorites)}
-          className="w-10 h-10 bg-white border border-[#8b959e]/40 rounded-lg flex items-center justify-center hover:border-[#ff1323] hover:shadow-md transition-all duration-200 shadow-sm relative group"
-          title={showFavorites ? "Hide Favorites" : "View Favorites"}
-        >
-          {/* Heart icon - shown when favorites are closed */}
-          {!showFavorites && (
-            <svg 
-              className={`w-6 h-6 transition-all duration-200 ${
-                favorites.length > 0 
-                  ? 'text-[#ff1323] fill-[#ff1323]' 
-                  : 'text-[#8b959e]'
-              }`}
-              fill={favorites.length > 0 ? 'currentColor' : 'none'}
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          )}
-          {/* X icon - shown when favorites are open, highlighted on hover */}
-          {showFavorites && (
-            <svg 
-              className="w-6 h-6 text-[#8b959e] group-hover:text-[#ff1323] transition-colors duration-200"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          )}
-        </button>
-        <h1 className="text-2xl font-bold text-[#8C1515] flex-1 text-center">Interactive Decision Support System</h1>
-      </header>
+    <div className="h-screen bg-white flex overflow-hidden relative">
+      {/* Main Chat Area */}
+      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
+        {/* Floating Title - IDA */}
+        <div className="absolute top-4 left-4 z-10">
+          <h1 className="text-xl font-semibold text-black">IDA</h1>
+        </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-        {/* Favorites Panel - Top Half */}
-        {showFavorites && (
-          <div className="h-1/2 border-b border-[#8b959e]/30 overflow-hidden flex-shrink-0">
-            <FavoritesPage
-              favorites={favorites}
-              onToggleFavorite={toggleFavorite}
-              isFavorite={isFavorite}
-              onItemSelect={setSelectedProduct}
-            />
+        {/* Floating Heart Button - Top Right */}
+        {!selectedProduct && (
+          <div className={`absolute top-4 right-4 ${showFavorites ? 'z-30' : 'z-10'}`}>
+            <button
+            onClick={() => {
+              setShowFavorites(!showFavorites);
+              if (showFavorites) {
+                setSelectedProduct(null);
+              }
+            }}
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            title={showFavorites ? "Hide Favorites" : "View Favorites"}
+          >
+            {showFavorites ? (
+              <svg 
+                className="w-6 h-6 text-black"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg 
+                className={`w-6 h-6 transition-all duration-200 ${
+                  favorites.length > 0 
+                    ? 'text-[#ff1323] fill-[#ff1323]' 
+                    : 'text-black'
+                }`}
+                fill={favorites.length > 0 ? 'currentColor' : 'none'}
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            )}
+          </button>
           </div>
         )}
 
-        {/* Chat Section - Bottom Half or Full */}
-        <div className={`flex-1 flex flex-col overflow-hidden min-h-0 ${showFavorites ? '' : ''}`}>
-          {/* Chat Messages */}
-          <div
-            ref={chatMessagesContainerRef}
-            className="flex-1 overflow-y-auto p-8 min-h-0"
-          >
-        <div className="max-w-4xl mx-auto flex flex-col space-y-6">
-          {chatMessages.map((message) => (
-            <div key={message.id} className="flex flex-col">
-              <div
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-[#8C1515] to-[#750013] text-white shadow-sm'
-                      : 'bg-white text-black border border-[#8b959e]/30 shadow-sm'
-                  }`}
-                >
-                  <div className="text-base leading-relaxed chat-message">
-                    {message.content}
-                  </div>
-
-                  {/* Show stacked recommendation cards if present */}
-                  {message.recommendations && message.recommendations.length > 0 && (
-                    <StackedRecommendationCards
-                      recommendations={message.recommendations}
-                      bucket_labels={message.bucket_labels}
-                      diversification_dimension={message.diversification_dimension}
-                      onItemSelect={setSelectedProduct}
-                      onToggleFavorite={toggleFavorite}
-                      isFavorite={isFavorite}
-                    />
-                  )}
+        {/* Chat Messages */}
+        <div
+          ref={chatMessagesContainerRef}
+          className={`flex-1 overflow-y-auto min-h-0 scrollbar-hide ${isInitialState ? 'flex items-center justify-center' : 'px-8 py-8'} pl-20`}
+        >
+          {isInitialState ? (
+            // Initial centered welcome screen
+            <div className="max-w-3xl w-full space-y-8">
+              {/* Large Welcome Message */}
+              <div className="text-center space-y-4">
+                <div className="text-3xl font-semibold text-black leading-tight">
+                  {config.welcomeMessage}
                 </div>
               </div>
 
-              {/* Quick reply buttons */}
-              {message.role === 'assistant' && message.quick_replies && message.quick_replies.length > 0 && (
-                <div className="flex justify-start mt-2">
-                  <div className="max-w-[80%] flex flex-wrap gap-2">
-                    {message.quick_replies.map((reply, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleChatMessage(reply)}
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-white hover:bg-[#8b959e]/5 border border-[#8b959e]/40 hover:border-[#8C1515] text-[#8C1515] hover:text-[#8C1515] text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
-                      >
-                        {reply}
-                      </button>
-                    ))}
-                  </div>
+              {/* Centered Input Box */}
+              <div className="flex justify-center">
+                <div className="w-full max-w-2xl">
+                  <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
                 </div>
-              )}
+              </div>
             </div>
-          ))}
+          ) : (
+            // Regular chat messages
+            <div className="max-w-4xl mx-auto flex flex-col space-y-8">
+              {chatMessages.map((message) => (
+                <div key={message.id} className="flex flex-col">
+                  {message.role === 'user' ? (
+                    // User message with bubble
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%] px-4 py-3 rounded-2xl bg-gradient-to-r from-[#8C1515] to-[#750013] text-white shadow-sm">
+                        <div className="text-base leading-relaxed">
+                          {message.content}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Assistant message - no bubble, full width
+                    <div className="space-y-4">
+                      <div className="text-base leading-relaxed text-black">
+                        {message.content}
+                      </div>
 
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white p-4 rounded-2xl border border-[#8b959e]/30 shadow-sm">
+                      {/* Show stacked recommendation cards if present */}
+                      {message.recommendations && message.recommendations.length > 0 && (
+                        <StackedRecommendationCards
+                          recommendations={message.recommendations}
+                          bucket_labels={message.bucket_labels}
+                          diversification_dimension={message.diversification_dimension}
+                          onItemSelect={setSelectedProduct}
+                          onToggleFavorite={toggleFavorite}
+                          isFavorite={isFavorite}
+                        />
+                      )}
+
+                      {/* Quick reply buttons */}
+                      {message.quick_replies && message.quick_replies.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {message.quick_replies.map((reply, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleChatMessage(reply)}
+                              disabled={isLoading}
+                              className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                            >
+                              {reply}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce"></div>
@@ -253,27 +267,43 @@ export default function Home() {
                   </div>
                   <span className="text-sm text-[#8b959e]">Thinking...</span>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
-          </div>
 
-          {/* Chat Input */}
-          <div className="border-t border-[#8b959e]/30 bg-[#8C1515]/5 px-8 py-3 flex-shrink-0">
+        {/* Chat Input - Only show when not in initial state */}
+        {!isInitialState && (
+          <div className="px-8 py-4 flex-shrink-0 pl-20">
             <div className="max-w-4xl mx-auto">
               <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Product Detail View */}
-      {selectedProduct && (
-        <ProductDetailView 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
-        />
+      {/* Sidebar - Favorites or Product Detail */}
+      {(showFavorites || selectedProduct) && (
+        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
+          {showFavorites && (
+            <FavoritesPage
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              isFavorite={isFavorite}
+              onItemSelect={(product) => {
+                setSelectedProduct(product);
+                setShowFavorites(false);
+              }}
+              onClose={() => setShowFavorites(false)}
+            />
+          )}
+          {selectedProduct && (
+            <ProductDetailView
+              product={selectedProduct}
+              onClose={() => setSelectedProduct(null)}
+            />
+          )}
+        </div>
       )}
     </div>
   );
