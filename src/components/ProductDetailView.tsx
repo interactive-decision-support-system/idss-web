@@ -63,7 +63,7 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
         {/* Image */}
         <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
           {product.image_url ? (

@@ -183,7 +183,7 @@ export default function Home() {
         {/* Chat Messages */}
         <div
           ref={chatMessagesContainerRef}
-          className={`flex-1 overflow-y-auto min-h-0 ${isInitialState ? 'flex items-center justify-center' : 'px-8 py-8'} pl-20`}
+          className={`flex-1 overflow-y-auto min-h-0 scrollbar-hide ${isInitialState ? 'flex items-center justify-center' : 'px-8 py-8'} pl-20`}
         >
           {isInitialState ? (
             // Initial centered welcome screen
