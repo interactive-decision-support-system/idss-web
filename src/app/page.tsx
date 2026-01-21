@@ -143,8 +143,9 @@ export default function Home() {
         </div>
 
         {/* Floating Heart Button - Top Right */}
-        <div className={`absolute top-4 right-4 ${showFavorites || selectedProduct ? 'z-30' : 'z-10'}`}>
-          <button
+        {!selectedProduct && (
+          <div className={`absolute top-4 right-4 ${showFavorites ? 'z-30' : 'z-10'}`}>
+            <button
             onClick={() => {
               setShowFavorites(!showFavorites);
               if (showFavorites) {
@@ -178,7 +179,8 @@ export default function Home() {
               </svg>
             )}
           </button>
-        </div>
+          </div>
+        )}
 
         {/* Chat Messages */}
         <div
@@ -272,7 +274,7 @@ export default function Home() {
 
         {/* Chat Input - Only show when not in initial state */}
         {!isInitialState && (
-          <div className="border-t border-[#6d0f14]/40 bg-[#5a0a0f]/75 px-8 py-4 flex-shrink-0 pl-20">
+          <div className="px-8 py-4 flex-shrink-0 pl-20">
             <div className="max-w-4xl mx-auto">
               <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
             </div>

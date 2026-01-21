@@ -84,7 +84,7 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
         {/* Price */}
         {(product.price_text || product.price) && (
           <div className="bg-[#5a0a0f]/60 border border-[#6d0f14]/60 rounded-lg p-4">
-            <div className="text-2xl font-bold text-[#d43f4a]">
+            <div className="text-2xl font-bold text-white">
               {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'Price N/A')}
             </div>
           </div>

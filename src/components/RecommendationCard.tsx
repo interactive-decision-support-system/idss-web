@@ -49,9 +49,9 @@ export default function RecommendationCard({
       : String(value);
     
     return (
-      <div key={fieldConfig.key} className="flex justify-between py-1">
+      <div key={fieldConfig.key} className="flex justify-between py-0.5">
         <span className="text-white/60">{fieldConfig.label}:</span>
-        <span className={fieldConfig.key === 'price' ? 'font-bold text-[#d43f4a]' : 'text-white'}>
+        <span className={fieldConfig.key === 'price' ? 'font-bold text-white' : 'text-white'}>
           {displayValue}
           {fieldConfig.key === 'rating' && currentProduct.rating_count && (
             ` (${currentProduct.rating_count})`
@@ -97,24 +97,24 @@ export default function RecommendationCard({
         </div>
 
         {/* Product Details */}
-        <div className="flex-1 flex flex-col space-y-2 min-w-0">
+        <div className="flex-1 flex flex-col space-y-1 min-w-0">
           <div>
-            <h4 className="text-base font-bold text-white leading-tight">
+            <h4 className="text-lg font-bold text-white leading-tight">
               {currentProduct.title}
             </h4>
 
             {currentProduct.brand && (
-              <p className="text-sm text-white/60">{currentProduct.brand}</p>
+              <p className="text-base text-white/60">{currentProduct.brand}</p>
             )}
           </div>
 
-          <div className="space-y-1 text-sm flex-1">
+          <div className="space-y-0.5 text-base flex-1">
             {config.recommendationCardFields.map(renderField)}
           </div>
 
           <button
             onClick={() => onItemSelect && onItemSelect(currentProduct)}
-            className="text-left text-sm text-[#8C1515] hover:text-[#750013] font-medium mt-2"
+            className="text-left text-base text-white hover:text-white/80 font-medium mt-1"
           >
             {config.viewDetailsButtonText} →
           </button>
