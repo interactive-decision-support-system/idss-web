@@ -245,7 +245,7 @@ export default function Home() {
                               key={idx}
                               onClick={() => handleChatMessage(reply)}
                               disabled={isLoading}
-                              className="px-4 py-2 bg-white hover:bg-[#8b959e]/5 border border-[#8b959e]/40 hover:border-[#8C1515] text-[#8C1515] hover:text-[#8C1515] text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                              className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
                               {reply}
                             </button>
@@ -284,7 +284,7 @@ export default function Home() {
 
       {/* Sidebar - Favorites or Product Detail */}
       {(showFavorites || selectedProduct) && (
-        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-[#8b959e]/30 shadow-2xl flex flex-col z-20">
+        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
           {showFavorites && (
             <FavoritesPage
               favorites={favorites}

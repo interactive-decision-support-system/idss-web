@@ -39,7 +39,7 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
             {favorites.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-lg p-3 border border-[#8b959e]/30 hover:border-[#8b959e]/40 transition-all duration-200 cursor-pointer"
+                className="bg-white rounded-lg p-3 border border-black/10 hover:border-black/20 transition-all duration-200 cursor-pointer"
                 onClick={() => onItemSelect(product)}
               >
                 {/* Image */}

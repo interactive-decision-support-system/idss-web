@@ -30,6 +30,15 @@ export default function StackedRecommendationCards({
 
   return (
     <div className="space-y-8 mt-6">
+      {/* Diversification Header - Above all rows */}
+      {diversification_dimension && (
+        <div className="pb-2 border-b border-black/10">
+          <p className="text-lg font-semibold text-[#8C1515]">
+            Diversified by: {diversification_dimension}
+          </p>
+        </div>
+      )}
+      
       {rowsToShow.map((row, rowIndex) => {
         const label = bucket_labels?.[rowIndex] || `Option ${rowIndex + 1}`;
         
@@ -38,7 +47,6 @@ export default function StackedRecommendationCards({
             key={rowIndex}
             row={row}
             label={label}
-            diversification_dimension={diversification_dimension}
             onItemSelect={onItemSelect}
             onToggleFavorite={onToggleFavorite}
             isFavorite={isFavorite}
@@ -52,7 +60,6 @@ export default function StackedRecommendationCards({
 interface RecommendationRowProps {
   row: Product[];
   label: string;
-  diversification_dimension?: string;
   onItemSelect?: (product: Product) => void;
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
@@ -61,7 +68,6 @@ interface RecommendationRowProps {
 function RecommendationRow({
   row,
   label,
-  diversification_dimension,
   onItemSelect,
   onToggleFavorite,
   isFavorite,
@@ -87,15 +93,10 @@ function RecommendationRow({
   return (
     <div className="space-y-3">
       {/* Row Label */}
-      <div className="pb-2 border-b border-[#8b959e]/20">
-        <h3 className="text-base font-semibold text-[#8C1515] uppercase tracking-wide">
+      <div className="pb-2 border-b border-black/10">
+        <h3 className="text-base font-semibold text-black uppercase tracking-wide">
           {label}
         </h3>
-        {diversification_dimension && (
-            <p className="text-xs text-[#8b959e] mt-1">
-            Diversified by: {diversification_dimension}
-          </p>
-        )}
       </div>
 
       {/* Product Card */}
@@ -112,14 +113,14 @@ function RecommendationRow({
         {/* Heart Button */}
         <button
           onClick={handleFavorite}
-            className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition-all duration-200"
+            className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
           aria-label="Toggle favorite"
         >
           <svg 
             className={`w-7 h-7 transition-all duration-200 ${
               isFavorite && currentProduct && isFavorite(currentProduct.id) 
                 ? 'text-[#ff1323] fill-[#ff1323]' 
-                : 'text-[#8b959e]'
+                : 'text-black/40'
             }`}
             fill={isFavorite && currentProduct && isFavorite(currentProduct.id) ? 'currentColor' : 'none'}
             stroke="currentColor" 
@@ -134,19 +135,19 @@ function RecommendationRow({
           <>
               <button
               onClick={prevProduct}
-              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-[#8C1515] hover:text-[#8C1515]"
+              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-black/60 hover:text-black"
               aria-label="Previous product"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-xs text-[#8b959e]">
+            <span className="text-base text-black/50">
               {currentIndex + 1} / {row.length}
             </span>
             <button
               onClick={nextProduct}
-              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-[#8C1515] hover:text-[#8C1515]"
+              className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200 text-black/60 hover:text-black"
               aria-label="Next product"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

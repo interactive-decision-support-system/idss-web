@@ -34,9 +34,9 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
       : String(value);
     
     return (
-      <div key={fieldConfig.key} className="bg-white border border-[#8b959e]/30 rounded p-3">
-            <div className="text-[#8b959e] text-xs mb-1">{fieldConfig.label}</div>
-            <div className="text-black text-sm font-medium">{displayValue}</div>
+      <div key={fieldConfig.key} className="bg-white border border-black/10 rounded p-3">
+        <div className="text-black/60 text-xs mb-1">{fieldConfig.label}</div>
+        <div className="text-black text-sm font-medium">{displayValue}</div>
       </div>
     );
   };
@@ -77,13 +77,13 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
               }}
             />
           ) : (
-            <div className="text-[#8b959e] text-sm text-center px-2">No Image Available</div>
+            <div className="text-black/40 text-sm text-center px-2">No Image Available</div>
           )}
         </div>
 
         {/* Price */}
         {(product.price_text || product.price) && (
-          <div className="bg-white border border-[#8b959e]/30 rounded-lg p-4">
+          <div className="bg-white border border-black/10 rounded-lg p-4">
             <div className="text-2xl font-bold text-[#8C1515]">
               {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'Price N/A')}
             </div>
@@ -115,9 +115,9 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
 
         {/* Description */}
         {product.description && (
-          <div className="bg-white border border-[#8b959e]/30 rounded-lg p-4">
+          <div className="bg-white border border-black/10 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-black mb-2">Description</h3>
-            <p className="text-[#8b959e] text-xs leading-relaxed whitespace-pre-line">
+            <p className="text-black/70 text-xs leading-relaxed whitespace-pre-line">
               {product.description}
             </p>
           </div>

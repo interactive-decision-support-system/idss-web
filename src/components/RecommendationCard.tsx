@@ -50,7 +50,7 @@ export default function RecommendationCard({
     
     return (
       <div key={fieldConfig.key} className="flex justify-between py-0.5">
-        <span className="text-[#8b959e]">{fieldConfig.label}:</span>
+        <span className="text-black/60">{fieldConfig.label}:</span>
         <span className={fieldConfig.key === 'price' ? 'font-bold text-[#8C1515]' : 'text-black'}>
           {displayValue}
           {fieldConfig.key === 'rating' && currentProduct.rating_count && (
@@ -62,7 +62,7 @@ export default function RecommendationCard({
   };
 
   return (
-    <div className="bg-white border border-[#8b959e]/30 rounded-xl p-4 hover:border-[#8b959e]/40 transition-all duration-200">
+    <div className="bg-white border border-black/10 rounded-xl p-4 hover:border-black/20 transition-all duration-200">
       <div className="flex gap-4 items-stretch">
         {/* Product Image Container */}
         <div className="w-56 h-56 flex-shrink-0">
@@ -81,14 +81,14 @@ export default function RecommendationCard({
                     const parent = target.parentElement;
                     if (parent && !parent.querySelector('.fallback-text')) {
                       const fallback = document.createElement('div');
-                      fallback.className = 'fallback-text text-[#8b959e] text-xs absolute inset-0 flex items-center justify-center text-center px-2';
+                      fallback.className = 'fallback-text text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
                       fallback.textContent = 'No Image';
                       parent.appendChild(fallback);
                     }
                   }}
                 />
               ) : (
-                <div className="text-[#8b959e] text-xs text-center px-2">
+                <div className="text-black/40 text-xs text-center px-2">
                   No Image
                 </div>
               );
@@ -104,7 +104,7 @@ export default function RecommendationCard({
             </h4>
 
             {currentProduct.brand && (
-              <p className="text-base text-[#8b959e]">{currentProduct.brand}</p>
+              <p className="text-base text-black/50">{currentProduct.brand}</p>
             )}
           </div>
 
