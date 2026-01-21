@@ -183,7 +183,7 @@ export default function Home() {
         {/* Chat Messages */}
         <div
           ref={chatMessagesContainerRef}
-          className={`flex-1 overflow-y-auto min-h-0 ${isInitialState ? 'flex items-center justify-center' : 'px-8 py-8'}`}
+          className={`flex-1 overflow-y-auto min-h-0 ${isInitialState ? 'flex items-center justify-center' : 'px-8 py-8'} pl-20`}
         >
           {isInitialState ? (
             // Initial centered welcome screen
@@ -272,7 +272,7 @@ export default function Home() {
 
         {/* Chat Input - Only show when not in initial state */}
         {!isInitialState && (
-          <div className="border-t border-black/10 bg-white px-8 py-4 flex-shrink-0">
+          <div className="border-t border-black/10 bg-white px-8 py-4 flex-shrink-0 pl-20">
             <div className="max-w-4xl mx-auto">
               <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
             </div>

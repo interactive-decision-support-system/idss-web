@@ -63,10 +63,10 @@ export default function RecommendationCard({
 
   return (
     <div className="bg-white border border-black/10 rounded-xl p-4 hover:border-black/20 transition-all duration-200">
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-stretch">
         {/* Product Image Container */}
-        <div className="w-40 flex-shrink-0">
-          <div className="h-28 bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
+        <div className="w-56 h-56 flex-shrink-0">
+          <div className="w-full h-full bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
             {(() => {
               // Check both image_url (converted) and primaryImage (from spread)
               const imageSrc = (currentProduct.image_url as string) || (currentProduct.primaryImage as string);

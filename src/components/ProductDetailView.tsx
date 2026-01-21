@@ -42,9 +42,9 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
   };
 
   return (
-    <div className="h-full bg-white flex flex-col overflow-hidden">
+    <div className="h-full bg-white flex flex-col overflow-hidden rounded-xl">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-black/10 flex-shrink-0">
+      <div className="flex items-center justify-between p-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold text-black truncate">{product.title}</h2>
           {product.brand && (
