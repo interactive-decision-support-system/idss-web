@@ -21,19 +21,19 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex space-x-4">
+    <form onSubmit={handleSubmit} className="relative">
       <input
         type="text"
         value={inputMessage}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder={config.inputPlaceholder}
-        className="flex-1 px-4 py-2 bg-white border border-[#8b959e]/40 rounded-xl focus:ring-2 focus:ring-[#8C1515]/20 focus:border-[#8C1515] transition-all duration-200 placeholder-[#8b959e] text-black text-base shadow-sm"
+        className="w-full px-4 py-3 pr-12 bg-white border border-black/20 rounded-full focus:ring-2 focus:ring-[#8C1515]/20 focus:border-[#8C1515] transition-all duration-200 placeholder-black/40 text-black text-base shadow-sm"
         disabled={isLoading}
       />
       <button
         type="submit"
         disabled={!inputMessage.trim() || isLoading}
-        className="w-10 h-10 bg-gradient-to-r from-[#8C1515] to-[#750013] text-white rounded-full hover:from-[#750013] hover:to-[#8C1515] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-[#8C1515] text-white rounded-full hover:bg-[#750013] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-sm"
         aria-label="Send message"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -73,7 +73,7 @@ export const vehicleConfig: DomainConfig = {
   productName: 'vehicle',
   productNamePlural: 'vehicles',
   
-  welcomeMessage: "Welcome! I'm here to help you find the perfect vehicle. What are you looking for today?",
+  welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of vehicle are you looking for?",
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
@@ -198,7 +198,7 @@ export const pcPartsConfig: DomainConfig = {
   productName: 'part',
   productNamePlural: 'parts',
   
-  welcomeMessage: "Welcome! I'm here to help you find the perfect PC component. What are you looking for today?",
+  welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of PC part are you looking for?",
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
