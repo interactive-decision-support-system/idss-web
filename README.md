@@ -5,6 +5,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
 ## Features
 
 - **Chat-first workflow**: user/assistant messages with auto-scroll.
+- **Mode selector (k)**: choose how many questions IDA asks before giving recommendations (default **Explorer / k=2**).
 - **Location-aware sessions (optional)**: a top alert asks for location permission; when enabled, the app sends `user_location` to the backend to tailor recommendations.
 - **Stacked recommendations**: assistant messages can include a **2D grid** of recommended items (rows = “buckets”), with:
   - optional `bucket_labels` per row
@@ -65,6 +66,11 @@ The app sends:
   - `longitude` (number)
   - `accuracy_m` (number, optional)
   - `captured_at` (ISO string, optional)
+- `k` (number, optional; **mode** = number of questions asked before recommendations). UI mapping:
+  - `0` → **Suggester**
+  - `1` → **Nudger**
+  - `2` → **Explorer** (default)
+  - `3` → **Interviewer**
 
 The proxy route (`/api/chat`) will also forward optional fields if the client includes them:
 - `k`, `method`, `n_rows`, `n_per_row`
