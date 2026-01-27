@@ -37,9 +37,17 @@ export interface ChatMessage {
   quick_replies?: string[];
 }
 
+export interface UserLocation {
+  latitude: number;
+  longitude: number;
+  accuracy_m?: number;
+  captured_at?: string; // ISO timestamp
+}
+
 export interface ChatRequest {
   message: string;
   session_id?: string;
+  user_location?: UserLocation;
 }
 
 export interface ChatResponse {

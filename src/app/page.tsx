@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
-import { ChatMessage, Product } from '@/types/chat';
+import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { currentDomainConfig } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
@@ -17,11 +17,18 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<Product[]>([]);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [locationPermission, setLocationPermission] = useState<
+    'unknown' | 'prompt' | 'granted' | 'denied' | 'unavailable' | 'error'
+  >('unknown');
+  const [locationDismissed, setLocationDismissed] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
   const config = currentDomainConfig;
 
   // Check if this is the initial state (only welcome message)
   const isInitialState = chatMessages.length === 1 && chatMessages[0]?.role === 'assistant';
+  const showLocationBanner =
+    !locationDismissed && !userLocation && locationPermission !== 'unavailable';
 
   // Load favorites from localStorage on mount
   useEffect(() => {
@@ -66,6 +73,75 @@ export default function Home() {
     }
   }, [chatMessages.length, config.welcomeMessage]);
 
+  const requestUserLocation = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationPermission('unavailable');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy_m: pos.coords.accuracy,
+          captured_at: new Date(pos.timestamp).toISOString(),
+        });
+        setLocationPermission('granted');
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationPermission('denied');
+        } else {
+          setLocationPermission('error');
+        }
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 5 * 60 * 1000,
+      }
+    );
+  }, []);
+
+  // Ask for / detect location permission at session start
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+
+    // If Permissions API exists, use it to decide whether to auto-fetch.
+    // Otherwise, fall back to showing a prompt CTA (browser will ask when we call geolocation).
+    const permissions = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    if (!permissions?.query) {
+      setLocationPermission(navigator.geolocation ? 'prompt' : 'unavailable');
+      return;
+    }
+
+    let cancelled = false;
+    permissions
+      .query({ name: 'geolocation' as PermissionName })
+      .then((status) => {
+        if (cancelled) return;
+        setLocationPermission(status.state as 'prompt' | 'granted' | 'denied');
+
+        // If already granted, capture location immediately so it's available for the first message.
+        if (status.state === 'granted') {
+          requestUserLocation();
+        }
+
+        status.onchange = () => {
+          setLocationPermission(status.state as 'prompt' | 'granted' | 'denied');
+          if (status.state === 'granted') requestUserLocation();
+        };
+      })
+      .catch(() => {
+        setLocationPermission(navigator.geolocation ? 'prompt' : 'unavailable');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requestUserLocation]);
+
   // Auto-scroll chat messages to bottom when new messages arrive
   useEffect(() => {
     if (chatMessagesContainerRef.current && !isInitialState) {
@@ -92,7 +168,11 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const response = await idssApiService.sendMessage(message, sessionId || undefined);
+      const response = await idssApiService.sendMessage(
+        message,
+        sessionId || undefined,
+        userLocation || undefined
+      );
 
       // Update session ID
       if (response.session_id) {
@@ -134,7 +214,45 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen bg-white flex overflow-hidden relative">
+    <div className={`h-screen bg-white flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
+      {/* Location permission alert (sticky, disappears once enabled) */}
+      {showLocationBanner && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <div className="mx-auto max-w-6xl px-4 py-2">
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-black/10 bg-white/95 backdrop-blur shadow-sm px-4 py-2">
+              <div className="text-sm text-black/80">
+                {locationPermission === 'denied' ? (
+                  <>Location permission is blocked in your browser settings.</>
+                ) : locationPermission === 'error' ? (
+                  <>Couldn’t access your location. You can try again.</>
+                ) : (
+                  <>Enable location to personalize recommendations near you.</>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                {locationPermission !== 'denied' && (
+                  <button
+                    type="button"
+                    onClick={requestUserLocation}
+                    className="text-sm font-medium text-[#8C1515] hover:text-[#750013] transition-colors"
+                  >
+                    Enable
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setLocationDismissed(true)}
+                  className="text-sm font-medium text-black/60 hover:text-black transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
         {/* Floating Title - IDA */}

@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, session_id, k, method, n_rows, n_per_row } = body;
+    const { message, session_id, user_location, k, method, n_rows, n_per_row } = body;
 
     if (!message) {
       return NextResponse.json(
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     // Forward request to backend API
     const requestBody: Record<string, unknown> = { message };
     if (session_id) requestBody.session_id = session_id;
+    if (user_location) requestBody.user_location = user_location;
     if (k !== undefined) requestBody.k = k;
     if (method) requestBody.method = method;
     if (n_rows !== undefined) requestBody.n_rows = n_rows;

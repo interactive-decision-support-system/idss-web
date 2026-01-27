@@ -1,10 +1,10 @@
-import { ChatRequest, ChatResponse } from '@/types/chat';
+import { ChatRequest, ChatResponse, UserLocation } from '@/types/chat';
 
 // Use Next.js API routes as proxy (they handle backend routing)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 class IDSSApiService {
-  async sendMessage(message: string, sessionId?: string): Promise<ChatResponse> {
+  async sendMessage(message: string, sessionId?: string, userLocation?: UserLocation): Promise<ChatResponse> {
     try {
       const url = API_BASE_URL ? `${API_BASE_URL}/chat` : '/api/chat';
       const response = await fetch(url, {
@@ -15,6 +15,7 @@ class IDSSApiService {
         body: JSON.stringify({
           message,
           session_id: sessionId,
+          user_location: userLocation,
         } as ChatRequest),
       });
 
