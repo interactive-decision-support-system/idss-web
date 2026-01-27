@@ -14,6 +14,7 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [modeK, setModeK] = useState<number>(2); // default: probie
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<Product[]>([]);
@@ -156,7 +157,7 @@ export default function Home() {
     }
   }, [chatMessages, isLoading, isInitialState]);
 
-  const handleChatMessage = async (message: string) => {
+  const handleChatMessage = async (message: string, k: number = modeK) => {
     // Add user message immediately
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -171,7 +172,8 @@ export default function Home() {
       const response = await idssApiService.sendMessage(
         message,
         sessionId || undefined,
-        userLocation || undefined
+        userLocation || undefined,
+        k
       );
 
       // Update session ID
@@ -318,7 +320,12 @@ export default function Home() {
               {/* Centered Input Box */}
               <div className="flex justify-center">
                 <div className="w-full max-w-2xl">
-                  <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
+                  <ChatInput
+                    onSendMessage={handleChatMessage}
+                    isLoading={isLoading}
+                    modeK={modeK}
+                    onModeKChange={setModeK}
+                  />
                 </div>
               </div>
             </div>
@@ -361,7 +368,7 @@ export default function Home() {
                           {message.quick_replies.map((reply, idx) => (
                             <button
                               key={idx}
-                              onClick={() => handleChatMessage(reply)}
+                              onClick={() => handleChatMessage(reply, modeK)}
                               disabled={isLoading}
                               className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
@@ -394,7 +401,12 @@ export default function Home() {
         {!isInitialState && (
           <div className="px-8 py-4 flex-shrink-0 pl-20">
             <div className="max-w-4xl mx-auto">
-              <ChatInput onSendMessage={handleChatMessage} isLoading={isLoading} />
+              <ChatInput
+                onSendMessage={handleChatMessage}
+                isLoading={isLoading}
+                modeK={modeK}
+                onModeKChange={setModeK}
+              />
             </div>
           </div>
         )}

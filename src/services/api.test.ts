@@ -23,7 +23,7 @@ describe('IDSSApiService.sendMessage', () => {
       captured_at: '2026-01-27T00:00:00.000Z',
     };
 
-    await idssApiService.sendMessage('hello', 'sid-123', loc);
+    await idssApiService.sendMessage('hello', 'sid-123', loc, 2);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
@@ -41,6 +41,7 @@ describe('IDSSApiService.sendMessage', () => {
         message: 'hello',
         session_id: 'sid-123',
         user_location: loc,
+        k: 2,
       }),
     );
   });

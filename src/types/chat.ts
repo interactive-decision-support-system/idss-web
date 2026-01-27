@@ -48,6 +48,7 @@ export interface ChatRequest {
   message: string;
   session_id?: string;
   user_location?: UserLocation;
+  k?: number;
 }
 
 export interface ChatResponse {
