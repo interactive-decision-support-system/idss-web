@@ -8,7 +8,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
 - **Stacked recommendations**: assistant messages can include a **2D grid** of recommended items (rows = “buckets”), with:
   - optional `bucket_labels` per row
   - optional `diversification_dimension` header
-  - per-row navigation when a row contains multiple items
+- each row renders up to **3 items side-by-side**, each with its own like button
 - **Quick replies**: optional suggested reply buttons returned by the backend.
 - **Favorites**: like/unlike items and view them in a sidebar; persisted in `localStorage`.
 - **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
@@ -100,7 +100,7 @@ src/
 ├── components/
 │   ├── ChatInput.tsx              # Message input
 │   ├── RecommendationCard.tsx     # Single card view for an item
-│   ├── StackedRecommendationCards.tsx # Rows/buckets + per-row navigation
+│   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
 │   ├── FavoritesPage.tsx          # Favorites list sidebar
 │   └── ProductDetailView.tsx      # Detail sidebar (+ listing link)
 ├── config/
