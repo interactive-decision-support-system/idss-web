@@ -8,6 +8,24 @@ interface ProductDetailViewProps {
   onClose: () => void;
 }
 
+function normalizeExternalUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (!trimmed) return null;
+
+  // Already absolute
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  // Protocol-relative URL
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+
+  // Domain-like URL missing scheme (e.g., www.example.com/path)
+  if (/^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)) return `https://${trimmed}`;
+
+  // Otherwise treat as an ID/relative path; don't render the button (prevents localhost 404s).
+  return null;
+}
+
 export default function ProductDetailView({ product, onClose }: ProductDetailViewProps) {
   const config = currentDomainConfig;
 
@@ -92,7 +110,7 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
 
         {/* View Listing Button */}
         {(() => {
-          const listingUrl = product.listing_url as string | undefined;
+          const listingUrl = normalizeExternalUrl(product.listing_url as string | undefined);
           return listingUrl && config.viewListingButtonText ? (
             <a
               href={listingUrl}

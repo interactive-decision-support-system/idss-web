@@ -1,160 +1,139 @@
-# IDSS Web - Recommendation System
+# IDSS Web
 
-A modern, chat-based recommendation system built with Next.js, React, and TypeScript. This application features a clean, simple interface with recommendations appearing directly in the chat conversation.
+Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (IDSS)**. Built with **Next.js (App Router)**, **React**, and **TypeScript**, with in-chat (stacked) recommendation cards and a sidebar for favorites and item details.
 
 ## Features
 
-- **Chat-based Interface**: Simple, conversational UI with auto-scrolling messages
-- **In-Chat Recommendations**: Product recommendations appear directly in chat messages
-- **Multi-Item Navigation**: When multiple items are recommended, navigate through them using arrow buttons
-- **Stanford Color Scheme**: Uses Stanford University colors (Cardinal Red #8C1515 and Gray #8b959e)
-- **Dummy Data**: Includes hardcoded demo car data (similar to CarMax) for testing
-- **Domain-Agnostic**: Code structure works for any product type (vehicles, fashion, electronics, etc.)
-- **Domain Configuration**: Easy-to-configure system for customizing product names, UI text, and displayed fields
+- **Chat-first workflow**: user/assistant messages with auto-scroll.
+- **Stacked recommendations**: assistant messages can include a **2D grid** of recommended items (rows = “buckets”), with:
+  - optional `bucket_labels` per row
+  - optional `diversification_dimension` header
+- each row renders up to **3 items side-by-side**, each with its own like button
+- **Quick replies**: optional suggested reply buttons returned by the backend.
+- **Favorites**: like/unlike items and view them in a sidebar; persisted in `localStorage`.
+- **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
+- **Domain configuration**: switch between domains (e.g., vehicles vs PC parts) by editing `src/config/domain-config.ts`.
+- **Stanford look & feel**: Cardinal Red + Gray palette; minimal, clean UI.
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- **Node.js**: CI uses Node **22** (recommended). Node **18+** should work.
+- **npm** (or equivalent)
 
-- Node.js 18+ 
-- npm or yarn
+## Setup
 
-### Installation
+Install dependencies:
 
-1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Run the development server:
+### Configure backend connectivity
+
+This frontend expects a backend with a `POST /chat` endpoint.
+
+Create `.env.local`:
+
+```bash
+# Used by the Next.js proxy route at /api/chat
+NEXT_PUBLIC_API_BASE_URL="http://localhost:8000"
+
+# Optional: if set, the frontend will call this directly (bypasses /api/chat proxy)
+# NEXT_PUBLIC_API_URL="http://localhost:8000"
+```
+
+Notes:
+- `src/app/api/chat/route.ts` proxies `POST /api/chat` → `${NEXT_PUBLIC_API_BASE_URL}/chat`.
+- `src/services/api.ts` calls `${NEXT_PUBLIC_API_URL}/chat` when `NEXT_PUBLIC_API_URL` is set; otherwise it calls `/api/chat`.
+
+Run the dev server:
+
 ```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
+Open `http://localhost:3000`.
 
-## Project Structure
+## API contract (expected)
+
+The app sends:
+- `message` (string)
+- `session_id` (string, optional; returned by the backend and re-sent on subsequent turns)
+
+The proxy route (`/api/chat`) will also forward optional fields if the client includes them:
+- `k`, `method`, `n_rows`, `n_per_row`
+
+The UI supports responses shaped like `ChatResponse` in `src/types/chat.ts`, including:
+- `message` (assistant text)
+- `session_id`
+- `quick_replies?: string[]`
+- `recommendations?: APIVehicle[][]` (2D array)
+- `bucket_labels?: string[]`
+- `diversification_dimension?: string`
+
+Vehicle recommendations are converted into the UI’s `Product` shape via `src/utils/product-converter.ts`.
+
+## Domain configuration
+
+`src/config/domain-config.ts` controls:
+- wording (welcome message, placeholders, button text)
+- which fields appear on recommendation cards and in the detail sidebar
+- default quick replies
+
+To switch domains, change:
+
+```ts
+export const currentDomainConfig: DomainConfig = vehicleConfig;
+// or:
+// export const currentDomainConfig: DomainConfig = pcPartsConfig;
+```
+
+## Project structure
 
 ```
 src/
 ├── app/
-│   ├── api/
-│   │   └── chat/
-│   │       └── route.ts          # API route handler (uses dummy data)
-│   ├── globals.css               # Global styles with Stanford colors
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Main chat interface
+│   ├── api/chat/route.ts          # Proxies chat requests to backend
+│   ├── globals.css                # Global styles (Tailwind v4 + Stanford colors)
+│   ├── layout.tsx                 # Root layout (+ Vercel Analytics)
+│   └── page.tsx                   # Main chat UI + sidebar (favorites/details)
 ├── components/
-│   ├── ChatInput.tsx             # Chat input component
-│   └── RecommendationCard.tsx   # In-chat recommendation card with arrows
+│   ├── ChatInput.tsx              # Message input
+│   ├── RecommendationCard.tsx     # Single card view for an item
+│   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
+│   ├── FavoritesPage.tsx          # Favorites list sidebar
+│   └── ProductDetailView.tsx      # Detail sidebar (+ listing link)
 ├── config/
-│   └── domain-config.ts          # Domain configuration (vehicles, fashion, etc.)
-├── data/
-│   ├── dummy-handler.ts          # Dummy chat handler logic
-│   └── dummy-products.ts         # Hardcoded product data
-├── services/
-│   └── api.ts                    # API service (ready for backend integration)
-└── types/
-    └── chat.ts                   # TypeScript type definitions
+│   ├── domain-config.ts           # Domain customization (vehicles/pc parts)
+│   └── theme-config.ts            # Theme tokens (currently light theme default)
+├── services/api.ts                # Frontend API client (direct or via proxy)
+├── types/chat.ts                  # Chat/API/Product types
+└── utils/product-converter.ts     # APIVehicle[][] → Product[][]
 ```
 
-## Domain Configuration
+## Testing & linting
 
-The application uses a **domain configuration system** that makes it easy to customize for different product types (vehicles, fashion, electronics, etc.) without changing code.
+Run unit tests:
 
-### Switching Domains
-
-To switch between domains, edit `src/config/domain-config.ts` and change the exported config:
-
-```typescript
-// For vehicles (default)
-export const currentDomainConfig: DomainConfig = vehicleConfig;
-
-// For PC parts/electronics
-export const currentDomainConfig: DomainConfig = pcPartsConfig;
+```bash
+npm test
 ```
 
-### Configuration Options
+Watch mode:
 
-Each domain configuration includes:
-
-- **Product naming**: `productName`, `productNamePlural` (e.g., "vehicle", "item")
-- **UI text**: Welcome messages, input placeholders, button text
-- **Field configuration**: Which fields to display in recommendation cards and detail pages
-- **Quick replies**: Default quick reply suggestions
-
-### Creating a Custom Domain
-
-You can create a new domain configuration by copying an existing one and customizing it:
-
-```typescript
-export const myCustomConfig: DomainConfig = {
-  productName: 'product',
-  productNamePlural: 'products',
-  welcomeMessage: "Welcome! I'm here to help you find the perfect product.",
-  inputPlaceholder: "What are you looking for?",
-  viewDetailsButtonText: "View Details",
-  recommendationCardFields: [
-    {
-      label: 'Price',
-      key: 'price',
-      format: (value) => `$${typeof value === 'number' ? value.toLocaleString() : value}`,
-    },
-    // Add more fields...
-  ],
-  detailPageFields: [
-    // Define fields for detail page...
-  ],
-  defaultQuickReplies: [
-    "Option 1",
-    "Option 2",
-    "Option 3"
-  ],
-};
+```bash
+npm run test:watch
 ```
 
-The field configuration supports:
-- **Labels**: Display names for fields
-- **Keys**: Product object keys to read values from
-- **Formatting**: Custom formatter functions
-- **Conditions**: Optional functions to conditionally show fields
+Lint:
 
-## API Integration
+```bash
+npm run lint
+```
 
-The application is structured to work with the backend API defined in `desktop/stanford/ldr/idss_new/idss/api`. Currently, it uses dummy data for demonstration purposes.
+CI runs `npm ci` + `npm test` on pushes/PRs to `main` (see `.github/workflows/unit-tests.yml`).
 
-To connect to the real backend:
+## Notes / known gaps
 
-1. Set the `NEXT_PUBLIC_API_URL` environment variable to your backend URL
-2. Update the API route handler in `src/app/api/chat/route.ts` to call the real backend instead of `dummyChatHandler`
-
-## Demo Queries
-
-The dummy handler responds to the following queries (case-insensitive):
-
-- "toyota" or "camry" - Returns Toyota Camry recommendations
-- "honda" or "cr-v" or "crv" - Returns Honda CR-V recommendations
-- "suv" or "sport utility" - Returns multiple SUV options (demonstrates arrow navigation)
-- "truck" or "pickup" - Returns multiple pickup truck options (demonstrates arrow navigation)
-- "tesla" or "electric" or "ev" - Returns Tesla/electric vehicle recommendations
-- "sedan" - Returns multiple sedan options (demonstrates arrow navigation)
-- "bmw" or "luxury" - Returns BMW luxury vehicle recommendations
-- "ford" or "f-150" or "f150" - Returns Ford F-150 recommendations
-- "under 30000" or "under 30" - Returns vehicles under $30,000 (demonstrates arrow navigation)
-
-## Design Notes
-
-- **Colors**: Stanford Cardinal Red (#8C1515, #750013) and Gray (#8b959e)
-- **Layout**: Simple header, scrollable chat area, fixed input at bottom
-- **Recommendations**: Appear inline in chat messages with navigation arrows when multiple items are shown
-- **Domain-Agnostic**: Product interface supports any product type - currently configured for vehicles but can work with fashion, electronics, etc.
-- **No Filters/Favorites**: Intentionally simplified - these features are not yet implemented
-
-## Future Enhancements
-
-- Connect to real backend API
-- Add filters functionality
-- Add favorites/favorites page
-- Enhanced product detail views
-- User authentication
-- Session persistence
+- The app includes a light/dark theme token file (`src/config/theme-config.ts`), but the current UI primarily uses explicit Tailwind classes.
+- The “favorites” state is local to the browser (stored in `localStorage`), not synced to a backend.

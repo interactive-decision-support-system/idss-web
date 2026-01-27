@@ -1,7 +1,38 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { FieldConfig } from '@/config/domain-config';
 import RecommendationCard from '@/components/RecommendationCard';
 import type { Product } from '@/types/chat';
+
+jest.mock('@/config/domain-config', () => {
+  const recommendationCardFields: FieldConfig[] = [
+    {
+      label: 'Price',
+      key: 'price',
+      format: (value: unknown) => `$${Number(value).toLocaleString()}`,
+    },
+    {
+      label: 'Mileage',
+      key: 'mileage',
+      format: (value: unknown) => `${Number(value).toLocaleString()} mi`,
+    },
+  ];
+
+  return {
+    currentDomainConfig: {
+      productName: 'item',
+      productNamePlural: 'items',
+      welcomeMessage: 'Welcome',
+      inputPlaceholder: 'Type a message',
+      viewDetailsButtonText: 'View Details',
+      recommendationCardFields,
+      recommendationCardSubtitleKey: 'source',
+      recommendationCardSubtitleClassName: 'text-base text-black/60',
+      detailPageFields: [],
+      defaultQuickReplies: [],
+    },
+  };
+});
 
 describe('RecommendationCard', () => {
   it('renders product and calls onItemSelect on click', async () => {
@@ -10,22 +41,24 @@ describe('RecommendationCard', () => {
 
     const product: Product = {
       id: 'p1',
-      title: '2023 Toyota Camry',
+      title: 'Example Product',
       price: 24999,
       mileage: 11000,
-      year: 2023,
       source: 'Test Dealer',
       image_url: 'https://example.com/img.jpg',
     };
 
     render(
       <RecommendationCard
-        products={[product]}
+        product={product}
         onItemSelect={onItemSelect}
       />,
     );
 
-    expect(screen.getByText('2023 Toyota Camry')).toBeInTheDocument();
+    expect(screen.getByText('Example Product')).toBeInTheDocument();
+    expect(screen.getByText('Test Dealer')).toBeInTheDocument();
+    expect(screen.getByText('$24,999')).toBeInTheDocument();
+    expect(screen.getByText('11,000 mi')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /view details/i }));
@@ -33,8 +66,8 @@ describe('RecommendationCard', () => {
     expect(onItemSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
   });
 
-  it('renders nothing when products is empty', () => {
-    const { container } = render(<RecommendationCard products={[]} />);
+  it('renders nothing when product is missing', () => {
+    const { container } = render(<RecommendationCard product={null} />);
     expect(container).toBeEmptyDOMElement();
   });
 });

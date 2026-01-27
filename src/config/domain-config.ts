@@ -9,6 +9,8 @@ export interface FieldConfig {
   key: string; // Product object key
   format?: (value: unknown) => string; // Optional formatter function
   condition?: (product: Record<string, unknown>) => boolean; // Optional condition to show field
+  labelClassName?: string; // Optional Tailwind classes for label text
+  valueClassName?: string; // Optional Tailwind classes for value text
 }
 
 export interface DomainConfig {
@@ -26,6 +28,11 @@ export interface DomainConfig {
   
   // Recommendation card fields
   recommendationCardFields: FieldConfig[];
+
+  // Optional: show a single field under the product title on recommendation cards
+  // (e.g., "Dealer" / "Retailer" / "Store" name). This is not shown on the detail page.
+  recommendationCardSubtitleKey?: string;
+  recommendationCardSubtitleClassName?: string;
   
   // View details page fields (for future implementation)
   detailPageFields: FieldConfig[];
@@ -34,37 +41,22 @@ export interface DomainConfig {
   defaultQuickReplies: string[];
 }
 
-// Helper function to create field config with dynamic label for source field
-const createRecommendationFields = (dealerOrStoreLabel: string) => [
+// Helper function to create recommendation card fields
+const createRecommendationFields = () => [
   {
     label: 'Price',
     key: 'price',
     format: (value: unknown) => `$${typeof value === 'number' ? value.toLocaleString() : value}`,
+    labelClassName: 'text-base text-black/60',
+    valueClassName: 'text-xl font-bold text-[#8C1515]',
   },
   {
     label: 'Mileage',
     key: 'mileage',
     format: (value: unknown) => typeof value === 'number' ? `${value.toLocaleString()} mi` : String(value),
     condition: (product: Record<string, unknown>) => product.mileage !== undefined && product.mileage !== null,
-  },
-  {
-    label: 'Year',
-    key: 'year',
-    condition: (product: Record<string, unknown>) => product.year !== undefined && product.year !== null,
-  },
-  {
-    label: 'Rating',
-    key: 'rating',
-    format: (value: unknown) => {
-      const rating = typeof value === 'number' ? value : parseFloat(String(value));
-      return `${rating.toFixed(1)} ★`;
-    },
-    condition: (product: Record<string, unknown>) => product.rating !== undefined && product.rating !== null,
-  },
-  {
-    label: dealerOrStoreLabel,
-    key: 'source',
-    condition: (product: Record<string, unknown>) => product.source !== undefined && product.source !== null,
+    labelClassName: 'text-base text-black/60',
+    valueClassName: 'text-xl font-semibold text-black',
   },
 ];
 
@@ -79,7 +71,9 @@ export const vehicleConfig: DomainConfig = {
   viewListingButtonText: "View Listing",
   dealerLabel: "Dealer",
   
-  recommendationCardFields: createRecommendationFields("Dealer"),
+  recommendationCardFields: createRecommendationFields(),
+  recommendationCardSubtitleKey: 'source',
+  recommendationCardSubtitleClassName: 'text-base text-black/60',
   
   detailPageFields: [
     {

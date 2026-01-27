@@ -4,38 +4,37 @@ import { Product } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
 
 interface RecommendationCardProps {
-  products: Product[];
-  currentIndex?: number;
+  product?: Product | null;
   onItemSelect?: (product: Product) => void;
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
 }
 
 export default function RecommendationCard({ 
-  products, 
-  currentIndex: controlledIndex,
+  product,
   onItemSelect, 
   onToggleFavorite, 
   isFavorite 
 }: RecommendationCardProps) {
   const config = currentDomainConfig;
 
-  if (!products || products.length === 0) {
+  if (!product) {
     return null;
   }
 
-  const currentProduct = products[controlledIndex ?? 0];
+  // Show a compact subset so 3 cards fit per row
+  const fieldsToShow = config.recommendationCardFields.slice(0, 3);
 
   // Render field based on config
   const renderField = (fieldConfig: typeof config.recommendationCardFields[0]) => {
     // Special handling for category field - check both part_type and category
-    let value = currentProduct[fieldConfig.key];
+    let value = product[fieldConfig.key];
     if (fieldConfig.key === 'part_type' && (value === undefined || value === null)) {
-      value = currentProduct['category'];
+      value = product['category'];
     }
     
     // Check condition if provided
-    if (fieldConfig.condition && !fieldConfig.condition(currentProduct)) {
+    if (fieldConfig.condition && !fieldConfig.condition(product)) {
       return null;
     }
     
@@ -49,76 +48,117 @@ export default function RecommendationCard({
       : String(value);
     
     return (
-      <div key={fieldConfig.key} className="flex justify-between py-0.5">
-        <span className="text-black/60">{fieldConfig.label}:</span>
-        <span className={fieldConfig.key === 'price' ? 'font-bold text-[#8C1515]' : 'text-black'}>
+      <div key={fieldConfig.key} className="flex items-baseline justify-between gap-3">
+        <span className={fieldConfig.labelClassName ?? 'text-xs text-black/60'}>
+          {fieldConfig.label}
+        </span>
+        <span
+          className={
+            fieldConfig.valueClassName ??
+            (fieldConfig.key === 'price'
+              ? 'text-sm font-bold text-[#8C1515]'
+              : 'text-sm text-black')
+          }
+        >
           {displayValue}
-          {fieldConfig.key === 'rating' && currentProduct.rating_count && (
-            ` (${currentProduct.rating_count})`
-          )}
+          {fieldConfig.key === 'rating' && product.rating_count && ` (${product.rating_count})`}
         </span>
       </div>
     );
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleFavorite) onToggleFavorite(product);
+  };
+
+  const favorited = Boolean(isFavorite && isFavorite(product.id));
+
   return (
-    <div className="bg-white border border-black/10 rounded-xl p-4 hover:border-black/20 transition-all duration-200">
-      <div className="flex gap-4 items-stretch">
-        {/* Product Image Container */}
-        <div className="w-56 h-56 flex-shrink-0">
-          <div className="w-full h-full bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
-            {(() => {
-              // Check both image_url (converted) and primaryImage (from spread)
-              const imageSrc = (currentProduct.image_url as string) || (currentProduct.primaryImage as string);
-              return imageSrc ? (
-                <img
-                  src={imageSrc}
-                  alt={currentProduct.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.fallback-text')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'fallback-text text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
-                      fallback.textContent = 'No Image';
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
-              ) : (
-                <div className="text-black/40 text-xs text-center px-2">
-                  No Image
-                </div>
-              );
-            })()}
-          </div>
-        </div>
+    <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200">
+      {/* Image */}
+      <div className="aspect-square bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
+        {(() => {
+          const imageSrc = (product.image_url as string) || (product.primaryImage as string);
+          return imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={product.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent && !parent.querySelector('.fallback-text')) {
+                  const fallback = document.createElement('div');
+                  // Make sure overlays (like the heart) remain clickable.
+                  fallback.className =
+                    'fallback-text pointer-events-none text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
+                  fallback.textContent = 'No Image';
+                  parent.appendChild(fallback);
+                }
+              }}
+            />
+          ) : (
+            <div className="pointer-events-none text-black/40 text-xs text-center px-2">No Image</div>
+          );
+        })()}
 
-        {/* Product Details */}
-        <div className="flex-1 flex flex-col space-y-1 min-w-0">
-          <div>
-            <h4 className="text-lg font-bold text-black leading-tight">
-              {currentProduct.title}
-            </h4>
-
-            {currentProduct.brand && (
-              <p className="text-base text-black/50">{currentProduct.brand}</p>
-            )}
-          </div>
-
-          <div className="space-y-0.5 text-base flex-1">
-            {config.recommendationCardFields.map(renderField)}
-          </div>
-
+        {/* Like button (per product) */}
+        {onToggleFavorite && (
           <button
-            onClick={() => onItemSelect && onItemSelect(currentProduct)}
-            className="text-left text-base text-[#8C1515] hover:text-[#750013] font-medium mt-1"
+            onClick={handleToggleFavorite}
+            className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center hover:bg-white transition-all duration-200 border border-black/10"
+            aria-label={favorited ? 'Unfavorite' : 'Favorite'}
+            title={favorited ? 'Unfavorite' : 'Favorite'}
           >
-            {config.viewDetailsButtonText} →
+            <svg
+              className={`w-5 h-5 transition-all duration-200 ${
+                favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
+              }`}
+              fill={favorited ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
           </button>
+        )}
+      </div>
+
+      {/* Details under image */}
+      <div className="mt-3 space-y-2">
+        <div className="min-w-0">
+          <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
+            {product.title}
+          </h4>
+          {(() => {
+            const subtitleKey = config.recommendationCardSubtitleKey;
+            const subtitleValue = subtitleKey ? product[subtitleKey] : undefined;
+            return subtitleValue ? (
+              <p className={(config.recommendationCardSubtitleClassName ?? 'text-sm text-black/60') + ' truncate'}>
+                {String(subtitleValue)}
+              </p>
+            ) : null;
+          })()}
         </div>
+
+        <div className="space-y-1">
+          {fieldsToShow.map(renderField)}
+        </div>
+
+        <button
+          onClick={() => onItemSelect && onItemSelect(product)}
+          className="text-left text-sm text-[#8C1515] hover:text-[#750013] font-medium"
+        >
+          {config.viewDetailsButtonText} →
+        </button>
       </div>
     </div>
   );
