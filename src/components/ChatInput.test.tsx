@@ -12,6 +12,10 @@ describe('ChatInput', () => {
       <ChatInput onSendMessage={onSendMessage} isLoading={false} modeK={2} onModeKChange={jest.fn()} />
     );
 
+    expect(
+      screen.getByText('IDA can make mistakes. Check before completing any purchases.')
+    ).toBeInTheDocument();
+
     const input = screen.getByRole('textbox');
     await user.type(input, '  hello  ');
     await user.click(screen.getByRole('button', { name: /send message/i }));
