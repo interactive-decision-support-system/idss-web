@@ -13,7 +13,7 @@ describe('ChatInput', () => {
     );
 
     expect(
-      screen.getByText('IDA can make mistakes. Check before completing any purchases')
+      screen.getByText('IDA can make mistakes. Check before completing any purchases.')
     ).toBeInTheDocument();
 
     const input = screen.getByRole('textbox');
