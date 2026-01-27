@@ -7,14 +7,16 @@ describe('ChatInput', () => {
     const user = userEvent.setup();
     const onSendMessage = jest.fn();
 
-    render(<ChatInput onSendMessage={onSendMessage} isLoading={false} />);
+    render(
+      <ChatInput onSendMessage={onSendMessage} isLoading={false} modeK={2} onModeKChange={jest.fn()} />
+    );
 
     const input = screen.getByRole('textbox');
     await user.type(input, '  hello  ');
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
     expect(onSendMessage).toHaveBeenCalledTimes(1);
-    expect(onSendMessage).toHaveBeenCalledWith('hello');
+    expect(onSendMessage).toHaveBeenCalledWith('hello', 2);
     expect(input).toHaveValue('');
   });
 
@@ -22,7 +24,9 @@ describe('ChatInput', () => {
     const user = userEvent.setup();
     const onSendMessage = jest.fn();
 
-    render(<ChatInput onSendMessage={onSendMessage} isLoading={true} />);
+    render(
+      <ChatInput onSendMessage={onSendMessage} isLoading={true} modeK={2} onModeKChange={jest.fn()} />
+    );
 
     const input = screen.getByRole('textbox');
     expect(input).toBeDisabled();
