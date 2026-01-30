@@ -13,7 +13,7 @@ describe('ChatInput', () => {
     );
 
     expect(
-      screen.getByText('IDA can make mistakes. Check before completing any purchases.')
+      screen.getByText('IDSS can make mistakes. Check before completing any purchases.')
     ).toBeInTheDocument();
 
     const input = screen.getByRole('textbox');
@@ -59,20 +59,12 @@ describe('ChatInput', () => {
 
     render(<Wrapper />);
 
-    // Tooltip exists when menu is closed (even if hidden via CSS)
-    expect(screen.getByText('Choose how many questions IDA asks before recommendations.')).toBeInTheDocument();
+    // Followup-question buttons: 0 questions, 1 question, 2 questions
+    expect(screen.getByRole('radio', { name: /nudger.*1 question/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /explorer.*2 questions/i })).toBeInTheDocument();
 
-    // Open menu, tooltip should not be rendered
-    await user.click(screen.getByRole('button', { name: /^mode$/i }));
-    expect(screen.queryByText('Choose how many questions IDA asks before recommendations.')).not.toBeInTheDocument();
-
-    // Menu items use singular/plural correctly
-    expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByText('Nudger')).toBeInTheDocument();
-    expect(screen.getByText('1 question')).toBeInTheDocument();
-
-    // Pick Nudger (k=1)
-    await user.click(screen.getByRole('menuitemradio', { name: /nudger/i }));
+    // Pick Nudger (1 question)
+    await user.click(screen.getByRole('radio', { name: /nudger.*1 question/i }));
 
     // Send a message; should include k=1
     const input = screen.getByRole('textbox');
@@ -80,6 +72,26 @@ describe('ChatInput', () => {
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
     expect(onSendMessage).toHaveBeenCalledWith('hi', 1);
+  });
+
+  it('disables mode buttons when modeButtonsLocked is true', () => {
+    render(
+      <ChatInput
+        onSendMessage={jest.fn()}
+        isLoading={false}
+        modeK={2}
+        onModeKChange={jest.fn()}
+        modeButtonsLocked={true}
+      />
+    );
+
+    const suggester = screen.getByRole('radio', { name: /suggester.*0 questions/i });
+    const nudger = screen.getByRole('radio', { name: /nudger.*1 question/i });
+    const explorer = screen.getByRole('radio', { name: /explorer.*2 questions/i });
+
+    expect(suggester).toBeDisabled();
+    expect(nudger).toBeDisabled();
+    expect(explorer).toBeDisabled();
   });
 });
 

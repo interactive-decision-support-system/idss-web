@@ -15,6 +15,7 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [modeK, setModeK] = useState<number>(2); // default: probie
+  const [modeButtonsLocked, setModeButtonsLocked] = useState(false); // freeze q until recommendations are given
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<Product[]>([]);
@@ -167,6 +168,7 @@ export default function Home() {
     };
     setChatMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+    setModeButtonsLocked(true);
 
     try {
       const response = await idssApiService.sendMessage(
@@ -199,6 +201,11 @@ export default function Home() {
         quick_replies: response.quick_replies,
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
+      // Unlock mode buttons only when recommendations were given
+      const hasRecommendations =
+        productRecommendations != null &&
+        productRecommendations.flat().length > 0;
+      if (hasRecommendations) setModeButtonsLocked(false);
     } catch (error) {
       console.error('Error sending message:', error);
 
@@ -210,6 +217,7 @@ export default function Home() {
         timestamp: new Date(),
       };
       setChatMessages((prev) => [...prev, errorMessage]);
+      setModeButtonsLocked(false); // unlock so user can change mode and retry
     } finally {
       setIsLoading(false);
     }
@@ -257,9 +265,9 @@ export default function Home() {
 
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
-        {/* Floating Title - IDA */}
+        {/* Floating Title - IDSS */}
         <div className="absolute top-4 left-4 z-10">
-          <h1 className="text-xl font-semibold text-black">IDA</h1>
+          <h1 className="text-xl font-semibold text-black">IDSS</h1>
         </div>
 
         {/* Floating Heart Button - Top Right */}
@@ -325,6 +333,7 @@ export default function Home() {
                     isLoading={isLoading}
                     modeK={modeK}
                     onModeKChange={setModeK}
+                    modeButtonsLocked={modeButtonsLocked}
                   />
                 </div>
               </div>
@@ -406,6 +415,7 @@ export default function Home() {
                 isLoading={isLoading}
                 modeK={modeK}
                 onModeKChange={setModeK}
+                modeButtonsLocked={modeButtonsLocked}
               />
             </div>
           </div>

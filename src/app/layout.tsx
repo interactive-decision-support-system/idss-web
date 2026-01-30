@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Interactive Decision Support System | Stanford LDR Lab",
+  title: "IDSS | Stanford LDR Lab",
   description: "Interactive Decision Support System for recommendations",
 };
 
