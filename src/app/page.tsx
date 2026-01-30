@@ -257,9 +257,9 @@ export default function Home() {
 
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
-        {/* Floating Title - IDA */}
+        {/* Floating Title - IDSS */}
         <div className="absolute top-4 left-4 z-10">
-          <h1 className="text-xl font-semibold text-black">IDA</h1>
+          <h1 className="text-xl font-semibold text-black">IDSS</h1>
         </div>
 
         {/* Floating Heart Button - Top Right */}

@@ -13,7 +13,7 @@ describe('ChatInput', () => {
     );
 
     expect(
-      screen.getByText('IDA can make mistakes. Check before completing any purchases.')
+      screen.getByText('IDSS can make mistakes. Check before completing any purchases.')
     ).toBeInTheDocument();
 
     const input = screen.getByRole('textbox');
@@ -60,11 +60,11 @@ describe('ChatInput', () => {
     render(<Wrapper />);
 
     // Tooltip exists when menu is closed (even if hidden via CSS)
-    expect(screen.getByText('Choose how many questions IDA asks before recommendations.')).toBeInTheDocument();
+    expect(screen.getByText('Choose how many questions IDSS asks before recommendations.')).toBeInTheDocument();
 
     // Open menu, tooltip should not be rendered
     await user.click(screen.getByRole('button', { name: /^mode$/i }));
-    expect(screen.queryByText('Choose how many questions IDA asks before recommendations.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Choose how many questions IDSS asks before recommendations.')).not.toBeInTheDocument();
 
     // Menu items use singular/plural correctly
     expect(screen.getByRole('menu')).toBeInTheDocument();
