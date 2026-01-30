@@ -8,6 +8,8 @@ interface ChatInputProps {
   isLoading: boolean;
   modeK: number;
   onModeKChange: (k: number) => void;
+  /** When true, followup-question buttons are disabled until recommendations are given. */
+  modeButtonsLocked?: boolean;
 }
 
 type ModeOption = {
@@ -21,6 +23,7 @@ export default function ChatInput({
   isLoading,
   modeK,
   onModeKChange,
+  modeButtonsLocked = false,
 }: ChatInputProps) {
   const [inputMessage, setInputMessage] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -125,7 +128,7 @@ export default function ChatInput({
                 aria-checked={isSelected}
                 aria-label={`${m.label}, ${questionLabel}`}
                 onClick={() => onModeKChange(m.k)}
-                disabled={isLoading}
+                disabled={isLoading || modeButtonsLocked}
                 className={`${modeButtonBase} ${isSelected ? '!bg-[#8C1515]/25 !border-[#8C1515]/60 text-[#8C1515] shadow-sm' : ''}`}
               >
                 <span className={`text-sm leading-tight font-medium ${isSelected ? 'text-[#8C1515]' : ''}`}>{questionLabel}</span>
