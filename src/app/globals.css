@@ -40,3 +40,19 @@ html {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Placeholder cycle: slide up + fade in */
+@keyframes placeholder-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.placeholder-enter {
+  animation: placeholder-enter 0.4s ease-out forwards;
+}

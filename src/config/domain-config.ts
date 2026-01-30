@@ -21,6 +21,8 @@ export interface DomainConfig {
   // UI text
   welcomeMessage: string;
   inputPlaceholder: string;
+  /** Example queries to cycle through in the input placeholder (ChatGPT-style). Falls back to [inputPlaceholder] if omitted. */
+  examplePlaceholderQueries?: string[];
   viewDetailsButtonText: string;
   viewListingButtonText?: string; // e.g., "View Listing", "View on Site", etc.
   dealerLabel?: string; // e.g., "Dealer" for vehicles, "Store" for products
@@ -67,6 +69,13 @@ export const vehicleConfig: DomainConfig = {
   
   welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of vehicle are you looking for?",
+  examplePlaceholderQueries: [
+    "What kind of vehicle are you looking for?",
+    "I need a reliable sedan for commuting",
+    "Show me SUVs under $35k",
+    "Looking for a truck with good towing",
+    "Fuel-efficient car for long drives",
+  ],
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
   dealerLabel: "Dealer",
@@ -194,6 +203,13 @@ export const pcPartsConfig: DomainConfig = {
   
   welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of PC part are you looking for?",
+  examplePlaceholderQueries: [
+    "What kind of PC part are you looking for?",
+    "I need a GPU for 1440p gaming",
+    "Show me CPUs for video editing",
+    "Quiet PSU, 650W or more",
+    "NVMe SSD, 1TB, under $100",
+  ],
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
   storeLabel: "Retailer",

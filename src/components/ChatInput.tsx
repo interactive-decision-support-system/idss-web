@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, FormEvent } from 'react';
+import { useMemo, useState, useEffect, useRef, FormEvent } from 'react';
 import { currentDomainConfig } from '@/config/domain-config';
 
 interface ChatInputProps {
@@ -23,7 +23,24 @@ export default function ChatInput({
   onModeKChange,
 }: ChatInputProps) {
   const [inputMessage, setInputMessage] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const inputFocusedRef = useRef(false);
   const config = currentDomainConfig;
+
+  const placeholderQueries = useMemo(
+    () => config.examplePlaceholderQueries ?? [config.inputPlaceholder],
+    [config.examplePlaceholderQueries, config.inputPlaceholder]
+  );
+
+  const currentPlaceholder = placeholderQueries[placeholderIndex % placeholderQueries.length];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (inputMessage.trim() || inputFocusedRef.current) return;
+      setPlaceholderIndex((i) => (i + 1) % placeholderQueries.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [inputMessage, placeholderQueries.length]);
 
   const modeOptions: ModeOption[] = useMemo(
     () => [
@@ -57,12 +74,28 @@ export default function ChatInput({
       >
         {/* Row 1: text input + send — inside same border as chatbox */}
         <div className="relative flex items-center">
+          {/* Animated placeholder overlay (hidden when user has typed) */}
+          {!inputMessage.trim() && (
+            <div
+              className="absolute inset-0 flex items-center pl-4 pr-12 pointer-events-none"
+              aria-hidden
+            >
+              <span
+                key={placeholderIndex}
+                className="placeholder-enter text-base text-black/40 truncate max-w-full"
+              >
+                {currentPlaceholder}
+              </span>
+            </div>
+          )}
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder={config.inputPlaceholder}
-            className="w-full pl-4 pr-12 py-3 bg-transparent border-0 focus:ring-0 focus:outline-none placeholder-black/40 text-black text-base"
+            placeholder=" "
+            onFocus={() => { inputFocusedRef.current = true; }}
+            onBlur={() => { inputFocusedRef.current = false; }}
+            className="w-full pl-4 pr-12 py-3 bg-transparent border-0 focus:ring-0 focus:outline-none text-black text-base relative z-[1]"
             disabled={isLoading}
           />
           <button
