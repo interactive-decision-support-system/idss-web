@@ -1,7 +1,10 @@
 'use client';
 
-import { Product } from '@/types/chat';
+import { Product, UnifiedProduct } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
+import VehicleCard from '@/components/cards/VehicleCard';
+import LaptopCard from '@/components/cards/LaptopCard';
+import BookCard from '@/components/cards/BookCard';
 
 interface RecommendationCardProps {
   product?: Product | null;
@@ -10,17 +13,52 @@ interface RecommendationCardProps {
   isFavorite?: (productId: string) => boolean;
 }
 
-export default function RecommendationCard({ 
+export default function RecommendationCard({
   product,
-  onItemSelect, 
-  onToggleFavorite, 
-  isFavorite 
+  onItemSelect,
+  onToggleFavorite,
+  isFavorite
 }: RecommendationCardProps) {
   const config = currentDomainConfig;
 
   if (!product) {
     return null;
   }
+
+  // Unified Product Dispatch
+  // We assume that if productType is one of these, it matches the UnifiedProduct schema
+  if (product.productType === 'vehicle') {
+    return (
+      <VehicleCard
+        data={product as UnifiedProduct}
+        onItemSelect={onItemSelect as any}
+        onToggleFavorite={onToggleFavorite as any}
+        isFavorite={isFavorite}
+      />
+    );
+  }
+  if (product.productType === 'laptop') {
+    return (
+      <LaptopCard
+        data={product as UnifiedProduct}
+        onItemSelect={onItemSelect as any}
+        onToggleFavorite={onToggleFavorite as any}
+        isFavorite={isFavorite}
+      />
+    );
+  }
+  if (product.productType === 'book') {
+    return (
+      <BookCard
+        data={product as UnifiedProduct}
+        onItemSelect={onItemSelect as any}
+        onToggleFavorite={onToggleFavorite as any}
+        isFavorite={isFavorite}
+      />
+    );
+  }
+
+  // --- Legacy / Generic Card Rendering ---
 
   // Show a compact subset so 3 cards fit per row
   const fieldsToShow = config.recommendationCardFields.slice(0, 3);
@@ -32,21 +70,21 @@ export default function RecommendationCard({
     if (fieldConfig.key === 'part_type' && (value === undefined || value === null)) {
       value = product['category'];
     }
-    
+
     // Check condition if provided
     if (fieldConfig.condition && !fieldConfig.condition(product)) {
       return null;
     }
-    
+
     // Don't render if value is undefined/null
     if (value === undefined || value === null) {
       return null;
     }
-    
-    const displayValue = fieldConfig.format 
+
+    const displayValue = fieldConfig.format
       ? fieldConfig.format(value)
       : String(value);
-    
+
     return (
       <div key={fieldConfig.key} className="flex items-baseline justify-between gap-3">
         <span className={fieldConfig.labelClassName ?? 'text-xs text-black/60'}>
@@ -61,7 +99,7 @@ export default function RecommendationCard({
           }
         >
           {displayValue}
-          {fieldConfig.key === 'rating' && product.rating_count && ` (${product.rating_count})`}
+          {fieldConfig.key === 'rating' && (product as any).rating_count && ` (${(product as any).rating_count})`}
         </span>
       </div>
     );
@@ -75,16 +113,22 @@ export default function RecommendationCard({
 
   const favorited = Boolean(isFavorite && isFavorite(product.id));
 
+  // Handle UnifiedProduct in generic fallback (map new fields to old structure if needed, or rely on them being similar)
+  // UnifiedProduct has 'image.primary' instead of 'image_url' or 'primaryImage'.
+  // UnifiedProduct has 'name' instead of 'title'.
+  // Adapt for display:
+  const displayTitle = (product as any).name || product.title;
+  const displayImage = (product as any).image?.primary || product.image_url || (product as any).primaryImage;
+
   return (
     <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200">
       {/* Image */}
       <div className="aspect-square bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
         {(() => {
-          const imageSrc = (product.image_url as string) || (product.primaryImage as string);
-          return imageSrc ? (
+          return displayImage ? (
             <img
-              src={imageSrc}
-              alt={product.title}
+              src={displayImage}
+              alt={displayTitle}
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -114,9 +158,8 @@ export default function RecommendationCard({
             title={favorited ? 'Unfavorite' : 'Favorite'}
           >
             <svg
-              className={`w-5 h-5 transition-all duration-200 ${
-                favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
-              }`}
+              className={`w-5 h-5 transition-all duration-200 ${favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
+                }`}
               fill={favorited ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -136,7 +179,7 @@ export default function RecommendationCard({
       <div className="mt-3 space-y-2">
         <div className="min-w-0">
           <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
-            {product.title}
+            {displayTitle}
           </h4>
           {(() => {
             const subtitleKey = config.recommendationCardSubtitleKey;

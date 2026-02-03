@@ -13,46 +13,74 @@ import { Product } from '@/types/chat';
 export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
   const vehicle = apiVehicle.vehicle || {};
   const retailListing = apiVehicle.retailListing || {};
-  
+
+  // Check if this is a UnifiedProduct (has productType)
+  const productType = (apiVehicle as any).productType;
+
+  // If we have a UnifiedProduct, we want to preserve its structure while ensuring
+  // it also satisfies the Product interface for legacy components.
+  // We check for productType to identify this new schema.
+  if (productType) {
+    const up = apiVehicle as any;
+    // Helper to get image URL from normalized UnifiedProduct structure
+    const upImage = up.image?.primary;
+
+    return {
+      // Include legacy fields if they exist as base
+      ...vehicle,
+      ...retailListing,
+      // Overlay UnifiedProduct fields
+      ...up,
+      // Ensure ID is robust
+      id: up.id || `${vehicle.make || 'unknown'}-${vehicle.model || 'product'}-${vehicle.year || '0'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      // Legacy fallback fields for components that haven't migrated
+      title: up.name || (vehicle.title as string) || 'Product',
+      image_url: upImage || vehicle.image_url || ((retailListing as any)?.photo_url),
+      brand: up.brand || vehicle.make,
+      price: up.price ?? ((retailListing as any)?.price || vehicle.price || 0),
+    };
+  }
+
   // Extract common fields
   const make = vehicle.make as string;
   const model = vehicle.model as string;
   const year = vehicle.year as number;
   const price = retailListing.price as number || vehicle.price as number || 0;
   const mileage = retailListing.miles as number || vehicle.mileage as number || retailListing.mileage as number;
-  
+
   // Build title from make, model, year
-  const title = year && make && model 
+  const title = year && make && model
     ? `${year} ${make} ${model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`
     : (vehicle.title as string) || 'Product';
-  
+
   // Extract image URL - check primaryImage first (actual API format), then fallback to photo_url
   const imageUrl = retailListing.primaryImage as string
-    || retailListing.photo_url as string 
-    || vehicle.image_url as string 
+    || retailListing.photo_url as string
+    || vehicle.image_url as string
     || vehicle.photo_url as string;
-  
+
   // Extract location/dealer info - check dealer first (actual API format), then fallback to dealer_name
   const location = retailListing.location as string || vehicle.location as string;
   const city = retailListing.city as string;
   const state = retailListing.state as string;
   const fullLocation = city && state ? `${city}, ${state}` : location;
-  const dealerName = retailListing.dealer as string 
-    || retailListing.dealer_name as string 
+  const dealerName = retailListing.dealer as string
+    || retailListing.dealer_name as string
     || vehicle.dealer_name as string;
   const source = dealerName || fullLocation || 'Unknown Dealer';
-  
+
   // Extract listing URL - check carfaxUrl first, then @id field from root
-  const listingUrl = retailListing.carfaxUrl as string 
+  const listingUrl = retailListing.carfaxUrl as string
     || (apiVehicle as { '@id'?: string })['@id'] as string
     || undefined;
-  
+
   // Build Product object (domain-agnostic structure)
   const product: Product = {
-    id: retailListing.listing_id as string 
-      || vehicle.vin as string 
-      || vehicle.id as string 
-      || `${make}-${model}-${year}-${Date.now()}`,
+    id: (apiVehicle as any).id as string // content checks top-level id first (UnifiedProduct)
+      || retailListing.listing_id as string
+      || vehicle.vin as string
+      || vehicle.id as string
+      || `${make || 'unknown'}-${model || 'product'}-${year || '0'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title,
     image_url: imageUrl,
     brand: make, // For vehicles, brand = make
@@ -77,7 +105,7 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     location: fullLocation || location,
     listing_url: listingUrl, // URL to view the actual listing
   };
-  
+
   return product;
 }
 

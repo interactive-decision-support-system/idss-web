@@ -64,7 +64,64 @@ export interface ChatResponse {
   question_count?: number;
 }
 
-export interface Product {
+export interface UnifiedProduct {
+  // --- Common Fields ---
+  id: string;              // VIN for vehicles, Product ID for others
+  productType: 'vehicle' | 'laptop' | 'book' | 'generic';
+  name: string;            // Title, Model, or Product Name
+  brand: string;           // Make, Manufacturer, or Product Brand
+  price: number;           // Price in USD (integer)
+  available: boolean;
+
+  // Normalized Image Object
+  image: {
+    primary: string;       // URL or null
+    count: number;
+    gallery: string[];
+  };
+
+  // --- Type-Specific Details (Only one will be populated) ---
+
+  // Present if productType === 'vehicle'
+  vehicle?: {
+    year: number;
+    make: string;
+    model: string;
+    trim?: string;
+    bodyStyle?: string;
+    mileage?: number;
+    fuel?: string;
+    mpg?: { city: number; highway: number };
+    // ... other vehicle specs
+  };
+  // Present if productType === 'laptop'
+  laptop?: {
+    productType: 'laptop';
+    specs: {
+      processor?: string;
+      ram?: string;
+      storage?: string;
+      display?: string;
+      graphics?: string;
+    };
+    gpuVendor?: string;
+    gpuModel?: string;
+    tags: string[];
+  };
+  // Present if productType === 'book'
+  book?: {
+    author?: string;
+    genre?: string;
+    format?: string;
+    pages?: number;
+    isbn?: string;
+  };
+
+  // Allow for existing fields to coexist for now if needed, or strictly index signature
+  [key: string]: unknown;
+}
+
+export type Product = UnifiedProduct | {
   id: string;
   title: string; // Display title (e.g., "2023 Toyota Camry" or "Black Long Sleeve Top")
   price: number;
@@ -75,6 +132,7 @@ export interface Product {
   source?: string; // Retailer/dealer name
   rating?: number;
   rating_count?: number;
+  productType?: string; // Optional on legacy
   // Domain-agnostic: any product can have these fields
   [key: string]: unknown; // Allow additional product-specific fields (make, model, year, mileage, etc.)
-}
+};
