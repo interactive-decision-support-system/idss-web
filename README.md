@@ -38,9 +38,9 @@ Create `.env.local`:
 
 ```bash
 # Used by the Next.js proxy route at /api/chat
-NEXT_PUBLIC_API_BASE_URL="http://localhost:8000"
+NEXT_PUBLIC_API_BASE_URL="http://localhost:8001"
 
-# Optional: if set, the frontend will call this directly (bypasses /api/chat proxy)
+# Optional: call to a different API URL for only car recommendations
 # NEXT_PUBLIC_API_URL="http://localhost:8000"
 ```
 
