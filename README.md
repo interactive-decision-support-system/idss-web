@@ -13,6 +13,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
   - optional `diversification_dimension` header
 - each row renders up to **3 items side-by-side**, each with its own like button
 - **Quick replies**: optional suggested reply buttons returned by the backend.
+- **User auth**: sign in with Google or Facebook via Supabase Auth; sign out in the header.
 - **Favorites**: like/unlike items and view them in a sidebar; persisted in `localStorage`.
 - **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
 - **Domain configuration**: switch between domains (e.g., vehicles vs PC parts) by editing `src/config/domain-config.ts`.
@@ -43,7 +44,20 @@ NEXT_PUBLIC_API_BASE_URL="http://localhost:8001"
 
 # Optional: call to a different API URL for only car recommendations
 # NEXT_PUBLIC_API_URL="http://localhost:8000"
+
+# Supabase Auth - from your project's Connect dialog or API Settings
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
+
+### Supabase Auth (Google & Facebook sign-in)
+
+1. Copy `.env.example` values for Supabase into `.env.local`, or get them from [Supabase Dashboard → Project Settings → API](https://supabase.com/dashboard/project/_/settings/api).
+2. In Supabase Dashboard → **Authentication → URL Configuration**, add to **Redirect URLs**:
+   - `http://localhost:3000/auth/callback` (local dev)
+   - `https://your-domain.com/auth/callback` (production)
+3. **Google**: [Authentication → Providers → Google](https://supabase.com/dashboard/project/_/auth/providers) — enable and add Client ID + Secret from [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Add `http://localhost:3000` to Authorized JavaScript origins and your Supabase callback URL to Authorized redirect URIs.
+4. **Facebook**: [Authentication → Providers → Facebook](https://supabase.com/dashboard/project/_/auth/providers) — enable and add App ID + Secret from [Facebook Developers](https://developers.facebook.com). Add your Supabase callback URL to Valid OAuth Redirect URIs.
 
 Notes:
 - `src/app/api/chat/route.ts` proxies `POST /api/chat` → `${NEXT_PUBLIC_API_BASE_URL}/chat`.
@@ -107,11 +121,13 @@ export const currentDomainConfig: DomainConfig = vehicleConfig;
 src/
 ├── app/
 │   ├── api/chat/route.ts          # Proxies chat requests to backend
+│   ├── auth/callback/route.ts    # OAuth callback (Google/Facebook)
 │   ├── globals.css                # Global styles (Tailwind v4 + Stanford colors)
 │   ├── layout.tsx                 # Root layout (+ Vercel Analytics)
 │   └── page.tsx                   # Main chat UI + sidebar (favorites/details)
 ├── components/
-│   ├── ChatInput.tsx              # Message input + followup-question mode buttons
+│   ├── AuthButton.tsx              # Sign in (Google/Facebook) / sign out
+│   ├── ChatInput.tsx               # Message input + followup-question mode buttons
 │   ├── RecommendationCard.tsx     # Single card view for an item
 │   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
 │   ├── FavoritesPage.tsx          # Favorites list sidebar

@@ -5,6 +5,7 @@ import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
+import AuthButton from '@/components/AuthButton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { currentDomainConfig } from '@/config/domain-config';
@@ -270,9 +271,10 @@ export default function Home() {
           <h1 className="text-xl font-semibold text-black">IDSS</h1>
         </div>
 
-        {/* Floating Heart Button - Top Right */}
-        {!selectedProduct && (
-          <div className={`absolute top-4 right-4 ${showFavorites ? 'z-30' : 'z-10'}`}>
+        {/* Auth + Favorites - Top Right */}
+        <div className={`absolute top-4 right-4 flex items-center gap-3 ${showFavorites || selectedProduct ? 'z-30' : 'z-10'}`}>
+          <AuthButton />
+          {!selectedProduct && (
             <button
             onClick={() => {
               setShowFavorites(!showFavorites);
@@ -280,12 +282,12 @@ export default function Home() {
                 setSelectedProduct(null);
               }
             }}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
             title={showFavorites ? "Hide Favorites" : "View Favorites"}
           >
             {showFavorites ? (
               <svg 
-                className="w-6 h-6 text-black"
+                className="w-5 h-5 text-black"
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -294,7 +296,7 @@ export default function Home() {
               </svg>
             ) : (
               <svg 
-                className={`w-6 h-6 transition-all duration-200 ${
+                className={`w-5 h-5 transition-all duration-200 ${
                   favorites.length > 0 
                     ? 'text-[#ff1323] fill-[#ff1323]' 
                     : 'text-black'
@@ -307,8 +309,8 @@ export default function Home() {
               </svg>
             )}
           </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Chat Messages */}
         <div
