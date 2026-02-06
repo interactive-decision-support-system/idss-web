@@ -87,16 +87,16 @@ function AuthButtonInner() {
         </button>
 
         {popupOpen && (
-          <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#2d2d2d] shadow-xl border border-black/10 overflow-hidden z-50">
-            <div className="px-4 py-3 border-b border-white/10">
+          <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-white shadow-xl border border-black/10 overflow-hidden z-50">
+            <div className="px-4 py-3 border-b border-black/10">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[#8C1515] flex items-center justify-center text-white font-medium text-xs shrink-0">
                   {getInitials(user)}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-white truncate">{displayName}</p>
+                  <p className="font-semibold text-black truncate">{displayName}</p>
                   {handle && (
-                    <p className="text-sm text-white/60 truncate">{handle}</p>
+                    <p className="text-sm text-black/60 truncate">{handle}</p>
                   )}
                 </div>
               </div>
@@ -104,7 +104,7 @@ function AuthButtonInner() {
             <div className="py-1">
               <button
                 onClick={signOut}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-black hover:bg-black/5 transition-colors"
               >
                 <svg
                   className="w-4 h-4 shrink-0"

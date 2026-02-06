@@ -328,7 +328,7 @@ export default function Home() {
         </div>
 
         {/* Auth + Cart + Favorites - Top Right */}
-        <div className={`absolute top-4 right-4 flex items-center gap-3 ${showFavorites || showCart || selectedProduct ? 'z-30' : 'z-10'}`}>
+        <div className={`absolute top-4 right-4 flex items-center gap-4 ${showFavorites || showCart || selectedProduct ? 'z-30' : 'z-10'}`}>
           <AuthButton />
           <button
             onClick={() => {
@@ -336,7 +336,7 @@ export default function Home() {
               if (showCart) setSelectedProduct(null);
               setShowFavorites(false);
             }}
-            className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 -ml-1"
             title={showCart ? "Hide Cart" : "View Cart"}
           >
             <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -358,20 +358,14 @@ export default function Home() {
               className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
               title={showFavorites ? "Hide Favorites" : "View Favorites"}
             >
-              {showFavorites ? (
-                <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg
-                  className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black'}`}
-                  fill={favorites.length > 0 ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              )}
+              <svg
+                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black'}`}
+                fill={favorites.length > 0 ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
             </button>
           )}
         </div>
@@ -493,9 +487,9 @@ export default function Home() {
         )}
       </div>
 
-      {/* Sidebar - Cart, Favorites, or Product Detail */}
+      {/* Sidebar - Cart, Favorites, or Product Detail (starts below header buttons) */}
       {(showCart || showFavorites || selectedProduct) && (
-        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
+        <div className="absolute top-16 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
           {showCart && (
             <CartPage
               cartItems={cartItems}
