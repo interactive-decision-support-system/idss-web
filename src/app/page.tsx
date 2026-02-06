@@ -336,7 +336,7 @@ export default function Home() {
               if (showCart) setSelectedProduct(null);
               setShowFavorites(false);
             }}
-            className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 -ml-1"
+            className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 -ml-1 -mr-4"
             title={showCart ? "Hide Cart" : "View Cart"}
           >
             <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">

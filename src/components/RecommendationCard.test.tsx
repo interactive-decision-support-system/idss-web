@@ -96,6 +96,51 @@ describe('RecommendationCard', () => {
     expect(onToggleFavorite).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
   });
 
+  it('calls onAddToCart when add to cart button is clicked', async () => {
+    const user = userEvent.setup();
+    const onAddToCart = jest.fn();
+    const product: Product = {
+      id: 'p1',
+      title: 'Example Product',
+      price: 24999,
+      source: 'Test Dealer',
+      image_url: 'https://example.com/img.jpg',
+    };
+
+    render(
+      <RecommendationCard
+        product={product}
+        onItemSelect={jest.fn()}
+        onAddToCart={onAddToCart}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    expect(onAddToCart).toHaveBeenCalledTimes(1);
+    expect(onAddToCart).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
+  });
+
+  it('shows Sold out when product has zero inventory', () => {
+    const product: Product = {
+      id: 'p1',
+      title: 'Example Product',
+      price: 24999,
+      source: 'Test Dealer',
+      image_url: 'https://example.com/img.jpg',
+      inventory: 0,
+    };
+
+    render(
+      <RecommendationCard
+        product={product}
+        onItemSelect={jest.fn()}
+        onAddToCart={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Sold out')).toBeInTheDocument();
+  });
+
   it('shows Unfavorite when product is favorited', () => {
     const product: Product = {
       id: 'p1',
