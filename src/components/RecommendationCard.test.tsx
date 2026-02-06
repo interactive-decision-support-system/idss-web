@@ -70,5 +70,51 @@ describe('RecommendationCard', () => {
     const { container } = render(<RecommendationCard product={null} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('calls onToggleFavorite when favorite button is clicked', async () => {
+    const user = userEvent.setup();
+    const onToggleFavorite = jest.fn();
+    const product: Product = {
+      id: 'p1',
+      title: 'Example Product',
+      price: 24999,
+      source: 'Test Dealer',
+      image_url: 'https://example.com/img.jpg',
+    };
+
+    render(
+      <RecommendationCard
+        product={product}
+        onItemSelect={jest.fn()}
+        onToggleFavorite={onToggleFavorite}
+        isFavorite={() => false}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /favorite/i }));
+    expect(onToggleFavorite).toHaveBeenCalledTimes(1);
+    expect(onToggleFavorite).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
+  });
+
+  it('shows Unfavorite when product is favorited', () => {
+    const product: Product = {
+      id: 'p1',
+      title: 'Example Product',
+      price: 24999,
+      source: 'Test Dealer',
+      image_url: 'https://example.com/img.jpg',
+    };
+
+    render(
+      <RecommendationCard
+        product={product}
+        onItemSelect={jest.fn()}
+        onToggleFavorite={jest.fn()}
+        isFavorite={() => true}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /unfavorite/i })).toBeInTheDocument();
+  });
 });
 

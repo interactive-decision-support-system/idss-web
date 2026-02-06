@@ -14,7 +14,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
 - each row renders up to **3 items side-by-side**, each with its own like button
 - **Quick replies**: optional suggested reply buttons returned by the backend.
 - **User auth**: sign in with Google or Facebook via Supabase Auth; sign out in the header.
-- **Favorites**: like/unlike items and view them in a sidebar; persisted in `localStorage`.
+- **Favorites**: like/unlike items and view them in a sidebar; persisted in **Supabase** for logged-in users, **localStorage** for guests. On login, localStorage favorites are migrated to Supabase.
 - **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
 - **Domain configuration**: switch between domains (e.g., vehicles vs PC parts) by editing `src/config/domain-config.ts`.
 - **Stanford look & feel**: Cardinal Red + Gray palette; minimal, clean UI.
@@ -42,7 +42,7 @@ Create `.env.local`:
 # Used by the Next.js proxy route at /api/chat
 NEXT_PUBLIC_API_BASE_URL="http://localhost:8001"
 
-# Optional: call to a different API URL for only car recommendations
+# Optional: call backend directly instead of via /api/chat proxy
 # NEXT_PUBLIC_API_URL="http://localhost:8000"
 
 # Supabase Auth - from your project's Connect dialog or API Settings
@@ -60,6 +60,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    - `https://your-domain.com/auth/reset-password` (password reset, production)
 3. **Google**: [Authentication → Providers → Google](https://supabase.com/dashboard/project/_/auth/providers) — enable and add Client ID + Secret from [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Add `http://localhost:3000` to Authorized JavaScript origins and your Supabase callback URL to Authorized redirect URIs.
 4. **Facebook**: [Authentication → Providers → Facebook](https://supabase.com/dashboard/project/_/auth/providers) — enable and add App ID + Secret from [Facebook Developers](https://developers.facebook.com). Add your Supabase callback URL to Valid OAuth Redirect URIs.
+
+### Supabase Favorites table
+
+Run the migration in Supabase SQL Editor (Dashboard → SQL Editor):
+
+```sql
+-- See supabase/migrations/001_create_favorites.sql
+```
+
+This creates the `favorites` table with RLS so users can only access their own favorites.
 
 Notes:
 - `src/app/api/chat/route.ts` proxies `POST /api/chat` → `${NEXT_PUBLIC_API_BASE_URL}/chat`.
@@ -90,6 +100,8 @@ The app sends:
 
 The proxy route (`/api/chat`) will also forward optional fields if the client includes them:
 - `k`, `method`, `n_rows`, `n_per_row`
+
+**Optional:** `GET /products?ids=id1,id2,id3` — fetch products by ID for refreshing favorites with fresh data. If not implemented, the app uses the stored `product_snapshot` from Supabase.
 
 The UI supports responses shaped like `ChatResponse` in `src/types/chat.ts`, including:
 - `message` (assistant text)
@@ -122,24 +134,39 @@ export const currentDomainConfig: DomainConfig = vehicleConfig;
 ```
 src/
 ├── app/
-│   ├── api/chat/route.ts          # Proxies chat requests to backend
-│   ├── auth/callback/route.ts    # OAuth callback (Google/Facebook)
-│   ├── globals.css                # Global styles (Tailwind v4 + Stanford colors)
-│   ├── layout.tsx                 # Root layout (+ Vercel Analytics)
-│   └── page.tsx                   # Main chat UI + sidebar (favorites/details)
+│   ├── api/chat/route.ts           # Proxies chat requests to backend
+│   ├── auth/
+│   │   ├── callback/route.ts       # OAuth callback (Google/Facebook)
+│   │   ├── auth-code-error/page.tsx
+│   │   └── reset-password/page.tsx # Password reset form (PKCE + hash)
+│   ├── globals.css                 # Global styles (Tailwind v4 + Stanford colors)
+│   ├── layout.tsx                  # Root layout (+ Vercel Analytics)
+│   └── page.tsx                    # Main chat UI + sidebar (favorites/details)
 ├── components/
-│   ├── AuthButton.tsx              # Sign in (Google/Facebook) / sign out
+│   ├── AuthButton.tsx              # Sign in / sign out (avatar when logged in)
+│   ├── AuthModal.tsx               # Modal: Google, Facebook, email/password, forgot password
 │   ├── ChatInput.tsx               # Message input + followup-question mode buttons
 │   ├── RecommendationCard.tsx     # Single card view for an item
 │   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
 │   ├── FavoritesPage.tsx          # Favorites list sidebar
 │   └── ProductDetailView.tsx      # Detail sidebar (+ listing link)
 ├── config/
-│   ├── domain-config.ts           # Domain customization (vehicles/pc parts)
-│   └── theme-config.ts            # Theme tokens (currently light theme default)
-├── services/api.ts                # Frontend API client (direct or via proxy)
+│   ├── domain-config.ts            # Domain customization (vehicles/pc parts)
+│   └── theme-config.ts             # Theme tokens (currently light theme default)
+├── hooks/useAuth.ts               # Auth state (user, loading)
+├── services/
+│   ├── api.ts                     # Frontend API client (direct or via proxy)
+│   └── favorites.ts                # Favorites: Supabase (logged-in) + localStorage (guest)
 ├── types/chat.ts                  # Chat/API/Product types
-└── utils/product-converter.ts     # APIVehicle[][] → Product[][]
+├── utils/
+│   ├── product-converter.ts       # APIVehicle[][] → Product[][]
+│   └── supabase/
+│       ├── client.ts              # Supabase browser client
+│       └── server.ts              # Supabase server client
+└── middleware.ts                 # Session refresh for auth
+
+supabase/migrations/
+└── 001_create_favorites.sql       # Favorites table + RLS
 ```
 
 ## Testing & linting
@@ -167,4 +194,3 @@ CI runs `npm ci` + `npm test` on pushes/PRs to `main` (see `.github/workflows/un
 ## Notes / known gaps
 
 - The app includes a light/dark theme token file (`src/config/theme-config.ts`), but the current UI primarily uses explicit Tailwind classes.
-- The “favorites” state is local to the browser (stored in `localStorage`), not synced to a backend.
