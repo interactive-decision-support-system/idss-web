@@ -1,17 +1,20 @@
 import { UnifiedProduct } from '@/types/chat';
+import { isSoldOut } from '@/utils/inventory';
 
 interface VehicleCardProps {
     data: UnifiedProduct;
     onItemSelect?: (product: UnifiedProduct) => void;
     onToggleFavorite?: (product: UnifiedProduct) => void;
     isFavorite?: (productId: string) => boolean;
+    onAddToCart?: (product: UnifiedProduct) => void;
 }
 
 export default function VehicleCard({
     data,
     onItemSelect,
     onToggleFavorite,
-    isFavorite
+    isFavorite,
+    onAddToCart,
 }: VehicleCardProps) {
     const { vehicle, name, price, image } = data;
     const imageSrc = image?.primary || null;
@@ -103,7 +106,7 @@ export default function VehicleCard({
             </div>
 
             {/* Actions */}
-            <div className="mt-4 pt-3 border-t border-gray-100">
+            <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
                 <button
                     onClick={() => onItemSelect && onItemSelect(data)}
                     className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f] flex items-center gap-1"
@@ -111,6 +114,18 @@ export default function VehicleCard({
                     View Details
                     <span className="group-hover:translate-x-0.5 transition-transform">→</span>
                 </button>
+                {onAddToCart && (
+                    isSoldOut(data) ? (
+                        <span className="text-xs text-red-600 font-medium">Sold out</span>
+                    ) : (
+                        <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
+                            className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f]"
+                        >
+                            Add to cart
+                        </button>
+                    )
+                )}
             </div>
         </div>
     );

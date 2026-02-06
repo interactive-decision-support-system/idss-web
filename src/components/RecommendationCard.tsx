@@ -2,6 +2,7 @@
 
 import { Product, UnifiedProduct } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
+import { isSoldOut } from '@/utils/inventory';
 import VehicleCard from '@/components/cards/VehicleCard';
 import LaptopCard from '@/components/cards/LaptopCard';
 import BookCard from '@/components/cards/BookCard';
@@ -11,13 +12,15 @@ interface RecommendationCardProps {
   onItemSelect?: (product: Product) => void;
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
+  onAddToCart?: (product: Product) => void;
 }
 
 export default function RecommendationCard({
   product,
   onItemSelect,
   onToggleFavorite,
-  isFavorite
+  isFavorite,
+  onAddToCart,
 }: RecommendationCardProps) {
   const config = currentDomainConfig;
 
@@ -34,6 +37,7 @@ export default function RecommendationCard({
         onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
         onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
+        onAddToCart={onAddToCart as ((p: UnifiedProduct) => void) | undefined}
       />
     );
   }
@@ -44,6 +48,7 @@ export default function RecommendationCard({
         onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
         onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
+        onAddToCart={onAddToCart as ((p: UnifiedProduct) => void) | undefined}
       />
     );
   }
@@ -54,6 +59,7 @@ export default function RecommendationCard({
         onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
         onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
+        onAddToCart={onAddToCart as ((p: UnifiedProduct) => void) | undefined}
       />
     );
   }
@@ -197,12 +203,32 @@ export default function RecommendationCard({
           {fieldsToShow.map(renderField)}
         </div>
 
-        <button
-          onClick={() => onItemSelect && onItemSelect(product)}
-          className="text-left text-sm text-[#8C1515] hover:text-[#750013] font-medium"
-        >
-          {config.viewDetailsButtonText} →
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onItemSelect && onItemSelect(product)}
+            className="text-left text-sm text-[#8C1515] hover:text-[#750013] font-medium"
+          >
+            {config.viewDetailsButtonText} →
+          </button>
+          {onAddToCart && (
+            <>
+              {isSoldOut(product) ? (
+                <span className="text-xs text-red-600 font-medium">Sold out</span>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onAddToCart(product);
+                  }}
+                  className="text-sm font-medium text-[#8C1515] hover:text-[#750013]"
+                >
+                  Add to cart
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

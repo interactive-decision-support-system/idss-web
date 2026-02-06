@@ -15,6 +15,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
 - **Quick replies**: optional suggested reply buttons returned by the backend.
 - **User auth**: sign in with Google or Facebook via Supabase Auth; sign out in the header.
 - **Favorites**: like/unlike items and view them in a sidebar; persisted in **Supabase** for logged-in users, **localStorage** for guests. On login, localStorage favorites are migrated to Supabase.
+- **Cart & checkout**: add items to cart, view cart in sidebar, remove items, checkout. Cart persisted in **Supabase** for logged-in users, **localStorage** for guests. Sold-out items (inventory = 0) are disabled; checkout validates inventory.
 - **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
 - **Domain configuration**: switch between domains (e.g., vehicles vs PC parts) by editing `src/config/domain-config.ts`.
 - **Stanford look & feel**: Cardinal Red + Gray palette; minimal, clean UI.
@@ -61,15 +62,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 3. **Google**: [Authentication → Providers → Google](https://supabase.com/dashboard/project/_/auth/providers) — enable and add Client ID + Secret from [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Add `http://localhost:3000` to Authorized JavaScript origins and your Supabase callback URL to Authorized redirect URIs.
 4. **Facebook**: [Authentication → Providers → Facebook](https://supabase.com/dashboard/project/_/auth/providers) — enable and add App ID + Secret from [Facebook Developers](https://developers.facebook.com). Add your Supabase callback URL to Valid OAuth Redirect URIs.
 
-### Supabase Favorites table
+### Supabase tables (favorites, cart)
 
-Run the migration in Supabase SQL Editor (Dashboard → SQL Editor):
+Run the migrations in Supabase SQL Editor (Dashboard → SQL Editor):
 
 ```sql
 -- See supabase/migrations/001_create_favorites.sql
+-- See supabase/migrations/002_create_cart.sql
 ```
 
-This creates the `favorites` table with RLS so users can only access their own favorites.
+This creates the `favorites` and `cart` tables with RLS so users can only access their own data.
 
 Notes:
 - `src/app/api/chat/route.ts` proxies `POST /api/chat` → `${NEXT_PUBLIC_API_BASE_URL}/chat`.
@@ -101,7 +103,9 @@ The app sends:
 The proxy route (`/api/chat`) will also forward optional fields if the client includes them:
 - `k`, `method`, `n_rows`, `n_per_row`
 
-**Optional:** `GET /products?ids=id1,id2,id3` — fetch products by ID for refreshing favorites with fresh data. If not implemented, the app uses the stored `product_snapshot` from Supabase.
+**Optional:** `GET /products?ids=id1,id2,id3` — fetch products by ID for refreshing favorites/cart with fresh data (including `inventory`). If not implemented, the app uses the stored `product_snapshot` from Supabase.
+
+**Required for checkout:** `POST /checkout` — validate inventory and decrement stock. See backend README on desktop for full spec.
 
 The UI supports responses shaped like `ChatResponse` in `src/types/chat.ts`, including:
 - `message` (assistant text)
@@ -149,14 +153,16 @@ src/
 │   ├── RecommendationCard.tsx     # Single card view for an item
 │   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
 │   ├── FavoritesPage.tsx          # Favorites list sidebar
-│   └── ProductDetailView.tsx      # Detail sidebar (+ listing link)
+│   ├── CartPage.tsx               # Cart sidebar with checkout
+│   └── ProductDetailView.tsx      # Detail sidebar (+ listing link, add to cart)
 ├── config/
 │   ├── domain-config.ts            # Domain customization (vehicles/pc parts)
 │   └── theme-config.ts             # Theme tokens (currently light theme default)
 ├── hooks/useAuth.ts               # Auth state (user, loading)
 ├── services/
 │   ├── api.ts                     # Frontend API client (direct or via proxy)
-│   └── favorites.ts                # Favorites: Supabase (logged-in) + localStorage (guest)
+│   ├── favorites.ts               # Favorites: Supabase (logged-in) + localStorage (guest)
+│   └── cart.ts                    # Cart: Supabase (logged-in) + localStorage (guest)
 ├── types/chat.ts                  # Chat/API/Product types
 ├── utils/
 │   ├── product-converter.ts       # APIVehicle[][] → Product[][]
@@ -166,7 +172,8 @@ src/
 └── middleware.ts                 # Session refresh for auth
 
 supabase/migrations/
-└── 001_create_favorites.sql       # Favorites table + RLS
+├── 001_create_favorites.sql       # Favorites table + RLS
+└── 002_create_cart.sql            # Cart table + RLS
 ```
 
 ## Testing & linting

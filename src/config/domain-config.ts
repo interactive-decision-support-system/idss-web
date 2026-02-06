@@ -374,4 +374,4 @@ export const pcPartsConfig: DomainConfig = {
 // Currently active domain configuration
 // Change this to switch between domains
 // Options: vehicleConfig, pcPartsConfig
-export const currentDomainConfig: DomainConfig = vehicleConfig;
+export const currentDomainConfig: DomainConfig = pcPartsConfig;

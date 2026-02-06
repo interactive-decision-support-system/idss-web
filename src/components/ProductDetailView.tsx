@@ -2,10 +2,12 @@
 
 import { Product } from '@/types/chat';
 import { currentDomainConfig } from '@/config/domain-config';
+import { isSoldOut } from '@/utils/inventory';
 
 interface ProductDetailViewProps {
   product: Product;
   onClose: () => void;
+  onAddToCart?: (product: Product) => void;
 }
 
 function normalizeExternalUrl(url: string | undefined): string | null {
@@ -40,7 +42,7 @@ function getPriceDisplay(product: Product): string {
   return p.price_text ?? (p.price != null ? `$${p.price.toLocaleString()}` : 'Price N/A');
 }
 
-export default function ProductDetailView({ product, onClose }: ProductDetailViewProps) {
+export default function ProductDetailView({ product, onClose, onAddToCart }: ProductDetailViewProps) {
   const config = currentDomainConfig;
 
   // Helper function to render field based on config
@@ -125,23 +127,42 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
           </div>
         )}
 
-        {/* View Listing Button */}
-        {(() => {
-          const listingUrl = normalizeExternalUrl(product.listing_url as string | undefined);
-          return listingUrl && config.viewListingButtonText ? (
-            <a
-              href={listingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <span>{config.viewListingButtonText}</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-          ) : null;
-        })()}
+        {/* View Listing + Add to Cart */}
+        <div className="space-y-2">
+          {(() => {
+            const listingUrl = normalizeExternalUrl(product.listing_url as string | undefined);
+            return listingUrl && config.viewListingButtonText ? (
+              <a
+                href={listingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <span>{config.viewListingButtonText}</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            ) : null;
+          })()}
+          {onAddToCart && (
+            isSoldOut(product) ? (
+              <div className="w-full py-2 px-4 rounded-lg text-sm font-medium bg-black/10 text-black/50 text-center">
+                Sold out
+              </div>
+            ) : (
+              <button
+                onClick={() => onAddToCart(product)}
+                className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Add to cart
+              </button>
+            )
+          )}
+        </div>
 
         {/* Details */}
         <div className="grid grid-cols-1 gap-2">
