@@ -9,7 +9,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -99,8 +99,28 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   };
 
-  const switchMode = () => {
-    setMode((m) => (m === 'signin' ? 'signup' : 'signin'));
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    setLoading(true);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    setLoading(false);
+    if (resetError) {
+      setError(resetError.message);
+      return;
+    }
+    setSuccessMessage('Check your email for a link to reset your password.');
+  };
+
+  const switchMode = (target?: 'signin' | 'signup' | 'forgot') => {
+    setMode(target !== undefined ? target : (m => (m === 'signin' ? 'signup' : 'signin')));
     setError(null);
     setSuccessMessage(null);
     setPassword('');
@@ -125,7 +145,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="bg-white rounded-xl shadow-2xl border border-black/10 overflow-hidden">
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <h2 id="auth-modal-title" className="text-xl font-semibold text-black">
-              Log in or sign up
+              {mode === 'forgot' ? 'Reset password' : 'Log in or sign up'}
             </h2>
             <button
               onClick={onClose}
@@ -140,9 +160,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           <div className="px-6 pb-6 space-y-5">
             <p className="text-sm text-black/70 -mt-2">
-              You can save your favorites across devices.
+              {mode === 'forgot'
+                ? 'Enter your email and we\'ll send you a link to reset your password.'
+                : 'You can save your favorites across devices.'}
             </p>
 
+            {mode !== 'forgot' && (
             <div className="space-y-3">
               <button
                 onClick={signInWithGoogle}
@@ -166,7 +189,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 Continue with Facebook
               </button>
             </div>
+            )}
 
+            {mode !== 'forgot' && (
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-black/15" />
@@ -175,8 +200,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <span className="bg-white px-3 text-xs font-medium text-black/50 uppercase tracking-wide">or</span>
               </div>
             </div>
+            )}
 
-            <form onSubmit={handleEmailAuth} className="space-y-3">
+            <form
+              onSubmit={mode === 'forgot' ? handleForgotPassword : handleEmailAuth}
+              className="space-y-3"
+            >
               <div>
                 <label htmlFor="auth-email" className="block text-sm font-medium text-black/80 mb-1">
                   Email address
@@ -192,6 +221,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 />
               </div>
 
+              {mode !== 'forgot' && (
               <div>
                 <label htmlFor="auth-password" className="block text-sm font-medium text-black/80 mb-1">
                   Password
@@ -206,6 +236,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                 />
               </div>
+              )}
 
               {mode === 'signup' && (
                 <div>
@@ -218,9 +249,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password"
-                    className="w-full px-4 py-3 text-sm border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8C1515]/30 focus:border-[#8C1515]"
+                    className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8C1515]/30 focus:border-[#8C1515] ${
+                      confirmPassword && password !== confirmPassword
+                        ? 'border-red-500'
+                        : 'border-black/20'
+                    }`}
                     autoComplete="new-password"
                   />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+                  )}
                 </div>
               )}
 
@@ -233,23 +271,47 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  (mode === 'signup' && (password !== confirmPassword || !confirmPassword))
+                }
                 className="w-full px-4 py-3 text-sm font-medium text-white bg-[#8C1515] hover:bg-[#750013] rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading
                   ? 'Please wait...'
-                  : mode === 'signin'
-                    ? 'Sign in with email'
-                    : 'Create account'}
+                  : mode === 'forgot'
+                    ? 'Send reset link'
+                    : mode === 'signin'
+                      ? 'Log in with email'
+                      : 'Create account'}
               </button>
 
               <p className="text-sm text-black/60 text-center">
-                {mode === 'signin' ? (
+                {mode === 'forgot' ? (
                   <>
+                    Remember your password?{' '}
+                    <button
+                      type="button"
+                      onClick={() => switchMode('signin')}
+                      className="font-medium text-[#8C1515] hover:text-[#750013]"
+                    >
+                      Back to sign in
+                    </button>
+                  </>
+                ) : mode === 'signin' ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => switchMode('forgot')}
+                      className="font-medium text-[#8C1515] hover:text-[#750013]"
+                    >
+                      Forgot password?
+                    </button>
+                    {' · '}
                     Don&apos;t have an account?{' '}
                     <button
                       type="button"
-                      onClick={switchMode}
+                      onClick={() => switchMode('signup')}
                       className="font-medium text-[#8C1515] hover:text-[#750013]"
                     >
                       Sign up
@@ -260,7 +322,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     Already have an account?{' '}
                     <button
                       type="button"
-                      onClick={switchMode}
+                      onClick={() => switchMode('signin')}
                       className="font-medium text-[#8C1515] hover:text-[#750013]"
                     >
                       Sign in

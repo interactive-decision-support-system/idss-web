@@ -55,7 +55,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 1. Copy `.env.example` values for Supabase into `.env.local`, or get them from [Supabase Dashboard → Project Settings → API](https://supabase.com/dashboard/project/_/settings/api).
 2. In Supabase Dashboard → **Authentication → URL Configuration**, add to **Redirect URLs**:
    - `http://localhost:3000/auth/callback` (local dev)
+   - `http://localhost:3000/auth/reset-password` (password reset, local)
    - `https://your-domain.com/auth/callback` (production)
+   - `https://your-domain.com/auth/reset-password` (password reset, production)
 3. **Google**: [Authentication → Providers → Google](https://supabase.com/dashboard/project/_/auth/providers) — enable and add Client ID + Secret from [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Add `http://localhost:3000` to Authorized JavaScript origins and your Supabase callback URL to Authorized redirect URIs.
 4. **Facebook**: [Authentication → Providers → Facebook](https://supabase.com/dashboard/project/_/auth/providers) — enable and add App ID + Secret from [Facebook Developers](https://developers.facebook.com). Add your Supabase callback URL to Valid OAuth Redirect URIs.
 
