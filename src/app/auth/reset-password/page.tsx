@@ -16,20 +16,39 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.slice(1));
-      const type = params.get('type');
-      if (type === 'recovery') {
-        setReady(true);
+    const run = async () => {
+      // PKCE flow: code in query string (Supabase redirects here with ?code=...)
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error && data.session) {
+          // Remove code from URL without full reload
+          window.history.replaceState({}, '', '/auth/reset-password');
+          setReady(true);
+          return;
+        }
+        setError('Invalid or expired reset link. Please request a new one.');
         return;
       }
-    }
-    supabase.auth.getSession().then(({ data: { session } }) => {
+
+      // Implicit flow: type=recovery in hash
+      const hash = window.location.hash;
+      if (hash) {
+        const hashParams = new URLSearchParams(hash.slice(1));
+        if (hashParams.get('type') === 'recovery') {
+          setReady(true);
+          return;
+        }
+      }
+
+      // Already have session (e.g. from callback redirect)
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) setReady(true);
       else setError('Invalid or expired reset link. Please request a new one.');
-    });
-  }, [supabase.auth]);
+    };
+    run();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

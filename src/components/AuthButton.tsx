@@ -79,7 +79,7 @@ function AuthButtonInner() {
       <div className="relative" ref={popupRef}>
         <button
           onClick={() => setPopupOpen(!popupOpen)}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#8C1515] text-white font-medium text-sm hover:bg-[#750013] transition-colors"
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-[#8C1515] text-white font-medium text-xs hover:bg-[#750013] transition-colors"
           title="Account"
           aria-label="Account menu"
         >
@@ -90,7 +90,7 @@ function AuthButtonInner() {
           <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[#2d2d2d] shadow-xl border border-black/10 overflow-hidden z-50">
             <div className="px-4 py-3 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#8C1515] flex items-center justify-center text-white font-medium text-sm shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#8C1515] flex items-center justify-center text-white font-medium text-xs shrink-0">
                   {getInitials(user)}
                 </div>
                 <div className="min-w-0">

@@ -8,10 +8,14 @@ import FavoritesPage from '@/components/FavoritesPage';
 import AuthButton from '@/components/AuthButton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
+import { favoritesService } from '@/services/favorites';
+import { useAuth } from '@/hooks/useAuth';
 import { currentDomainConfig } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
 export default function Home() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,29 +37,34 @@ export default function Home() {
   const showLocationBanner =
     !locationDismissed && !userLocation && locationPermission !== 'unavailable';
 
-  // Load favorites from localStorage on mount
+  // Load favorites when userId changes (or on mount for guest)
+  // When user logs in with localStorage favorites, migrate them to Supabase first
   useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        setFavorites(JSON.parse(savedFavorites));
-      } catch (e) {
-        console.error('Error loading favorites:', e);
+    let cancelled = false;
+    const run = async () => {
+      if (userId) {
+        const local = typeof window !== 'undefined' ? localStorage.getItem('favorites') : null;
+        if (local && local !== '[]') {
+          const merged = await favoritesService.migrateLocalToSupabase(userId);
+          if (!cancelled) setFavorites(merged);
+          return;
+        }
       }
-    }
-  }, []);
+      const loaded = await favoritesService.load(userId);
+      if (!cancelled) setFavorites(loaded);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [userId]);
 
-  // Save favorites to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  const toggleFavorite = (product: Product) => {
+  const toggleFavorite = async (product: Product) => {
     const currentlyFavorited = favorites.some(p => p.id === product.id);
     if (currentlyFavorited) {
       setFavorites(prev => prev.filter(p => p.id !== product.id));
+      await favoritesService.remove(userId, product.id);
     } else {
       setFavorites(prev => [...prev, product]);
+      await favoritesService.add(userId, product);
     }
   };
 
