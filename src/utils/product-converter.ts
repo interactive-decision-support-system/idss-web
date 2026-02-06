@@ -6,6 +6,16 @@
 import { APIVehicle } from '@/types/chat';
 import { Product } from '@/types/chat';
 
+/** API response that may include UnifiedProduct-like fields */
+type APIProductWithUnified = APIVehicle & {
+  productType?: string;
+  id?: string;
+  name?: string;
+  image?: { primary?: string };
+  brand?: string;
+  price?: number;
+};
+
 /**
  * Convert API vehicle format to frontend Product format.
  * Domain-agnostic: works with any product type that follows the API structure.
@@ -15,15 +25,19 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
   const retailListing = apiVehicle.retailListing || {};
 
   // Check if this is a UnifiedProduct (has productType)
-  const productType = (apiVehicle as any).productType;
+  const typedApi = apiVehicle as APIProductWithUnified;
+  const productType = typedApi.productType;
 
   // If we have a UnifiedProduct, we want to preserve its structure while ensuring
   // it also satisfies the Product interface for legacy components.
   // We check for productType to identify this new schema.
   if (productType) {
-    const up = apiVehicle as any;
+    const up = typedApi;
     // Helper to get image URL from normalized UnifiedProduct structure
     const upImage = up.image?.primary;
+
+    const imageUrl = typeof upImage === 'string' ? upImage
+      : (vehicle.image_url as string) || (retailListing as { photo_url?: string })?.photo_url;
 
     return {
       // Include legacy fields if they exist as base
@@ -35,10 +49,10 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       id: up.id || `${vehicle.make || 'unknown'}-${vehicle.model || 'product'}-${vehicle.year || '0'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       // Legacy fallback fields for components that haven't migrated
       title: up.name || (vehicle.title as string) || 'Product',
-      image_url: upImage || vehicle.image_url || ((retailListing as any)?.photo_url),
+      image_url: imageUrl,
       brand: up.brand || vehicle.make,
-      price: up.price ?? ((retailListing as any)?.price || vehicle.price || 0),
-    };
+      price: Number(up.price ?? (retailListing as { price?: number })?.price ?? vehicle.price ?? 0),
+    } as Product;
   }
 
   // Extract common fields
@@ -76,7 +90,7 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
 
   // Build Product object (domain-agnostic structure)
   const product: Product = {
-    id: (apiVehicle as any).id as string // content checks top-level id first (UnifiedProduct)
+    id: (apiVehicle as APIProductWithUnified).id as string // content checks top-level id first (UnifiedProduct)
       || retailListing.listing_id as string
       || vehicle.vin as string
       || vehicle.id as string

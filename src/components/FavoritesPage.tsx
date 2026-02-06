@@ -10,8 +10,17 @@ interface FavoritesPageProps {
   onClose: () => void;
 }
 
+function getDisplayTitle(product: Product): string {
+  return (product as { name?: string }).name ?? (product as { title?: string }).title ?? 'Product';
+}
+
+function getPrimaryImage(product: Product): string | undefined {
+  const p = product as { image?: { primary?: string }; image_url?: string; primaryImage?: string };
+  return p.image?.primary || p.image_url || p.primaryImage || undefined;
+}
+
 export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite, onItemSelect, onClose }: FavoritesPageProps) {
-  const primaryImage = (product: Product) => (product.image_url as string) || (product.primaryImage as string) || undefined;
+  const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {
     const img = primaryImage(product);
     return img && typeof img === 'string' && img.trim().length > 0 && !img.toLowerCase().includes('.svg');
@@ -47,7 +56,7 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
                   {hasValidImage(product) ? (
                     <img
                       src={primaryImage(product)!}
-                      alt={product.title}
+                      alt={getDisplayTitle(product)}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -69,16 +78,16 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
                 {/* Content */}
                 <div className="space-y-1">
                   <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
-                    {product.title}
+                    {getDisplayTitle(product)}
                   </h4>
-                  {(product.brand || product.source) && (
+                  {((product as { brand?: string }).brand || (product as { source?: string }).source) && (
                     <p className="text-xs text-black/50">
-                      {[product.brand, product.source].filter(Boolean).join(' • ')}
+                      {[(product as { brand?: string }).brand, (product as { source?: string }).source].filter(Boolean).join(' • ')}
                     </p>
                   )}
-                  {(product.price_text || product.price) && (
+                  {((product as { price_text?: string }).price_text || (product as { price?: number }).price) && (
                     <p className="text-sm font-bold text-[#8C1515]">
-                      {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'N/A')}
+                      {(product as { price_text?: string }).price_text || ((product as { price?: number }).price ? `$${(product as { price?: number }).price!.toLocaleString()}` : 'N/A')}
                     </p>
                   )}
                 </div>

@@ -26,6 +26,20 @@ function normalizeExternalUrl(url: string | undefined): string | null {
   return null;
 }
 
+function getDisplayTitle(product: Product): string {
+  return (product as { name?: string }).name ?? (product as { title?: string }).title ?? 'Product';
+}
+
+function getPrimaryImage(product: Product): string | undefined {
+  const p = product as { image?: { primary?: string }; image_url?: string; primaryImage?: string };
+  return p.image?.primary || p.image_url || p.primaryImage || undefined;
+}
+
+function getPriceDisplay(product: Product): string {
+  const p = product as { price_text?: string; price?: number };
+  return p.price_text ?? (p.price != null ? `$${p.price.toLocaleString()}` : 'Price N/A');
+}
+
 export default function ProductDetailView({ product, onClose }: ProductDetailViewProps) {
   const config = currentDomainConfig;
 
@@ -64,9 +78,9 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
       {/* Header */}
       <div className="flex items-center justify-between p-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-black truncate">{product.title}</h2>
-          {product.brand && (
-            <p className="text-xs text-black/50 mt-1">{product.brand}</p>
+          <h2 className="text-lg font-semibold text-black truncate">{getDisplayTitle(product)}</h2>
+          {(product as { brand?: string }).brand && (
+            <p className="text-xs text-black/50 mt-1">{(product as { brand?: string }).brand}</p>
           )}
         </div>
         <button
@@ -84,10 +98,12 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
         {/* Image */}
         <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
-          {product.image_url ? (
+          {(() => {
+          const imgSrc = getPrimaryImage(product);
+          return imgSrc ? (
             <img
-              src={product.image_url as string}
-              alt={product.title}
+              src={imgSrc}
+              alt={getDisplayTitle(product)}
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -96,14 +112,15 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
             />
           ) : (
             <div className="text-black/40 text-sm text-center px-2">No Image Available</div>
-          )}
+          );
+        })()}
         </div>
 
         {/* Price */}
-        {(product.price_text || product.price) && (
-          <div className="bg-white border border-black/10 rounded-lg p-4">
-            <div className="text-2xl font-bold text-[#8C1515]">
-              {product.price_text || (product.price ? `$${product.price.toLocaleString()}` : 'Price N/A')}
+{((product as { price_text?: string }).price_text || (product as { price?: number }).price != null) && (
+            <div className="bg-white border border-black/10 rounded-lg p-4">
+              <div className="text-2xl font-bold text-[#8C1515]">
+                {getPriceDisplay(product)}
             </div>
           </div>
         )}
@@ -132,11 +149,11 @@ export default function ProductDetailView({ product, onClose }: ProductDetailVie
         </div>
 
         {/* Description */}
-        {product.description && (
+        {(product as { description?: string }).description && (
           <div className="bg-white border border-black/10 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-black mb-2">Description</h3>
             <p className="text-black/70 text-xs leading-relaxed whitespace-pre-line">
-              {product.description}
+              {(product as { description?: string }).description}
             </p>
           </div>
         )}

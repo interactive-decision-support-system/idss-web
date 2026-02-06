@@ -31,8 +31,8 @@ export default function RecommendationCard({
     return (
       <VehicleCard
         data={product as UnifiedProduct}
-        onItemSelect={onItemSelect as any}
-        onToggleFavorite={onToggleFavorite as any}
+        onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
+        onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
       />
     );
@@ -41,8 +41,8 @@ export default function RecommendationCard({
     return (
       <LaptopCard
         data={product as UnifiedProduct}
-        onItemSelect={onItemSelect as any}
-        onToggleFavorite={onToggleFavorite as any}
+        onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
+        onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
       />
     );
@@ -51,8 +51,8 @@ export default function RecommendationCard({
     return (
       <BookCard
         data={product as UnifiedProduct}
-        onItemSelect={onItemSelect as any}
-        onToggleFavorite={onToggleFavorite as any}
+        onItemSelect={onItemSelect as ((p: UnifiedProduct) => void) | undefined}
+        onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
       />
     );
@@ -99,7 +99,7 @@ export default function RecommendationCard({
           }
         >
           {displayValue}
-          {fieldConfig.key === 'rating' && (product as any).rating_count && ` (${(product as any).rating_count})`}
+          {fieldConfig.key === 'rating' && (product as { rating_count?: number }).rating_count && ` (${(product as { rating_count?: number }).rating_count})`}
         </span>
       </div>
     );
@@ -117,8 +117,9 @@ export default function RecommendationCard({
   // UnifiedProduct has 'image.primary' instead of 'image_url' or 'primaryImage'.
   // UnifiedProduct has 'name' instead of 'title'.
   // Adapt for display:
-  const displayTitle = (product as any).name || product.title;
-  const displayImage = (product as any).image?.primary || product.image_url || (product as any).primaryImage;
+  const p = product as { name?: string; image?: { primary?: string }; image_url?: string; primaryImage?: string; title?: string };
+  const displayTitle = p.name || p.title || 'Product';
+  const displayImage = p.image?.primary || p.image_url || p.primaryImage;
 
   return (
     <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200">
