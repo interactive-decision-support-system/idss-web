@@ -10,6 +10,7 @@ interface StackedRecommendationCardsProps {
   onItemSelect?: (product: Product) => void;
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
+  onAddToCart?: (product: Product) => void;
 }
 
 export default function StackedRecommendationCards({
@@ -19,6 +20,7 @@ export default function StackedRecommendationCards({
   onItemSelect,
   onToggleFavorite,
   isFavorite,
+  onAddToCart,
 }: StackedRecommendationCardsProps) {
   if (!recommendations || recommendations.length === 0) {
     return null;
@@ -49,6 +51,7 @@ export default function StackedRecommendationCards({
             onItemSelect={onItemSelect}
             onToggleFavorite={onToggleFavorite}
             isFavorite={isFavorite}
+            onAddToCart={onAddToCart}
           />
         );
       })}
@@ -62,6 +65,7 @@ interface RecommendationRowProps {
   onItemSelect?: (product: Product) => void;
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
+  onAddToCart?: (product: Product) => void;
 }
 
 function RecommendationRow({
@@ -70,6 +74,7 @@ function RecommendationRow({
   onItemSelect,
   onToggleFavorite,
   isFavorite,
+  onAddToCart,
 }: RecommendationRowProps) {
   // Show up to 3 items per row side-by-side (instead of a carousel)
   const productsToShow = row.slice(0, 3);
@@ -92,6 +97,7 @@ function RecommendationRow({
             onItemSelect={onItemSelect}
             onToggleFavorite={onToggleFavorite}
             isFavorite={isFavorite}
+            onAddToCart={onAddToCart}
           />
         ))}
       </div>

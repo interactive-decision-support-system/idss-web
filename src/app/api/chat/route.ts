@@ -4,6 +4,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!API_BASE_URL) {
+      return NextResponse.json(
+        { error: 'API not configured. Set NEXT_PUBLIC_API_BASE_URL in .env.local' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { message, session_id, user_location, k, method, n_rows, n_per_row } = body;
 

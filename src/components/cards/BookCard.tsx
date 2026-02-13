@@ -1,17 +1,20 @@
 import { UnifiedProduct } from '@/types/chat';
+import { isSoldOut } from '@/utils/inventory';
 
 interface BookCardProps {
     data: UnifiedProduct;
     onItemSelect?: (product: UnifiedProduct) => void;
     onToggleFavorite?: (product: UnifiedProduct) => void;
     isFavorite?: (productId: string) => boolean;
+    onAddToCart?: (product: UnifiedProduct) => void;
 }
 
 export default function BookCard({
     data,
     onItemSelect,
     onToggleFavorite,
-    isFavorite
+    isFavorite,
+    onAddToCart,
 }: BookCardProps) {
     const { book, name, price, image } = data;
     const imageSrc = image?.primary || null;
@@ -82,7 +85,7 @@ export default function BookCard({
             </div>
 
             {/* Actions */}
-            <div className="mt-3 pt-2 border-t border-gray-100 flex justify-center">
+            <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between gap-2">
                 <button
                     onClick={() => onItemSelect && onItemSelect(data)}
                     className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f] flex items-center gap-1"
@@ -90,6 +93,21 @@ export default function BookCard({
                     Details
                     <span className="group-hover:translate-x-0.5 transition-transform">→</span>
                 </button>
+                {onAddToCart && (
+                    isSoldOut(data) ? (
+                        <span className="text-xs text-red-600 font-medium">Sold out</span>
+                    ) : (
+                        <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
+                            className="w-9 h-9 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
+                            aria-label="Add to cart"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </button>
+                    )
+                )}
             </div>
         </div>
     );

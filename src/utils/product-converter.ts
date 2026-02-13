@@ -109,6 +109,7 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     price, // Set after spreads to ensure our computed value is used
     price_text: price ? `$${price.toLocaleString()}` : undefined,
     mileage,
+    inventory: (retailListing as { inventory?: number }).inventory ?? (vehicle as { inventory?: number }).inventory,
     body_style: vehicle.body_type as string || vehicle.body_style as string,
     fuel_type: vehicle.fuel_type as string,
     transmission: vehicle.transmission as string,

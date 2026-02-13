@@ -5,12 +5,19 @@ import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
+import CartPage from '@/components/CartPage';
+import AuthButton from '@/components/AuthButton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
+import { favoritesService } from '@/services/favorites';
+import { cartService, type CartItem } from '@/services/cart';
+import { useAuth } from '@/hooks/useAuth';
 import { currentDomainConfig } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
 export default function Home() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +25,9 @@ export default function Home() {
   const [modeButtonsLocked, setModeButtonsLocked] = useState(false); // freeze q until recommendations are given
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showCart, setShowCart] = useState(false);
   const [favorites, setFavorites] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [locationPermission, setLocationPermission] = useState<
     'unknown' | 'prompt' | 'granted' | 'denied' | 'unavailable' | 'error'
@@ -32,34 +41,82 @@ export default function Home() {
   const showLocationBanner =
     !locationDismissed && !userLocation && locationPermission !== 'unavailable';
 
-  // Load favorites from localStorage on mount
+  // Load favorites when userId changes (or on mount for guest)
+  // When user logs in with localStorage favorites, migrate them to Supabase first
   useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        setFavorites(JSON.parse(savedFavorites));
-      } catch (e) {
-        console.error('Error loading favorites:', e);
+    let cancelled = false;
+    const run = async () => {
+      if (userId) {
+        const local = typeof window !== 'undefined' ? localStorage.getItem('favorites') : null;
+        if (local && local !== '[]') {
+          const merged = await favoritesService.migrateLocalToSupabase(userId);
+          if (!cancelled) setFavorites(merged);
+          return;
+        }
       }
-    }
-  }, []);
+      const loaded = await favoritesService.load(userId);
+      if (!cancelled) setFavorites(loaded);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [userId]);
 
-  // Save favorites to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  const toggleFavorite = (product: Product) => {
+  const toggleFavorite = async (product: Product) => {
     const currentlyFavorited = favorites.some(p => p.id === product.id);
     if (currentlyFavorited) {
       setFavorites(prev => prev.filter(p => p.id !== product.id));
+      await favoritesService.remove(userId, product.id);
     } else {
       setFavorites(prev => [...prev, product]);
+      await favoritesService.add(userId, product);
     }
   };
 
   const isFavorite = (productId: string) => {
     return favorites.some(p => p.id === productId);
+  };
+
+  // Load cart when userId changes (or on mount for guest)
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (userId) {
+        const local = typeof window !== 'undefined' ? localStorage.getItem('cart') : null;
+        if (local && local !== '[]') {
+          const merged = await cartService.migrateLocalToSupabase(userId);
+          if (!cancelled) setCartItems(merged);
+          return;
+        }
+      }
+      const loaded = await cartService.load(userId);
+      if (!cancelled) setCartItems(loaded);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  const addToCart = async (product: Product) => {
+    if ((product as { inventory?: number }).inventory === 0) return;
+    setCartItems((prev) => {
+      const idx = prev.findIndex((i) => i.product.id === product.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
+        return next;
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    await cartService.add(userId, product);
+  };
+
+  const removeFromCart = async (productId: string) => {
+    setCartItems((prev) => prev.filter((i) => i.product.id !== productId));
+    await cartService.remove(userId, productId);
+  };
+
+  const handleCheckout = () => {
+    // TODO: Call backend checkout API when available
+    console.warn('Checkout not yet implemented - backend required');
   };
 
   // Initialize with welcome message
@@ -264,51 +321,54 @@ export default function Home() {
       )}
 
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || selectedProduct ? 'pr-96' : ''}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || showCart || selectedProduct ? 'pr-96' : ''}`}>
         {/* Floating Title - IDSS */}
         <div className="absolute top-4 left-4 z-10">
           <h1 className="text-xl font-semibold text-black">IDSS</h1>
         </div>
 
-        {/* Floating Heart Button - Top Right */}
-        {!selectedProduct && (
-          <div className={`absolute top-4 right-4 ${showFavorites ? 'z-30' : 'z-10'}`}>
-            <button
+        {/* Auth + Cart + Favorites - Top Right */}
+        <div className={`absolute top-4 right-4 flex items-center gap-4 ${showFavorites || showCart || selectedProduct ? 'z-30' : 'z-10'}`}>
+          <AuthButton />
+          <button
             onClick={() => {
-              setShowFavorites(!showFavorites);
-              if (showFavorites) {
-                setSelectedProduct(null);
-              }
+              setShowCart(!showCart);
+              if (showCart) setSelectedProduct(null);
+              setShowFavorites(false);
             }}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-all duration-200"
-            title={showFavorites ? "Hide Favorites" : "View Favorites"}
+            className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 -ml-1 -mr-4"
+            title={showCart ? "Hide Cart" : "View Cart"}
           >
-            {showFavorites ? (
-              <svg 
-                className="w-6 h-6 text-black"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg 
-                className={`w-6 h-6 transition-all duration-200 ${
-                  favorites.length > 0 
-                    ? 'text-[#ff1323] fill-[#ff1323]' 
-                    : 'text-black'
-                }`}
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            {cartItems.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8C1515] text-white text-[10px] font-medium flex items-center justify-center">
+                {cartItems.reduce((s, i) => s + i.quantity, 0)}
+              </span>
+            )}
+          </button>
+          {!selectedProduct && (
+            <button
+              onClick={() => {
+                setShowFavorites(!showFavorites);
+                if (showFavorites) setSelectedProduct(null);
+                setShowCart(false);
+              }}
+              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+              title={showFavorites ? "Hide Favorites" : "View Favorites"}
+            >
+              <svg
+                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black'}`}
                 fill={favorites.length > 0 ? 'currentColor' : 'none'}
-                stroke="currentColor" 
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-            )}
-          </button>
-          </div>
-        )}
+            </button>
+          )}
+        </div>
 
         {/* Chat Messages */}
         <div
@@ -365,9 +425,14 @@ export default function Home() {
                           recommendations={message.recommendations}
                           bucket_labels={message.bucket_labels}
                           diversification_dimension={message.diversification_dimension}
-                          onItemSelect={setSelectedProduct}
+                          onItemSelect={(p) => {
+                            setSelectedProduct(p);
+                            setShowFavorites(false);
+                            setShowCart(false);
+                          }}
                           onToggleFavorite={toggleFavorite}
                           isFavorite={isFavorite}
+                          onAddToCart={addToCart}
                         />
                       )}
 
@@ -422,10 +487,22 @@ export default function Home() {
         )}
       </div>
 
-      {/* Sidebar - Favorites or Product Detail */}
-      {(showFavorites || selectedProduct) && (
-        <div className="absolute top-4 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
-          {showFavorites && (
+      {/* Sidebar - Cart, Favorites, or Product Detail (starts below header buttons) */}
+      {(showCart || showFavorites || selectedProduct) && (
+        <div className="absolute top-16 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-20">
+          {showCart && (
+            <CartPage
+              cartItems={cartItems}
+              onRemove={removeFromCart}
+              onCheckout={handleCheckout}
+              onItemSelect={(product) => {
+                setSelectedProduct(product);
+                setShowCart(false);
+              }}
+              onClose={() => setShowCart(false)}
+            />
+          )}
+          {showFavorites && !showCart && (
             <FavoritesPage
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
@@ -437,10 +514,11 @@ export default function Home() {
               onClose={() => setShowFavorites(false)}
             />
           )}
-          {selectedProduct && (
+          {selectedProduct && !showCart && !showFavorites && (
             <ProductDetailView
               product={selectedProduct}
               onClose={() => setSelectedProduct(null)}
+              onAddToCart={addToCart}
             />
           )}
         </div>

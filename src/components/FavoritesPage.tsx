@@ -29,8 +29,17 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
   return (
     <div className="h-full bg-white flex flex-col overflow-hidden rounded-xl">
       {/* Header */}
-      <div className="flex items-center p-4 flex-shrink-0">
+      <div className="flex items-center justify-between p-4 flex-shrink-0">
         <h2 className="text-lg font-semibold text-black">Favorites</h2>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors"
+          aria-label="Close"
+        >
+          <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Content */}

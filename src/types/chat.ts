@@ -72,6 +72,7 @@ export interface UnifiedProduct {
   brand: string;           // Make, Manufacturer, or Product Brand
   price: number;           // Price in USD (integer)
   available: boolean;
+  inventory?: number;      // Stock count; 0 = sold out (backend provides this)
 
   // Normalized Image Object
   image: {
@@ -133,6 +134,7 @@ export type Product = UnifiedProduct | {
   rating?: number;
   rating_count?: number;
   productType?: string; // Optional on legacy
+  inventory?: number; // Stock count; 0 = sold out (backend provides this)
   // Domain-agnostic: any product can have these fields
   [key: string]: unknown; // Allow additional product-specific fields (make, model, year, mileage, etc.)
 };
