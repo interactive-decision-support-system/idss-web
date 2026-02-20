@@ -1,7 +1,7 @@
 /**
- * UCP (Universal Commerce Protocol) client for cart and checkout.
- * All cart/checkout writes for logged-in users go through the MCP server.
- * See FRONTEND_CART_CHECKOUT_API.md for the full API contract.
+ * Cart and checkout client: calls the backend agent action API.
+ * The agent then calls UCP (e.g. Supabase cart) internally. Frontend → Agent → UCP.
+ * Base URL: NEXT_PUBLIC_MCP_BASE_URL or NEXT_PUBLIC_API_BASE_URL.
  */
 
 import type { Product } from '@/types/chat';
@@ -101,20 +101,17 @@ export async function getProducts(
 }
 
 /**
- * POST /ucp/get_cart – get user's cart from MCP (Supabase).
+ * POST /api/action/fetch-cart – get user's cart via agent (agent → UCP/Supabase).
  */
 export async function getCart(userId: string): Promise<GetCartResponse> {
   const base = getBaseUrl();
   if (!base) {
-    return { status: 'error', error: 'MCP base URL not configured' };
+    return { status: 'error', error: 'API base URL not configured' };
   }
-  const res = await fetch(`${base}/ucp/get_cart`, {
+  const res = await fetch(`${base}/api/action/fetch-cart`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'get_cart',
-      parameters: { user_id: userId },
-    }),
+    body: JSON.stringify({ user_id: userId }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -124,7 +121,7 @@ export async function getCart(userId: string): Promise<GetCartResponse> {
 }
 
 /**
- * POST /ucp/add_to_cart – add item to cart via MCP.
+ * POST /api/action/add-to-cart – add item to cart via agent (agent → UCP/Supabase).
  */
 export async function addToCart(
   userId: string,
@@ -134,19 +131,16 @@ export async function addToCart(
 ): Promise<{ status: 'success' | 'error'; error?: string }> {
   const base = getBaseUrl();
   if (!base) {
-    return { status: 'error', error: 'MCP base URL not configured' };
+    return { status: 'error', error: 'API base URL not configured' };
   }
-  const res = await fetch(`${base}/ucp/add_to_cart`, {
+  const res = await fetch(`${base}/api/action/add-to-cart`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      action: 'add_to_cart',
-      parameters: {
-        user_id: userId,
-        product_id: productId,
-        quantity,
-        product_snapshot: productSnapshot,
-      },
+      user_id: userId,
+      product_id: productId,
+      quantity,
+      product_snapshot: productSnapshot,
     }),
   });
   const data = await res.json().catch(() => ({}));
@@ -160,9 +154,8 @@ export async function addToCart(
 }
 
 /**
- * POST /ucp/checkout – checkout current cart or explicit items.
- * Option A: omit items → MCP uses Supabase cart for user_id.
- * Option B: pass items → checkout those items (and optionally product_type for books).
+ * POST /api/action/checkout – checkout via agent (agent → UCP/Supabase).
+ * Omit items to checkout current cart for user_id; optional items/product_type.
  */
 export async function checkout(
   userId: string,
@@ -173,19 +166,16 @@ export async function checkout(
 ): Promise<CheckoutResponse> {
   const base = getBaseUrl();
   if (!base) {
-    return { status: 'error', error: 'MCP base URL not configured' };
+    return { status: 'error', error: 'API base URL not configured' };
   }
-  const parameters: Record<string, unknown> = { user_id: userId };
-  if (options?.items?.length) parameters.items = options.items;
-  if (options?.product_type) parameters.product_type = options.product_type;
+  const body: Record<string, unknown> = { user_id: userId };
+  if (options?.items?.length) body.items = options.items;
+  if (options?.product_type) body.product_type = options.product_type;
 
-  const res = await fetch(`${base}/ucp/checkout`, {
+  const res = await fetch(`${base}/api/action/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'checkout',
-      parameters,
-    }),
+    body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -195,22 +185,18 @@ export async function checkout(
 }
 
 /**
- * Optional: remove item from cart via MCP.
- * Not in FRONTEND_CART_CHECKOUT_API.md; backend may need to implement this UCP action.
+ * POST /api/action/remove-from-cart – remove item via agent (agent → UCP/Supabase).
  */
 export async function removeFromCart(
   userId: string,
   productId: string
 ): Promise<{ status: 'success' | 'error'; error?: string }> {
   const base = getBaseUrl();
-  if (!base) return { status: 'error', error: 'MCP base URL not configured' };
-  const res = await fetch(`${base}/ucp/remove_from_cart`, {
+  if (!base) return { status: 'error', error: 'API base URL not configured' };
+  const res = await fetch(`${base}/api/action/remove-from-cart`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'remove_from_cart',
-      parameters: { user_id: userId, product_id: productId },
-    }),
+    body: JSON.stringify({ user_id: userId, product_id: productId }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) return { status: 'error', error: data.error ?? `HTTP ${res.status}` };
@@ -219,8 +205,8 @@ export async function removeFromCart(
 }
 
 /**
- * Optional: update cart item quantity via MCP.
- * Not in FRONTEND_CART_CHECKOUT_API.md; backend may need to implement this UCP action.
+ * Update cart item quantity. Backend has no agent action for this yet, so we call UCP directly.
+ * Agent path: add-to-cart / remove-from-cart only.
  */
 export async function updateCartItem(
   userId: string,
@@ -228,7 +214,7 @@ export async function updateCartItem(
   quantity: number
 ): Promise<{ status: 'success' | 'error'; error?: string }> {
   const base = getBaseUrl();
-  if (!base) return { status: 'error', error: 'MCP base URL not configured' };
+  if (!base) return { status: 'error', error: 'API base URL not configured' };
   const res = await fetch(`${base}/ucp/update_cart`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

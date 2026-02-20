@@ -13,7 +13,7 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
   - optional `diversification_dimension` header
 - each row renders up to **3 items side-by-side**, each with its own like button
 - **Quick replies**: optional suggested reply buttons returned by the backend.
-- **User auth**: sign in with Google or Facebook via Supabase Auth; sign out in the header.
+- **User auth**: sign in with Google via Supabase Auth; sign out in the header.
 - **Favorites**: like/unlike items and view them in a sidebar; persisted in **Supabase** for logged-in users, **localStorage** for guests. On login, localStorage favorites are migrated to Supabase.
 - **Cart & checkout**: add items to cart, view cart in sidebar, remove items, checkout. Cart persisted in **Supabase** for logged-in users, **localStorage** for guests. Sold-out items (inventory = 0) are disabled; checkout validates inventory.
 - **Detail sidebar**: click “View Details” to open a sidebar view; includes “View Listing” when `listing_url` is present.
@@ -51,7 +51,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### Supabase Auth (Google & Facebook sign-in)
+### Supabase Auth (Google sign-in)
 
 1. Copy `.env.example` values for Supabase into `.env.local`, or get them from [Supabase Dashboard → Project Settings → API](https://supabase.com/dashboard/project/_/settings/api).
 2. In Supabase Dashboard → **Authentication → URL Configuration**, add to **Redirect URLs**:
@@ -60,7 +60,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    - `https://your-domain.com/auth/callback` (production)
    - `https://your-domain.com/auth/reset-password` (password reset, production)
 3. **Google**: [Authentication → Providers → Google](https://supabase.com/dashboard/project/_/auth/providers) — enable and add Client ID + Secret from [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Add `http://localhost:3000` to Authorized JavaScript origins and your Supabase callback URL to Authorized redirect URIs.
-4. **Facebook**: [Authentication → Providers → Facebook](https://supabase.com/dashboard/project/_/auth/providers) — enable and add App ID + Secret from [Facebook Developers](https://developers.facebook.com). Add your Supabase callback URL to Valid OAuth Redirect URIs.
+4. **Disable email confirmation (optional)**: If sign-up confirmation emails fail or you don’t need them (e.g. for dev/testing), go to [Authentication → Providers → Email](https://supabase.com/dashboard/project/_/auth/providers) and turn **off** “Confirm email”. New users can then sign in immediately after signing up without clicking a link.
 
 ### Supabase tables (favorites, cart)
 
@@ -140,7 +140,7 @@ src/
 ├── app/
 │   ├── api/chat/route.ts           # Proxies chat requests to backend
 │   ├── auth/
-│   │   ├── callback/route.ts       # OAuth callback (Google/Facebook)
+│   │   ├── callback/route.ts       # OAuth callback (Google)
 │   │   ├── auth-code-error/page.tsx
 │   │   └── reset-password/page.tsx # Password reset form (PKCE + hash)
 │   ├── globals.css                 # Global styles (Tailwind v4 + Stanford colors)
@@ -148,7 +148,7 @@ src/
 │   └── page.tsx                    # Main chat UI + sidebar (favorites/details)
 ├── components/
 │   ├── AuthButton.tsx              # Sign in / sign out (avatar when logged in)
-│   ├── AuthModal.tsx               # Modal: Google, Facebook, email/password, forgot password
+│   ├── AuthModal.tsx               # Modal: Google, email/password, forgot password
 │   ├── ChatInput.tsx               # Message input + followup-question mode buttons
 │   ├── RecommendationCard.tsx     # Single card view for an item
 │   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
@@ -184,7 +184,7 @@ Unit tests use **Jest** and **React Testing Library**. Supabase is mocked in tes
 
 - **Auth**: `useAuth` hook, `AuthModal`, and `AuthButton` with mocked Supabase Auth:
   - **useAuth** (`src/hooks/useAuth.test.ts`): initial loading state, user from `getUser`, subscription to `onAuthStateChange` and cleanup on unmount.
-  - **AuthModal** (`src/components/AuthModal.test.tsx`): Google and Facebook OAuth (`signInWithOAuth`), email/password sign-in and sign-up (validation, success, error handling), forgot password (`resetPasswordForEmail`), and mode switching (sign-in ↔ sign-up ↔ forgot).
+  - **AuthModal** (`src/components/AuthModal.test.tsx`): Google OAuth (`signInWithOAuth`), email/password sign-in and sign-up (validation, success, error handling), forgot password (`resetPasswordForEmail`), and mode switching (sign-in ↔ sign-up ↔ forgot).
   - **AuthButton** (`src/components/AuthButton.test.tsx`): hidden when Supabase env is missing, “Sign in” when no user, modal open on click, avatar and sign-out when logged in.
 - **Services**: `favorites` and `cart` (Supabase + localStorage) in `src/services/*.test.ts`.
 - **API**: chat proxy route in `src/app/api/chat/route.test.ts`, frontend API client in `src/services/api.test.ts`.

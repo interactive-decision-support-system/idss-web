@@ -12,6 +12,7 @@ export type CheckoutResultProp =
 interface CartPageProps {
   cartItems: CartItem[];
   onRemove: (productId: string) => void;
+  onSetQuantity?: (productId: string, quantity: number) => void;
   onCheckout: () => void;
   checkoutLoading?: boolean;
   checkoutResult?: CheckoutResultProp;
@@ -37,6 +38,7 @@ function getPriceDisplay(product: Product): string {
 export default function CartPage({
   cartItems,
   onRemove,
+  onSetQuantity,
   onCheckout,
   checkoutLoading = false,
   checkoutResult = null,
@@ -146,7 +148,38 @@ export default function CartPage({
                         {getDisplayTitle(product)}
                       </h4>
                       <p className="text-sm font-bold text-[#8C1515] mt-0.5">{getPriceDisplay(product)}</p>
-                      <p className="text-xs text-black/50">Qty: {quantity}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {onSetQuantity && !soldOut ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (quantity <= 1) onRemove(product.id);
+                                else onSetQuantity(product.id, quantity - 1);
+                              }}
+                              className="w-6 h-6 rounded border border-black/20 flex items-center justify-center hover:bg-black/5 text-black/70 hover:text-black"
+                              aria-label="Decrease quantity"
+                            >
+                              <span className="text-sm leading-none">−</span>
+                            </button>
+                            <span className="text-xs text-black/70 min-w-[1.25rem] text-center">{quantity}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSetQuantity(product.id, quantity + 1);
+                              }}
+                              className="w-6 h-6 rounded border border-black/20 flex items-center justify-center hover:bg-black/5 text-black/70 hover:text-black"
+                              aria-label="Increase quantity"
+                            >
+                              <span className="text-sm leading-none">+</span>
+                            </button>
+                          </>
+                        ) : (
+                          <p className="text-xs text-black/50">Qty: {quantity}</p>
+                        )}
+                      </div>
                       {soldOut && (
                         <p className="text-xs font-medium text-red-600 mt-1">Sold out</p>
                       )}
