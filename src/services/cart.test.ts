@@ -1,5 +1,6 @@
 import { cartService } from '@/services/cart';
 import type { Product } from '@/types/chat';
+import * as ucp from '@/services/ucp';
 
 const mockGetCart = jest.fn();
 const mockAddToCart = jest.fn();
@@ -33,8 +34,7 @@ describe('cartService', () => {
     if (typeof window !== 'undefined') {
       localStorage.clear();
     }
-    const { isUcpAvailable } = require('@/services/ucp');
-    isUcpAvailable.mockReturnValue(true);
+    jest.mocked(ucp).isUcpAvailable.mockReturnValue(true);
   });
 
   describe('load', () => {
@@ -42,8 +42,7 @@ describe('cartService', () => {
       const items = [{ product, quantity: 2 }];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 
-      const { isUcpAvailable } = require('@/services/ucp');
-      isUcpAvailable.mockReturnValue(false);
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
 
       const result = await cartService.load(null);
 
@@ -54,8 +53,7 @@ describe('cartService', () => {
     });
 
     it('returns empty array when userId is null and localStorage is empty', async () => {
-      const { isUcpAvailable } = require('@/services/ucp');
-      isUcpAvailable.mockReturnValue(false);
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
 
       const result = await cartService.load(null);
       expect(result).toEqual([]);
@@ -86,8 +84,7 @@ describe('cartService', () => {
 
   describe('add', () => {
     it('saves to localStorage when userId is null', async () => {
-      const { isUcpAvailable } = require('@/services/ucp');
-      isUcpAvailable.mockReturnValue(false);
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
 
       await cartService.add(null, product);
 
@@ -99,8 +96,7 @@ describe('cartService', () => {
     });
 
     it('increments quantity in localStorage when product already in cart', async () => {
-      const { isUcpAvailable } = require('@/services/ucp');
-      isUcpAvailable.mockReturnValue(false);
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
       localStorage.setItem(STORAGE_KEY, JSON.stringify([{ product, quantity: 1 }]));
       await cartService.add(null, product);
 
@@ -120,8 +116,7 @@ describe('cartService', () => {
 
   describe('remove', () => {
     it('removes from localStorage when userId is null', async () => {
-      const { isUcpAvailable } = require('@/services/ucp');
-      isUcpAvailable.mockReturnValue(false);
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
       localStorage.setItem(STORAGE_KEY, JSON.stringify([{ product, quantity: 1 }]));
       await cartService.remove(null, 'p1');
 
