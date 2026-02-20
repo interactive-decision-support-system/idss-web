@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "encrypted-tbn0.gstatic.com",
-      // add any other domains you need
+      "encrypted-tbn1.gstatic.com",
+      // add more if needed
     ],
   },
 };
