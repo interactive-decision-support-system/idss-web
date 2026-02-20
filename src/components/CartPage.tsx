@@ -4,10 +4,18 @@ import type { CartItem } from '@/services/cart';
 import type { Product } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
 
+export type CheckoutResultProp =
+  | { success: true; orderId: string }
+  | { success: false; error: string; soldOutIds?: string[] }
+  | null;
+
 interface CartPageProps {
   cartItems: CartItem[];
   onRemove: (productId: string) => void;
   onCheckout: () => void;
+  checkoutLoading?: boolean;
+  checkoutResult?: CheckoutResultProp;
+  onDismissCheckoutResult?: () => void;
   onItemSelect: (product: Product) => void;
   onClose: () => void;
 }
@@ -30,11 +38,14 @@ export default function CartPage({
   cartItems,
   onRemove,
   onCheckout,
+  checkoutLoading = false,
+  checkoutResult = null,
+  onDismissCheckoutResult,
   onItemSelect,
   onClose,
 }: CartPageProps) {
   const hasSoldOutItem = cartItems.some((item) => isSoldOut(item.product));
-  const canCheckout = cartItems.length > 0 && !hasSoldOutItem;
+  const canCheckout = cartItems.length > 0 && !hasSoldOutItem && !checkoutLoading;
 
   const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {
@@ -57,6 +68,39 @@ export default function CartPage({
           </svg>
         </button>
       </div>
+
+      {/* Checkout result banner */}
+      {checkoutResult && (
+        <div
+          className={`mx-4 mt-2 rounded-lg border p-3 text-sm ${
+            checkoutResult.success
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-red-200 bg-red-50 text-red-800'
+          }`}
+        >
+          {checkoutResult.success ? (
+            <p className="font-medium">Order placed! Order ID: {checkoutResult.orderId || '—'}</p>
+          ) : (
+            <div>
+              <p className="font-medium">{checkoutResult.error}</p>
+              {checkoutResult.soldOutIds && checkoutResult.soldOutIds.length > 0 && (
+                <p className="mt-1 text-xs opacity-90">
+                  Sold out: {checkoutResult.soldOutIds.join(', ')}. Remove or reduce quantity to continue.
+                </p>
+              )}
+            </div>
+          )}
+          {onDismissCheckoutResult && (
+            <button
+              type="button"
+              onClick={onDismissCheckoutResult}
+              className="mt-2 text-xs underline hover:no-underline"
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
@@ -141,7 +185,7 @@ export default function CartPage({
                 : 'bg-black/20 text-black/50 cursor-not-allowed'
             }`}
           >
-            {hasSoldOutItem ? 'Remove sold-out items to checkout' : 'Checkout'}
+            {checkoutLoading ? 'Processing…' : hasSoldOutItem ? 'Remove sold-out items to checkout' : 'Checkout'}
           </button>
         </div>
       )}

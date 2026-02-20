@@ -12,7 +12,7 @@ import { idssApiService } from '@/services/api';
 import { favoritesService } from '@/services/favorites';
 import { cartService, type CartItem } from '@/services/cart';
 import { useAuth } from '@/hooks/useAuth';
-import { currentDomainConfig } from '@/config/domain-config';
+import { getMultiDomainDefaults } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
 export default function Home() {
@@ -28,13 +28,17 @@ export default function Home() {
   const [showCart, setShowCart] = useState(false);
   const [favorites, setFavorites] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutResult, setCheckoutResult] = useState<
+    { success: true; orderId: string } | { success: false; error: string; soldOutIds?: string[] } | null
+  >(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [locationPermission, setLocationPermission] = useState<
     'unknown' | 'prompt' | 'granted' | 'denied' | 'unavailable' | 'error'
   >('unknown');
   const [locationDismissed, setLocationDismissed] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
-  const config = currentDomainConfig;
+  const multiDomainDefaults = getMultiDomainDefaults();
 
   // Check if this is the initial state (only welcome message)
   const isInitialState = chatMessages.length === 1 && chatMessages[0]?.role === 'assistant';
@@ -97,40 +101,77 @@ export default function Home() {
 
   const addToCart = async (product: Product) => {
     if ((product as { inventory?: number }).inventory === 0) return;
-    setCartItems((prev) => {
-      const idx = prev.findIndex((i) => i.product.id === product.id);
+    const prev = cartItems;
+    setCartItems((p) => {
+      const idx = p.findIndex((i) => i.product.id === product.id);
       if (idx >= 0) {
-        const next = [...prev];
+        const next = [...p];
         next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
         return next;
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...p, { product, quantity: 1 }];
     });
-    await cartService.add(userId, product);
+    try {
+      await cartService.add(userId, product);
+    } catch (e) {
+      setCartItems(prev);
+      console.error('Add to cart failed:', e);
+    }
   };
 
   const removeFromCart = async (productId: string) => {
     setCartItems((prev) => prev.filter((i) => i.product.id !== productId));
-    await cartService.remove(userId, productId);
+    try {
+      await cartService.remove(userId, productId);
+    } catch {
+      const fresh = await cartService.load(userId);
+      setCartItems(fresh);
+    }
   };
 
-  const handleCheckout = () => {
-    // TODO: Call backend checkout API when available
-    console.warn('Checkout not yet implemented - backend required');
+  const handleCheckout = async () => {
+    setCheckoutResult(null);
+    setCheckoutLoading(true);
+    try {
+      const result = await cartService.checkout(userId, cartItems);
+      if (result.success) {
+        setCheckoutResult({ success: true, orderId: result.orderId ?? '' });
+        setCartItems([]);
+        const fresh = await cartService.load(userId);
+        setCartItems(fresh);
+      } else {
+        setCheckoutResult({
+          success: false,
+          error: result.error ?? 'Checkout failed',
+          soldOutIds: result.soldOutIds,
+        });
+        if (result.soldOutIds?.length) {
+          const fresh = await cartService.load(userId);
+          setCartItems(fresh);
+        }
+      }
+    } catch (e) {
+      setCheckoutResult({
+        success: false,
+        error: e instanceof Error ? e.message : 'Checkout failed',
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
-  // Initialize with welcome message
+  // Initialize with welcome message (multi-domain)
   useEffect(() => {
     if (chatMessages.length === 0) {
       const initialMessage: ChatMessage = {
         id: 'initial',
         role: 'assistant',
-        content: config.welcomeMessage,
+        content: multiDomainDefaults.welcomeMessage,
         timestamp: new Date(),
       };
       setChatMessages([initialMessage]);
     }
-  }, [chatMessages.length, config.welcomeMessage]);
+  }, [chatMessages.length, multiDomainDefaults.welcomeMessage]);
 
   const requestUserLocation = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -381,7 +422,7 @@ export default function Home() {
               {/* Large Welcome Message */}
               <div className="text-center space-y-4">
                 <div className="text-3xl font-semibold text-black leading-tight">
-                  {config.welcomeMessage}
+                  {multiDomainDefaults.welcomeMessage}
                 </div>
               </div>
 
@@ -495,11 +536,17 @@ export default function Home() {
               cartItems={cartItems}
               onRemove={removeFromCart}
               onCheckout={handleCheckout}
+              checkoutLoading={checkoutLoading}
+              checkoutResult={checkoutResult}
+              onDismissCheckoutResult={() => setCheckoutResult(null)}
               onItemSelect={(product) => {
                 setSelectedProduct(product);
                 setShowCart(false);
               }}
-              onClose={() => setShowCart(false)}
+              onClose={() => {
+                setShowCart(false);
+                setCheckoutResult(null);
+              }}
             />
           )}
           {showFavorites && !showCart && (

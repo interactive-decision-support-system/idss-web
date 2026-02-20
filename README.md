@@ -178,7 +178,22 @@ supabase/migrations/
 
 ## Testing & linting
 
-Run unit tests:
+Unit tests use **Jest** and **React Testing Library**. Supabase is mocked in tests so no real backend or auth is required.
+
+### What’s covered
+
+- **Auth**: `useAuth` hook, `AuthModal`, and `AuthButton` with mocked Supabase Auth:
+  - **useAuth** (`src/hooks/useAuth.test.ts`): initial loading state, user from `getUser`, subscription to `onAuthStateChange` and cleanup on unmount.
+  - **AuthModal** (`src/components/AuthModal.test.tsx`): Google and Facebook OAuth (`signInWithOAuth`), email/password sign-in and sign-up (validation, success, error handling), forgot password (`resetPasswordForEmail`), and mode switching (sign-in ↔ sign-up ↔ forgot).
+  - **AuthButton** (`src/components/AuthButton.test.tsx`): hidden when Supabase env is missing, “Sign in” when no user, modal open on click, avatar and sign-out when logged in.
+- **Services**: `favorites` and `cart` (Supabase + localStorage) in `src/services/*.test.ts`.
+- **API**: chat proxy route in `src/app/api/chat/route.test.ts`, frontend API client in `src/services/api.test.ts`.
+- **Components**: `ChatInput`, `RecommendationCard`.
+- **Utils**: `product-converter`.
+
+### Commands
+
+Run all unit tests:
 
 ```bash
 npm test

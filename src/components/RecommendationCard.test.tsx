@@ -18,19 +18,21 @@ jest.mock('@/config/domain-config', () => {
     },
   ];
 
+  const mockConfig = {
+    productName: 'item',
+    productNamePlural: 'items',
+    welcomeMessage: 'Welcome',
+    inputPlaceholder: 'Type a message',
+    viewDetailsButtonText: 'View Details',
+    recommendationCardFields,
+    recommendationCardSubtitleKey: 'source',
+    recommendationCardSubtitleClassName: 'text-base text-black/60',
+    detailPageFields: [],
+    defaultQuickReplies: [],
+  };
+
   return {
-    currentDomainConfig: {
-      productName: 'item',
-      productNamePlural: 'items',
-      welcomeMessage: 'Welcome',
-      inputPlaceholder: 'Type a message',
-      viewDetailsButtonText: 'View Details',
-      recommendationCardFields,
-      recommendationCardSubtitleKey: 'source',
-      recommendationCardSubtitleClassName: 'text-base text-black/60',
-      detailPageFields: [],
-      defaultQuickReplies: [],
-    },
+    getDomainConfigForProduct: () => mockConfig,
   };
 });
 
