@@ -41,7 +41,6 @@ describe('AuthModal', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/log in or sign up/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /continue with google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue with facebook/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log in with email/i })).toBeInTheDocument();
   });
 
@@ -53,19 +52,6 @@ describe('AuthModal', () => {
     expect(mockSignInWithOAuth).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'google',
-        options: expect.objectContaining({ redirectTo: expect.stringContaining('/auth/callback') }),
-      })
-    );
-  });
-
-  it('calls signInWithOAuth with facebook when Continue with Facebook is clicked', async () => {
-    const user = userEvent.setup();
-    render(<AuthModal isOpen={true} onClose={onClose} />);
-    await user.click(screen.getByRole('button', { name: /continue with facebook/i }));
-    expect(mockSignInWithOAuth).toHaveBeenCalledTimes(1);
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: 'facebook',
         options: expect.objectContaining({ redirectTo: expect.stringContaining('/auth/callback') }),
       })
     );
@@ -155,7 +141,7 @@ describe('AuthModal', () => {
       email: 'new@example.com',
       password: 'password123',
     });
-    await screen.findByText(/check your email to confirm/i);
+    await screen.findByText(/account created! you can sign in now/i);
   });
 
   it('switches to forgot password and shows reset form', async () => {

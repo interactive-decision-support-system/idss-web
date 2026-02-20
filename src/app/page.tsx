@@ -129,6 +129,26 @@ export default function Home() {
     }
   };
 
+  const setQuantityInCart = async (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    setCartItems((prev) => {
+      const idx = prev.findIndex((i) => i.product.id === productId);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], quantity };
+      return next;
+    });
+    try {
+      await cartService.setQuantity(userId, productId, quantity);
+    } catch {
+      const fresh = await cartService.load(userId);
+      setCartItems(fresh);
+    }
+  };
+
   const handleCheckout = async () => {
     setCheckoutResult(null);
     setCheckoutLoading(true);
@@ -535,6 +555,7 @@ export default function Home() {
             <CartPage
               cartItems={cartItems}
               onRemove={removeFromCart}
+              onSetQuantity={setQuantityInCart}
               onCheckout={handleCheckout}
               checkoutLoading={checkoutLoading}
               checkoutResult={checkoutResult}
