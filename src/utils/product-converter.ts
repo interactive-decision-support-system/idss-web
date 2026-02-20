@@ -6,9 +6,11 @@
 import { APIVehicle } from '@/types/chat';
 import { Product } from '@/types/chat';
 
-/** API response that may include UnifiedProduct-like fields */
+/** API response that may include UnifiedProduct-like fields or category for domain detection */
 type APIProductWithUnified = APIVehicle & {
   productType?: string;
+  category?: string;
+  part_type?: string;
   id?: string;
   name?: string;
   image?: { primary?: string };
@@ -43,7 +45,7 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       // Include legacy fields if they exist as base
       ...vehicle,
       ...retailListing,
-      // Overlay UnifiedProduct fields
+      // Overlay UnifiedProduct fields (preserves productType, category, part_type for multi-domain)
       ...up,
       // Ensure ID is robust
       id: up.id || `${vehicle.make || 'unknown'}-${vehicle.model || 'product'}-${vehicle.year || '0'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -52,6 +54,9 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       image_url: imageUrl,
       brand: up.brand || vehicle.make,
       price: Number(up.price ?? (retailListing as { price?: number })?.price ?? vehicle.price ?? 0),
+      // Preserve category/part_type for getDomainConfigForProduct when API sends them
+      ...(up.category !== undefined && { category: up.category }),
+      ...(up.part_type !== undefined && { part_type: up.part_type }),
     } as Product;
   }
 
@@ -88,9 +93,10 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     || (apiVehicle as { '@id'?: string })['@id'] as string
     || undefined;
 
+  const typedApiForLegacy = apiVehicle as APIProductWithUnified;
   // Build Product object (domain-agnostic structure)
   const product: Product = {
-    id: (apiVehicle as APIProductWithUnified).id as string // content checks top-level id first (UnifiedProduct)
+    id: typedApiForLegacy.id as string // content checks top-level id first (UnifiedProduct)
       || retailListing.listing_id as string
       || vehicle.vin as string
       || vehicle.id as string
@@ -102,6 +108,9 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     // Include all vehicle and retailListing fields for domain-specific access
     ...vehicle,
     ...retailListing,
+    // Preserve category/part_type from API for multi-domain detection when present
+    ...(typedApiForLegacy.category !== undefined && { category: typedApiForLegacy.category }),
+    ...(typedApiForLegacy.part_type !== undefined && { part_type: typedApiForLegacy.part_type }),
     // Explicitly map common fields (after spreads to avoid overwriting)
     make,
     model,

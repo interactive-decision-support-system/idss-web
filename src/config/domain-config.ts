@@ -371,7 +371,116 @@ export const pcPartsConfig: DomainConfig = {
   ],
 };
 
-// Currently active domain configuration
-// Change this to switch between domains
-// Options: vehicleConfig, pcPartsConfig
-export const currentDomainConfig: DomainConfig = pcPartsConfig;
+// Generic/minimal config for products that don't match vehicle or pc_parts
+const createGenericRecommendationFields = (): FieldConfig[] => [
+  {
+    label: 'Price',
+    key: 'price',
+    format: (value: unknown) => `$${typeof value === 'number' ? value.toLocaleString() : value}`,
+    labelClassName: 'text-base text-black/60',
+    valueClassName: 'text-xl font-bold text-[#8C1515]',
+  },
+  {
+    label: 'Brand',
+    key: 'brand',
+    condition: (p: Record<string, unknown>) => p.brand != null,
+  },
+  {
+    label: 'Retailer',
+    key: 'source',
+    condition: (p: Record<string, unknown>) => p.source != null,
+  },
+];
+
+export const genericConfig: DomainConfig = {
+  productName: 'item',
+  productNamePlural: 'items',
+  welcomeMessage: "Hi! What are you looking for today?",
+  inputPlaceholder: "What are you looking for?",
+  examplePlaceholderQueries: ["What are you looking for?"],
+  viewDetailsButtonText: "View Details",
+  viewListingButtonText: "View Listing",
+  recommendationCardFields: createGenericRecommendationFields(),
+  recommendationCardSubtitleKey: 'source',
+  recommendationCardSubtitleClassName: 'text-base text-black/60',
+  detailPageFields: [
+    { label: 'Brand', key: 'brand', condition: (p) => p.brand != null },
+    { label: 'Price', key: 'price', format: (v) => `$${typeof v === 'number' ? v.toLocaleString() : v}` },
+    { label: 'Retailer', key: 'source', condition: (p) => p.source != null },
+  ],
+  defaultQuickReplies: [],
+};
+
+// Multi-domain: map domain id -> config (used to pick config per product)
+export const DOMAIN_IDS = ['vehicle', 'pc_parts', 'generic'] as const;
+export type DomainId = (typeof DOMAIN_IDS)[number];
+
+export const DOMAIN_CONFIG_MAP: Record<DomainId, DomainConfig> = {
+  vehicle: vehicleConfig,
+  pc_parts: pcPartsConfig,
+  generic: genericConfig,
+};
+
+/** PC part category/part_type values that indicate pc_parts domain */
+const PC_PART_CATEGORIES = new Set([
+  'gpu', 'cpu', 'motherboard', 'psu', 'storage', 'ram', 'cooling', 'case',
+  'ssd', 'hdd', 'nvme', 'part',
+]);
+
+/**
+ * Detect domain from a product (after conversion) using productType or category/part_type or shape.
+ * Used to select which DomainConfig to use for card and detail rendering.
+ */
+export function getDomainConfigForProduct(
+  product: Record<string, unknown> & { productType?: string }
+): DomainConfig {
+  const productType = product.productType;
+  const category = (product.category ?? product.part_type) as string | undefined;
+  const cat = category?.toLowerCase?.();
+
+  if (productType === 'vehicle') return vehicleConfig;
+  if (productType === 'laptop' || productType === 'book') return genericConfig;
+
+  if (cat && PC_PART_CATEGORIES.has(cat)) return pcPartsConfig;
+
+  const hasVehicleShape =
+    product.make != null || product.model != null || product.mileage != null;
+  if (hasVehicleShape) return vehicleConfig;
+
+  return genericConfig;
+}
+
+/**
+ * Combined defaults for multi-domain UI: welcome message, placeholders, and quick replies
+ * so users can search any domain without switching config.
+ */
+export function getMultiDomainDefaults(): {
+  welcomeMessage: string;
+  defaultQuickReplies: string[];
+  examplePlaceholderQueries: string[];
+} {
+  const configs = [vehicleConfig, pcPartsConfig];
+  const welcomeMessage = configs[0].welcomeMessage;
+  const defaultQuickReplies: string[] = [];
+  const seen = new Set<string>();
+  for (const c of configs) {
+    for (const q of c.defaultQuickReplies ?? []) {
+      if (!seen.has(q)) {
+        seen.add(q);
+        defaultQuickReplies.push(q);
+      }
+    }
+  }
+  const examplePlaceholderQueries: string[] = [];
+  const seenPlaceholders = new Set<string>();
+  for (const c of configs) {
+    const list = c.examplePlaceholderQueries ?? [c.inputPlaceholder];
+    for (const p of list) {
+      if (!seenPlaceholders.has(p)) {
+        seenPlaceholders.add(p);
+        examplePlaceholderQueries.push(p);
+      }
+    }
+  }
+  return { welcomeMessage, defaultQuickReplies, examplePlaceholderQueries };
+}

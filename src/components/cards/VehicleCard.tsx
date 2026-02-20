@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { UnifiedProduct } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
 
@@ -32,10 +33,12 @@ export default function VehicleCard({
             {/* Image */}
             <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative mb-3">
                 {imageSrc ? (
-                    <img
+                    <Image
                         src={imageSrc}
                         alt={name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">

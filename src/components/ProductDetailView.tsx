@@ -1,7 +1,7 @@
 'use client';
 
 import { Product } from '@/types/chat';
-import { currentDomainConfig } from '@/config/domain-config';
+import { getDomainConfigForProduct } from '@/config/domain-config';
 import { isSoldOut } from '@/utils/inventory';
 
 interface ProductDetailViewProps {
@@ -43,7 +43,7 @@ function getPriceDisplay(product: Product): string {
 }
 
 export default function ProductDetailView({ product, onClose, onAddToCart }: ProductDetailViewProps) {
-  const config = currentDomainConfig;
+  const config = getDomainConfigForProduct(product as Record<string, unknown> & { productType?: string });
 
   // Helper function to render field based on config
   const renderField = (fieldConfig: typeof config.detailPageFields[0]) => {

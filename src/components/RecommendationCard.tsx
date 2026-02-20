@@ -1,7 +1,7 @@
 'use client';
 
 import { Product, UnifiedProduct } from '@/types/chat';
-import { currentDomainConfig } from '@/config/domain-config';
+import { getDomainConfigForProduct } from '@/config/domain-config';
 import { isSoldOut } from '@/utils/inventory';
 import VehicleCard from '@/components/cards/VehicleCard';
 import LaptopCard from '@/components/cards/LaptopCard';
@@ -22,8 +22,6 @@ export default function RecommendationCard({
   isFavorite,
   onAddToCart,
 }: RecommendationCardProps) {
-  const config = currentDomainConfig;
-
   if (!product) {
     return null;
   }
@@ -65,6 +63,8 @@ export default function RecommendationCard({
   }
 
   // --- Legacy / Generic Card Rendering ---
+  // Resolve domain from product (category/productType) so cards use the right fields
+  const config = getDomainConfigForProduct(product as Record<string, unknown> & { productType?: string });
 
   // Show a compact subset so 3 cards fit per row
   const fieldsToShow = config.recommendationCardFields.slice(0, 3);

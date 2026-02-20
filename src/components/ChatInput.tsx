@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useRef, FormEvent } from 'react';
-import { currentDomainConfig } from '@/config/domain-config';
+import { getMultiDomainDefaults } from '@/config/domain-config';
 
 interface ChatInputProps {
   onSendMessage: (message: string, k: number) => void;
@@ -28,11 +28,10 @@ export default function ChatInput({
   const [inputMessage, setInputMessage] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const inputFocusedRef = useRef(false);
-  const config = currentDomainConfig;
 
   const placeholderQueries = useMemo(
-    () => config.examplePlaceholderQueries ?? [config.inputPlaceholder],
-    [config.examplePlaceholderQueries, config.inputPlaceholder]
+    () => getMultiDomainDefaults().examplePlaceholderQueries,
+    []
   );
 
   const currentPlaceholder = placeholderQueries[placeholderIndex % placeholderQueries.length];
