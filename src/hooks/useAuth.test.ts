@@ -19,9 +19,20 @@ jest.mock('@/utils/supabase/client', () => ({
 }));
 
 describe('useAuth', () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
+    };
     mockGetUser.mockResolvedValue({ data: { user: null } });
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
   });
 
   it('starts with loading true then sets user and loading false after getUser', async () => {
