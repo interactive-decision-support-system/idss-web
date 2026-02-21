@@ -1,6 +1,7 @@
 'use client';
 
 import { Product } from '@/types/chat';
+import Image from 'next/image';
 import { getDomainConfigForProduct } from '@/config/domain-config';
 import { isSoldOut } from '@/utils/inventory';
 
@@ -52,37 +53,34 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
     if (fieldConfig.key === 'part_type' && (value === undefined || value === null)) {
       value = product['category'];
     }
-    
     // Check condition if provided
     if (fieldConfig.condition && !fieldConfig.condition(product)) {
       return null;
     }
-    
     // Don't render if value is undefined/null
     if (value === undefined || value === null) {
       return null;
     }
-    
     const displayValue = fieldConfig.format 
       ? fieldConfig.format(value)
       : String(value);
-    
     return (
-      <div key={fieldConfig.key} className="bg-white border border-black/10 rounded p-3">
-        <div className="text-black/60 text-xs mb-1">{fieldConfig.label}</div>
-        <div className="text-black text-sm font-medium">{displayValue}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-black/70 font-medium">{fieldConfig.label}</span>
+        <span className="text-xs text-black font-semibold">{displayValue}</span>
       </div>
     );
   };
 
+  // Main render
   return (
     <div className="h-full bg-white flex flex-col overflow-hidden rounded-xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 flex-shrink-0">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-black truncate">{getDisplayTitle(product)}</h2>
+          <h2 className="text-base font-semibold text-black truncate">{getDisplayTitle(product)}</h2>
           {(product as { brand?: string }).brand && (
-            <p className="text-xs text-black/50 mt-1">{(product as { brand?: string }).brand}</p>
+            <p className="text-xs text-black/50 mt-0.5">{(product as { brand?: string }).brand}</p>
           )}
         </div>
         <button
@@ -96,38 +94,35 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
         </button>
       </div>
 
-      {/* Content */}
+      {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-        {/* Image */}
+        {/* Product image */}
         <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
           {(() => {
-          const imgSrc = getPrimaryImage(product);
-          return imgSrc ? (
-            <img
-              src={imgSrc}
-              alt={getDisplayTitle(product)}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="text-black/40 text-sm text-center px-2">No Image Available</div>
-          );
-        })()}
+            const imgSrc = getPrimaryImage(product);
+            return imgSrc ? (
+              <Image
+                src={imgSrc}
+                alt={getDisplayTitle(product)}
+                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 600px) 100vw, 33vw"
+                priority={false}
+              />
+            ) : (
+              <div className="text-black/40 text-xs text-center px-2">No Image Available</div>
+            );
+          })()}
         </div>
 
         {/* Price */}
-{((product as { price_text?: string }).price_text || (product as { price?: number }).price != null) && (
-            <div className="bg-white border border-black/10 rounded-lg p-4">
-              <div className="text-2xl font-bold text-[#8C1515]">
-                {getPriceDisplay(product)}
-            </div>
+        {((product as { price_text?: string }).price_text || (product as { price?: number }).price != null) && (
+          <div className="text-2xl font-bold text-[#8C1515]">
+            {getPriceDisplay(product)}
           </div>
         )}
 
-        {/* View Listing + Add to Cart */}
+        {/* Action buttons */}
         <div className="space-y-2">
           {(() => {
             const listingUrl = normalizeExternalUrl(product.listing_url as string | undefined);
@@ -136,7 +131,7 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
                 href={listingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full button flex items-center justify-center space-x-2 text-sm"
               >
                 <span>{config.viewListingButtonText}</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +148,7 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
             ) : (
               <button
                 onClick={() => onAddToCart(product)}
-                className="w-full bg-[#8C1515] hover:bg-[#750013] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full button flex items-center justify-center space-x-2 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -164,20 +159,82 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
           )}
         </div>
 
-        {/* Details */}
+        {/* Details grid */}
         <div className="grid grid-cols-1 gap-2">
           {config.detailPageFields.map(renderField)}
         </div>
 
         {/* Description */}
         {(product as { description?: string }).description && (
-          <div className="bg-white border border-black/10 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-black mb-2">Description</h3>
+          <div className="bg-black/3 rounded-lg p-3">
+            <h3 className="text-xs font-semibold text-black mb-1.5">Description</h3>
             <p className="text-black/70 text-xs leading-relaxed whitespace-pre-line">
               {(product as { description?: string }).description}
             </p>
           </div>
         )}
+
+        {/* Ratings & Reviews */}
+        {(() => {
+          const productRating = product.rating as number | undefined;
+          const productRatingCount = product.rating_count as number | undefined;
+          const productReviews = product.reviews as string | { title?: string; body?: string; rating?: number; author?: string }[] | undefined;
+          if (!productRating && !productRatingCount && !productReviews) return null;
+
+          let reviewList: { title?: string; body?: string; rating?: number; author?: string }[] = [];
+          let reviewsPlainText: string | undefined;
+          if (productReviews) {
+            if (typeof productReviews === 'string') {
+              try {
+                const parsed = JSON.parse(productReviews);
+                if (Array.isArray(parsed)) reviewList = parsed;
+              } catch {
+                reviewsPlainText = productReviews;
+              }
+            } else if (Array.isArray(productReviews)) {
+              reviewList = productReviews;
+            }
+          }
+
+          return (
+            <div className="bg-black/3 rounded-lg p-3">
+              <h3 className="text-xs font-semibold text-black mb-2">Ratings & Reviews</h3>
+              {productRating != null && (
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <svg key={i} className={`w-4 h-4 ${i < Math.floor(productRating) ? 'text-yellow-400' : 'text-black/15'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.462a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.538 1.118l-3.388-2.462a1 1 0 00-1.175 0l-3.388 2.462c-.783.57-1.838-.197-1.538-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.049 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-black">{productRating.toFixed(1)}</span>
+                  {productRatingCount != null && (
+                    <span className="text-xs text-black/50">({productRatingCount.toLocaleString()} ratings)</span>
+                  )}
+                </div>
+              )}
+              {reviewsPlainText && (
+                <p className="text-black/70 text-xs leading-relaxed whitespace-pre-line mt-2">{reviewsPlainText}</p>
+              )}
+              {reviewList.length > 0 && (
+                <div className="border-t border-black/10 pt-2 mt-2 space-y-2">
+                  {reviewList.slice(0, 3).map((review, idx) => (
+                    <div key={idx} className="text-xs">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        {review.rating != null && <span className="text-yellow-400">{'★'.repeat(Math.min(5, Math.round(review.rating)))}{'☆'.repeat(Math.max(0, 5 - Math.round(review.rating)))}</span>}
+                        {review.author && <span className="text-black/40">{review.author}</span>}
+                      </div>
+                      {review.title && <p className="font-medium text-black mb-0.5">{review.title}</p>}
+                      {review.body && <p className="text-black/60 leading-relaxed">{review.body}</p>}
+                    </div>
+                  ))}
+                  {reviewList.length > 3 && <p className="text-black/40 text-xs">+{reviewList.length - 3} more reviews</p>}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
