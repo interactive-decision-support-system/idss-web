@@ -6,6 +6,7 @@ import StackedRecommendationCards from '@/components/StackedRecommendationCards'
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
 import CartPage from '@/components/CartPage';
+import ComparisonTable from '@/components/ComparisonTable';
 import AuthButton from '@/components/AuthButton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
@@ -571,16 +572,23 @@ export default function Home() {
             />
           )}
           {showFavorites && !showCart && (
-            <FavoritesPage
-              favorites={favorites}
-              onToggleFavorite={toggleFavorite}
-              isFavorite={isFavorite}
-              onItemSelect={(product) => {
-                setSelectedProduct(product);
-                setShowFavorites(false);
-              }}
-              onClose={() => setShowFavorites(false)}
-            />
+            <>
+              <FavoritesPage
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                isFavorite={isFavorite}
+                onItemSelect={(product) => {
+                  setSelectedProduct(product);
+                  setShowFavorites(false);
+                }}
+                onClose={() => setShowFavorites(false)}
+              />
+              {/* Comparison Table Demo: show for favorites */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-2 text-black">Compare Favorites</h3>
+                <ComparisonTable products={favorites} />
+              </div>
+            </>
           )}
           {selectedProduct && !showCart && !showFavorites && (
             <ProductDetailView
