@@ -1,6 +1,7 @@
 'use client';
 
 import { Product } from '@/types/chat';
+import Image from 'next/image';
 
 interface FavoritesPageProps {
   favorites: Product[];
@@ -19,7 +20,7 @@ function getPrimaryImage(product: Product): string | undefined {
   return p.image?.primary || p.image_url || p.primaryImage || undefined;
 }
 
-export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite, onItemSelect, onClose }: FavoritesPageProps) {
+export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite: _isFavorite, onItemSelect, onClose }: FavoritesPageProps) {
   const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {
     const img = primaryImage(product);
@@ -63,21 +64,13 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
                 {/* Image */}
                 <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
                   {hasValidImage(product) ? (
-                    <img
+                    <Image
                       src={primaryImage(product)!}
                       alt={getDisplayTitle(product)}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent && !parent.querySelector('.fallback-text')) {
-                          const fallback = document.createElement('div');
-                          fallback.className = 'fallback-text text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
-                          fallback.textContent = 'No Image';
-                          parent.appendChild(fallback);
-                        }
-                      }}
+                      fill
+                      sizes="(max-width: 600px) 100vw, 33vw"
+                      priority={false}
                     />
                   ) : (
                     <div className="text-black/40 text-xs text-center px-2">No Image</div>
@@ -85,20 +78,31 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite,
                 </div>
 
                 {/* Content */}
-                <div className="space-y-1">
-                  <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
-                    {getDisplayTitle(product)}
-                  </h4>
-                  {((product as { brand?: string }).brand || (product as { source?: string }).source) && (
-                    <p className="text-xs text-black/50">
-                      {[(product as { brand?: string }).brand, (product as { source?: string }).source].filter(Boolean).join(' • ')}
-                    </p>
-                  )}
-                  {((product as { price_text?: string }).price_text || (product as { price?: number }).price) && (
-                    <p className="text-sm font-bold text-[#8C1515]">
-                      {(product as { price_text?: string }).price_text || ((product as { price?: number }).price ? `$${(product as { price?: number }).price!.toLocaleString()}` : 'N/A')}
-                    </p>
-                  )}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
+                      {getDisplayTitle(product)}
+                    </h4>
+                    {((product as { brand?: string }).brand || (product as { source?: string }).source) && (
+                      <p className="text-xs text-black/50">
+                        {[(product as { brand?: string }).brand, (product as { source?: string }).source].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                    {((product as { price_text?: string }).price_text || (product as { price?: number }).price) && (
+                      <p className="text-sm font-bold text-[#8C1515]">
+                        {(product as { price_text?: string }).price_text || ((product as { price?: number }).price ? `$${(product as { price?: number }).price!.toLocaleString()}` : 'N/A')}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onToggleFavorite(product); }}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+                    aria-label="Remove from favorites"
+                  >
+                    <svg className="w-4 h-4 text-[#ff1323] fill-[#ff1323]" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
