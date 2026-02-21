@@ -1,6 +1,7 @@
 'use client';
 
 import { Product, UnifiedProduct } from '@/types/chat';
+import Image from 'next/image';
 import { getDomainConfigForProduct } from '@/config/domain-config';
 import { isSoldOut } from '@/utils/inventory';
 import VehicleCard from '@/components/cards/VehicleCard';
@@ -128,28 +129,19 @@ export default function RecommendationCard({
   const displayImage = p.image?.primary || p.image_url || p.primaryImage;
 
   return (
-    <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200">
+    <div className="card hover:border-black/20 transition-all duration-200">
       {/* Image */}
-      <div className="aspect-square bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
+  <div className="aspect-square bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
         {(() => {
           return displayImage ? (
-            <img
+            <Image
               src={displayImage}
               alt={displayTitle}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent && !parent.querySelector('.fallback-text')) {
-                  const fallback = document.createElement('div');
-                  // Make sure overlays (like the heart) remain clickable.
-                  fallback.className =
-                    'fallback-text pointer-events-none text-black/40 text-xs absolute inset-0 flex items-center justify-center text-center px-2';
-                  fallback.textContent = 'No Image';
-                  parent.appendChild(fallback);
-                }
-              }}
+              fill
+              sizes="(max-width: 600px) 100vw, 33vw"
+              onError={() => {}}
+              priority={false}
             />
           ) : (
             <div className="pointer-events-none text-black/40 text-xs text-center px-2">No Image</div>
@@ -183,11 +175,31 @@ export default function RecommendationCard({
       </div>
 
       {/* Details under image */}
-      <div className="mt-3 space-y-2">
+  <div className="mt-3 space-y-2">
         <div className="min-w-0">
           <h4 className="text-sm font-semibold text-black leading-tight line-clamp-2">
             {displayTitle}
           </h4>
+          {/* Rating stars and count */}
+          {typeof product.rating === 'number' && (
+            <div className="flex items-center gap-1 mt-1">
+              {/* Stars */}
+              {Array.from({ length: 5 }).map((_, i) => (
+                <svg
+                  key={i}
+                  className={`w-4 h-4 ${i < Math.round(product.rating as number) ? 'text-yellow-400' : 'text-black/15'}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.462a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.538 1.118l-3.388-2.462a1 1 0 00-1.175 0l-3.388 2.462c-.783.57-1.838-.197-1.538-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.049 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z" />
+                </svg>
+              ))}
+              {/* Count */}
+              {typeof product.rating_count === 'number' && (
+                <span className="text-xs text-[#6B6B6B] ml-2">({product.rating_count as number})</span>
+              )}
+            </div>
+          )}
           {(() => {
             const subtitleKey = config.recommendationCardSubtitleKey;
             const subtitleValue = subtitleKey ? product[subtitleKey] : undefined;
