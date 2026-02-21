@@ -114,6 +114,39 @@ describe('cartService', () => {
     });
   });
 
+  describe('setQuantity', () => {
+    it('updates quantity in localStorage when userId is null', async () => {
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([{ product, quantity: 1 }]));
+
+      await cartService.setQuantity(null, 'p1', 3);
+
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+      expect(stored).toHaveLength(1);
+      expect(stored[0].quantity).toBe(3);
+      expect(mockUpdateCartItem).not.toHaveBeenCalled();
+    });
+
+    it('removes item from localStorage when quantity is 0', async () => {
+      jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([{ product, quantity: 2 }]));
+
+      await cartService.setQuantity(null, 'p1', 0);
+
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+      expect(stored).toHaveLength(0);
+      expect(mockUpdateCartItem).not.toHaveBeenCalled();
+    });
+
+    it('calls UCP updateCartItem when userId is set', async () => {
+      mockUpdateCartItem.mockResolvedValue({ status: 'success' });
+
+      await cartService.setQuantity('user-123', 'p1', 5);
+
+      expect(mockUpdateCartItem).toHaveBeenCalledWith('user-123', 'p1', 5);
+    });
+  });
+
   describe('remove', () => {
     it('removes from localStorage when userId is null', async () => {
       jest.mocked(ucp).isUcpAvailable.mockReturnValue(false);
