@@ -103,7 +103,7 @@ export default function ChatInput({
           <button
             type="submit"
             disabled={!inputMessage.trim() || isLoading}
-            className="absolute right-2 w-9 h-9 bg-[#8C1515] text-white rounded-full hover:bg-[#750013] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shrink-0"
+            className="absolute right-2 w-9 h-9 button disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
             aria-label="Send message"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
