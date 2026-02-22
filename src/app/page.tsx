@@ -343,7 +343,7 @@ export default function Home() {
   };
 
   return (
-  <div className={`h-screen bg-[var(--color-accent-light)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
+  <div className={`h-screen bg-white flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
       {/* Location permission alert (sticky, disappears once enabled) */}
       {showLocationBanner && (
         <div className="fixed top-0 left-0 right-0 z-50">
