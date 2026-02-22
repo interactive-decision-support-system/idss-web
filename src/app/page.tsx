@@ -390,7 +390,7 @@ export default function Home() {
         </div>
 
         {/* Auth + Cart + Favorites - Top Right */}
-        <div className={`absolute top-4 right-4 flex items-center gap-4 ${showFavorites || showCart || selectedProduct ? 'z-30' : 'z-10'}`}>
+        <div className="absolute top-4 right-4 flex items-center gap-4 z-[60]">
           <AuthButton />
           <button
             onClick={() => {
