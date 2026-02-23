@@ -13,7 +13,7 @@ interface ChatInputProps {
 }
 
 type ModeOption = {
-  k: 0 | 1 | 2;
+  k: 1 | 2;
   name: string;
   label: string;
 };
@@ -46,7 +46,6 @@ export default function ChatInput({
 
   const modeOptions: ModeOption[] = useMemo(
     () => [
-      { k: 0, name: 'suggester', label: 'Suggester' },
       { k: 1, name: 'nudger', label: 'Nudger' },
       { k: 2, name: 'explorer', label: 'Explorer' },
     ],
@@ -54,7 +53,7 @@ export default function ChatInput({
   );
 
   const selectedMode = useMemo(() => {
-    return modeOptions.find((m) => m.k === modeK) ?? modeOptions[2];
+    return modeOptions.find((m) => m.k === modeK) ?? modeOptions[1];
   }, [modeK, modeOptions]);
 
   const handleSubmit = async (e: FormEvent) => {
