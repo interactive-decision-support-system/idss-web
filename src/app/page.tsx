@@ -36,8 +36,6 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [modeK, setModeK] = useState<number>(2); // default: probie
-  const [modeButtonsLocked, setModeButtonsLocked] = useState(false); // freeze q until recommendations are given
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -291,7 +289,7 @@ export default function Home() {
     }
   }, [chatMessages, isLoading, isInitialState]);
 
-  const handleChatMessage = async (message: string, k: number = modeK) => {
+  const handleChatMessage = async (message: string) => {
     // Add user message immediately
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -301,7 +299,6 @@ export default function Home() {
     };
     setChatMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
-    setModeButtonsLocked(true);
 
     // --- Latency logging ---
     const tRequest = performance.now();
@@ -309,8 +306,7 @@ export default function Home() {
       const response = await idssApiService.sendMessage(
         message,
         sessionId || undefined,
-        userLocation || undefined,
-        k
+        userLocation || undefined
       );
       const tResponse = performance.now();
       // Persist session ID so subsequent messages use the same backend session
@@ -356,12 +352,6 @@ export default function Home() {
           });
         }, 0);
       }
-
-      // Unlock mode buttons only when recommendations were given
-      const hasRecommendations =
-        productRecommendations != null &&
-        productRecommendations.flat().length > 0;
-      if (hasRecommendations) setModeButtonsLocked(false);
     } catch (error) {
       console.error('Error sending message:', error);
 
@@ -373,7 +363,6 @@ export default function Home() {
         timestamp: new Date(),
       };
       setChatMessages((prev) => [...prev, errorMessage]);
-      setModeButtonsLocked(false); // unlock so user can change mode and retry
     } finally {
       setIsLoading(false);
     }
@@ -510,9 +499,6 @@ export default function Home() {
                   <ChatInput
                     onSendMessage={handleChatMessage}
                     isLoading={isLoading}
-                    modeK={modeK}
-                    onModeKChange={setModeK}
-                    modeButtonsLocked={modeButtonsLocked}
                   />
                 </div>
               </div>
@@ -561,7 +547,7 @@ export default function Home() {
                           {message.quick_replies.map((reply, idx) => (
                             <button
                               key={idx}
-                              onClick={() => handleChatMessage(reply, modeK)}
+                              onClick={() => handleChatMessage(reply)}
                               disabled={isLoading}
                               className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
@@ -597,9 +583,6 @@ export default function Home() {
               <ChatInput
                 onSendMessage={handleChatMessage}
                 isLoading={isLoading}
-                modeK={modeK}
-                onModeKChange={setModeK}
-                modeButtonsLocked={modeButtonsLocked}
               />
             </div>
           </div>
