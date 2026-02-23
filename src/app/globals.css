@@ -1,93 +1,107 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f8f9fa;
+  /* === uirecs.txt palette === */
+  --color-bg: #F7F8FA;
   --color-bg-alt: #f3f4f6;
-  --color-border: #e5e7eb;
-  --color-text-main: #18181b;
-  --color-text-secondary: #444;
+  --color-card: #ffffff;
+  --color-border: #E0E0E0;
+  --color-text-main: #1F1F1F;
+  --color-text-secondary: #6B6B6B;
+
+  /* === Stanford brand (kept intentionally — all components hardcode these) === */
   --color-accent: #8C1515;
+  --color-accent-dark: #750013;
   --color-accent-light: #fbeaea;
+
+  /* === Semantic === */
   --color-success: #198754;
   --color-warning: #ffc107;
   --color-danger: #dc3545;
-  --font-main: 'Inter', 'system-ui', 'sans-serif';
-  --radius: 0.75rem;
-  --shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+
+  /* === Typography (framework.com-style) === */
+  --font-main: 'Inter', 'Graphik', system-ui, sans-serif;
+
+  /* === Spacing (uirecs: cards 1.5rem, buttons 0.75rem 1.5rem) === */
   --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* === Tokens === */
+  --radius-sm: 0.5rem;   /* 8px — buttons per uirecs */
+  --radius: 0.75rem;     /* 12px — cards */
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 html, body {
   font-family: var(--font-main);
   background: var(--color-bg);
   color: var(--color-text-main);
-  font-size: 17px;
-  line-height: 1.7;
-  letter-spacing: 0.01em;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
-/* Button styles for accessibility and contrast */
+
+/* === Button — uirecs.txt spec === */
 .button {
   background: var(--color-accent);
   color: #fff;
-  border-radius: var(--radius);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-weight: 600;
-  font-size: 1rem;
-  transition: background 0.15s, box-shadow 0.15s;
-  box-shadow: none;
   border: none;
-  outline: none;
+  border-radius: var(--radius-sm);   /* 8px */
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
-  letter-spacing: 0.01em;
+  transition: background 0.2s, box-shadow 0.2s;
+  outline: none;
 }
 .button:hover, .button:focus-visible {
-  background: #a62626;
-  color: #fff;
-  box-shadow: 0 2px 8px 0 rgba(140,21,21,0.10);
-  outline: 2px solid var(--color-accent-light);
-  outline-offset: 2px;
+  background: var(--color-accent-dark);
+  box-shadow: 0 4px 12px rgba(140, 21, 21, 0.15);
+  outline: none;
 }
 .button:active {
-  background: #7a1010;
+  background: #5c000f;
 }
 .button:disabled, .button[aria-disabled='true'] {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* === Card — uirecs.txt spec === */
 .card {
-  background: #ffffff;
+  background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  padding: 1rem;
+  border-radius: var(--radius);      /* 12px */
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
 }
 
 html {
-  background: #ffffff;
+  background: var(--color-bg);
 }
 
-/* Chat message styling */
+/* Chat message */
 .chat-message {
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
 }
 
-/* Hide scrollbar but keep scrolling functionality */
+/* Hide scrollbar, keep scrolling */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;
 }
 
-/* Placeholder cycle: slide up + fade in */
+/* Placeholder cycle animation */
 @keyframes placeholder-enter {
   from {
     opacity: 0;
@@ -98,7 +112,6 @@ html {
     transform: translateY(0);
   }
 }
-
 .placeholder-enter {
   animation: placeholder-enter 0.4s ease-out forwards;
 }
