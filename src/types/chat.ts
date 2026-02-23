@@ -62,6 +62,7 @@ export interface ChatResponse {
   filters?: Record<string, unknown>;
   preferences?: Record<string, unknown>;
   question_count?: number;
+  timings_ms?: Record<string, number>;
 }
 
 export interface UnifiedProduct {

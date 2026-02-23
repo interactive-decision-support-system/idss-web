@@ -319,7 +319,7 @@ export default function Home() {
         session_id: response.session_id,
         tRequest,
         tResponse,
-        backendTimings: (response as any).timings_ms,
+        backendTimings: response.timings_ms,
       });
 
       // Convert API recommendations to Product format if present
@@ -350,7 +350,7 @@ export default function Home() {
             tRequest,
             tResponse,
             tRendered,
-            backendTimings: (response as any).timings_ms,
+            backendTimings: response.timings_ms,
             totalToRender: tRendered - tRequest,
             apiToRender: tRendered - tResponse,
           });
