@@ -2,9 +2,17 @@
 
 :root {
   /* === uirecs.txt palette === */
-  --color-bg: #F7F8FA;
-  --color-bg-alt: #f3f4f6;
-  --color-card: #ffffff;
+
+  /* === Framework.com-inspired palette === */
+  --color-bg: #FFF8F3;           /* warm cream background */
+  --color-bg-alt: #F7F3FF;       /* soft lavender alt */
+  --color-card: #FFFFFF;         /* default card white */
+  --color-card-peach: #FFE5D0;   /* pastel peach */
+  --color-card-blue: #E3F0FF;    /* pastel blue */
+  --color-card-green: #E6F9E5;   /* pastel green */
+  --color-card-yellow: #FFF9D6;  /* pastel yellow */
+  --color-card-pink: #FFE6F3;    /* pastel pink */
+  --color-card-purple: #F3E8FF;  /* pastel purple */
   --color-border: #E0E0E0;
   --color-text-main: #1F1F1F;
   --color-text-secondary: #6B6B6B;
@@ -73,13 +81,23 @@ html, body {
 }
 
 /* === Card — uirecs.txt spec === */
+/* Card base style */
 .card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);      /* 12px */
   box-shadow: var(--shadow);
   padding: 1.5rem;
+  transition: background 0.2s;
 }
+
+/* Pastel card modifiers */
+.card-peach { background: var(--color-card-peach); }
+.card-blue { background: var(--color-card-blue); }
+.card-green { background: var(--color-card-green); }
+.card-yellow { background: var(--color-card-yellow); }
+.card-pink { background: var(--color-card-pink); }
+.card-purple { background: var(--color-card-purple); }
 
 html {
   background: var(--color-bg);
