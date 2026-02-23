@@ -16,6 +16,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { getMultiDomainDefaults } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
+// --- Frontend Latency Logging ---
+const logFrontendLatency = async (label: string, data: Record<string, unknown>) => {
+  console.log(`[LATENCY] ${label}`, data);
+  try {
+    await fetch('/api/log-latency', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label, ...data }),
+    });
+  } catch {
+    // Ignore network/logging errors
+  }
+};
+
 export default function Home() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
@@ -289,6 +303,8 @@ export default function Home() {
     setIsLoading(true);
     setModeButtonsLocked(true);
 
+    // --- Latency logging ---
+    const tRequest = performance.now();
     try {
       const response = await idssApiService.sendMessage(
         message,
@@ -296,11 +312,13 @@ export default function Home() {
         userLocation || undefined,
         k
       );
-
-      // Update session ID
-      if (response.session_id) {
-        setSessionId(response.session_id);
-      }
+      const tResponse = performance.now();
+      logFrontendLatency('API Response Received', {
+        session_id: response.session_id,
+        tRequest,
+        tResponse,
+        backendTimings: (response as any).timings_ms,
+      });
 
       // Convert API recommendations to Product format if present
       let productRecommendations: Product[][] | undefined;
@@ -320,6 +338,23 @@ export default function Home() {
         quick_replies: response.quick_replies,
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
+
+      // --- Log render time after products are rendered ---
+      if (productRecommendations) {
+        setTimeout(() => {
+          const tRendered = performance.now();
+          logFrontendLatency('Products Rendered', {
+            session_id: response.session_id,
+            tRequest,
+            tResponse,
+            tRendered,
+            backendTimings: (response as any).timings_ms,
+            totalToRender: tRendered - tRequest,
+            apiToRender: tRendered - tResponse,
+          });
+        }, 0);
+      }
+
       // Unlock mode buttons only when recommendations were given
       const hasRecommendations =
         productRecommendations != null &&
@@ -343,7 +378,7 @@ export default function Home() {
   };
 
   return (
-  <div className={`h-screen bg-white flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
+  <div className={`h-screen bg-[var(--color-bg)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
       {/* Location permission alert (sticky, disappears once enabled) */}
       {showLocationBanner && (
         <div className="fixed top-0 left-0 right-0 z-50">
@@ -390,8 +425,9 @@ export default function Home() {
         </div>
 
         {/* Auth + Cart + Favorites - Top Right */}
-        <div className="absolute top-4 right-4 flex items-center gap-4 z-[60]">
+  <div className="absolute top-4 right-4 flex items-center gap-4 z-[1000]">
           <AuthButton />
+          {/* Cart Icon Button */}
           <button
             onClick={() => {
               setShowCart(!showCart);
@@ -442,8 +478,27 @@ export default function Home() {
             <div className="max-w-3xl w-full space-y-8">
               {/* Large Welcome Message */}
               <div className="text-center space-y-4">
-                <div className="text-3xl font-semibold text-black leading-tight">
+                <div className="text-3xl font-extrabold text-black leading-tight">
                   {multiDomainDefaults.welcomeMessage}
+                </div>
+                <div className="mt-6 flex flex-wrap justify-center gap-6">
+                  {/* Feature Tiles */}
+                  <div className="card card-peach flex flex-col items-center w-40 shadow-md">
+                    <span className="text-3xl mb-2">🚗</span>
+                    <span className="font-semibold text-lg text-black">Vehicles</span>
+                  </div>
+                  <div className="card card-blue flex flex-col items-center w-40 shadow-md">
+                    <span className="text-3xl mb-2">💻</span>
+                    <span className="font-semibold text-lg text-black">Laptops</span>
+                  </div>
+                  <div className="card card-yellow flex flex-col items-center w-40 shadow-md">
+                    <span className="text-3xl mb-2">📚</span>
+                    <span className="font-semibold text-lg text-black">Books</span>
+                  </div>
+                  <div className="card card-green flex flex-col items-center w-40 shadow-md">
+                    <span className="text-3xl mb-2">🛒</span>
+                    <span className="font-semibold text-lg text-black">Cart & Deals</span>
+                  </div>
                 </div>
               </div>
 
