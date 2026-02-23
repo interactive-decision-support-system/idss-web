@@ -45,6 +45,7 @@ function getPriceDisplay(product: Product): string {
 }
 
 export default function ProductDetailView({ product, onClose, onAddToCart }: ProductDetailViewProps) {
+  const [imgError, setImgError] = React.useState(false);
   const config = getDomainConfigForProduct(product as Record<string, unknown> & { productType?: string });
 
   // Helper function to render field based on config
@@ -97,10 +98,9 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-        {/* Product image */}
         <div className="aspect-[3/2] bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg flex items-center justify-center overflow-hidden relative">
           {(() => {
-            const imgSrc = getPrimaryImage(product);
+            const imgSrc = !imgError && getPrimaryImage(product);
             return imgSrc ? (
               <Image
                 src={imgSrc}
@@ -109,6 +109,7 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
                 fill
                 sizes="(max-width: 600px) 100vw, 33vw"
                 priority={false}
+                onError={() => setImgError(true)}
               />
             ) : (
               <div className="text-black/40 text-xs text-center px-2">No Image Available</div>
