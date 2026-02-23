@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Image from 'next/image';
 import { UnifiedProduct } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
@@ -17,8 +18,9 @@ export default function VehicleCard({
     isFavorite,
     onAddToCart,
 }: VehicleCardProps) {
+    const [imgError, setImgError] = useState(false);
     const { vehicle, name, price, image } = data;
-    const imageSrc = image?.primary || null;
+    const imageSrc = !imgError && image?.primary ? image.primary : null;
 
     const favorited = isFavorite ? isFavorite(data.id) : false;
 
@@ -39,6 +41,7 @@ export default function VehicleCard({
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 33vw"
+                        onError={() => setImgError(true)}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
