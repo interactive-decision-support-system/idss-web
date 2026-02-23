@@ -5,7 +5,6 @@ Chat-based UI for the Stanford LDR Lab **Interactive Decision Support System (ID
 ## Features
 
 - **Chat-first workflow**: user/assistant messages with auto-scroll.
-- **Mode selector (k)**: choose how many followup questions IDSS asks before giving recommendations (default **Explorer / k=2**). Three modes: **0 questions** (Suggester), **1 question** (Nudger), **2 questions** (Explorer). Mode buttons are frozen until recommendations are returned for the current turn.
 - **Cycling placeholder**: the input placeholder cycles through domain-specific example queries (e.g. “What kind of vehicle are you looking for?”, “Show me SUVs under $35k”) with a slide-up animation. Configured via `examplePlaceholderQueries` in domain config.
 - **Location-aware sessions (optional)**: a top alert asks for location permission; when enabled, the app sends `user_location` to the backend to tailor recommendations.
 - **Stacked recommendations**: assistant messages can include a **2D grid** of recommended items (rows = “buckets”), with:
@@ -95,10 +94,7 @@ The app sends:
   - `longitude` (number)
   - `accuracy_m` (number, optional)
   - `captured_at` (ISO string, optional)
-- `k` (number, optional; **mode** = number of questions asked before recommendations). UI mapping:
-  - `0` → **Suggester**
-  - `1` → **Nudger**
-  - `2` → **Explorer** (default)
+- `k` (number, optional). The app sends `k=2` (Explorer) by default. Backend may interpret: `0` = Suggester, `1` = Nudger, `2` = Explorer.
 
 The proxy route (`/api/chat`) will also forward optional fields if the client includes them:
 - `k`, `method`, `n_rows`, `n_per_row`
@@ -149,7 +145,7 @@ src/
 ├── components/
 │   ├── AuthButton.tsx              # Sign in / sign out (avatar when logged in)
 │   ├── AuthModal.tsx               # Modal: Google, email/password, forgot password
-│   ├── ChatInput.tsx               # Message input + followup-question mode buttons
+│   ├── ChatInput.tsx               # Message input (placeholder cycle, send)
 │   ├── RecommendationCard.tsx     # Single card view for an item
 │   ├── StackedRecommendationCards.tsx # Rows/buckets rendered as a 3-up grid
 │   ├── FavoritesPage.tsx          # Favorites list sidebar

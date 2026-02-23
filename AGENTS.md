@@ -29,7 +29,7 @@ Do **not** introduce or rely on a single `currentDomainConfig`; the codebase has
 
 ## API and data flow
 
-- **Chat**: `POST /api/chat` (Next.js route) proxies to the backend `POST /chat`. Request: `message`, optional `session_id`, `user_location`, `k` (mode: 0=Suggester, 1=Nudger, 2=Explorer).
+- **Chat**: `POST /api/chat` (Next.js route) proxies to the backend `POST /chat`. Request: `message`, optional `session_id`, `user_location`, `k` (frontend sends fixed `k=2` / Explorer; backend may support 0=Suggester, 1=Nudger, 2=Explorer).
 - **Response shape**: See `ChatResponse` in `src/types/chat.ts`: `message`, `session_id`, optional `quick_replies`, `recommendations` (2D array of API items), `bucket_labels`, `diversification_dimension`.
 - **Recommendations**: Backend returns a 2D array of items (any domain). They are converted with `convertAPIVehiclesToProducts()` in `src/utils/product-converter.ts`. The converter preserves `productType`, `category`, and `part_type` so `getDomainConfigForProduct` works. Types: `APIVehicle` (legacy vehicle shape) and `Product` / `UnifiedProduct` in `src/types/chat.ts`.
 - **Product types**: `RecommendationCard` first dispatches on `product.productType`: `vehicle` → `VehicleCard`, `laptop` → `LaptopCard`, `book` → `BookCard`. Otherwise it uses the config returned by `getDomainConfigForProduct(product)` for the legacy/generic card (fields, subtitle, button text).
