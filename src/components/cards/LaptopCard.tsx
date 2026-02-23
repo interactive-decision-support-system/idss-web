@@ -29,7 +29,7 @@ export default function LaptopCard({
     };
 
     return (
-        <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
+        <div className="card card-blue border-black/10 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
             {/* Image */}
             <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative mb-3">
                 {imageSrc ? (

@@ -28,7 +28,7 @@ export default function BookCard({
     };
 
     return (
-        <div className="bg-white border border-black/10 rounded-xl p-3 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
+        <div className="card card-yellow border-black/10 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
             {/* Image - Books usually portrait */}
             <div className="aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden relative mb-3 self-center w-2/3 shadow-sm group-hover:shadow-md transition-shadow">
                 {imageSrc ? (
