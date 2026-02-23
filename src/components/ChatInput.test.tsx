@@ -59,7 +59,7 @@ describe('ChatInput', () => {
 
     render(<Wrapper />);
 
-    // Followup-question buttons: 0 questions, 1 question, 2 questions
+    // Followup-question buttons: 1 question, 2 questions
     expect(screen.getByRole('radio', { name: /nudger.*1 question/i })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /explorer.*2 questions/i })).toBeInTheDocument();
 
@@ -85,11 +85,9 @@ describe('ChatInput', () => {
       />
     );
 
-    const suggester = screen.getByRole('radio', { name: /suggester.*0 questions/i });
     const nudger = screen.getByRole('radio', { name: /nudger.*1 question/i });
     const explorer = screen.getByRole('radio', { name: /explorer.*2 questions/i });
 
-    expect(suggester).toBeDisabled();
     expect(nudger).toBeDisabled();
     expect(explorer).toBeDisabled();
   });
