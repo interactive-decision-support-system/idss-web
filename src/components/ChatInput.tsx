@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef, FormEvent } from 'react';
 import { getMultiDomainDefaults } from '@/config/domain-config';
 
 interface ChatInputProps {
-  onSendMessage: (message: string, k: number) => void;
+  onSendMessage: (message: string, k: number) => Promise<void>;
   isLoading: boolean;
   modeK: number;
   onModeKChange: (k: number) => void;
@@ -57,10 +57,10 @@ export default function ChatInput({
     return modeOptions.find((m) => m.k === modeK) ?? modeOptions[2];
   }, [modeK, modeOptions]);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (inputMessage.trim() && !isLoading) {
-      onSendMessage(inputMessage.trim(), selectedMode.k);
+      await onSendMessage(inputMessage.trim(), selectedMode.k);
       setInputMessage('');
     }
   };
