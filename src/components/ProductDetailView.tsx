@@ -170,6 +170,50 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
           ))}
         </div>
 
+        {/* Full attributes / metadata (e.g. laptop attributes from API) */}
+        {(() => {
+          const attrs = (product as { attributes?: Record<string, unknown> }).attributes
+            ?? (product as { metadata?: Record<string, unknown> }).metadata;
+          if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return null;
+          const entries = Object.entries(attrs).filter(
+            ([, v]) => v !== undefined && v !== null && String(v).trim() !== ''
+          );
+          if (entries.length === 0) return null;
+
+          const labelFor = (key: string): string => {
+            const map: Record<string, string> = {
+              ram_gb: 'RAM (GB)',
+              storage_gb: 'Storage (GB)',
+              screen_size_inches: 'Screen size (in)',
+              refresh_rate_hz: 'Refresh rate (Hz)',
+              battery_life_hours: 'Battery life (hrs)',
+              weight_lbs: 'Weight (lbs)',
+              processor: 'Processor',
+              gpu: 'GPU',
+              os: 'Operating system',
+              resolution: 'Resolution',
+              storage_type: 'Storage type',
+            };
+            return map[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+          };
+
+          return (
+            <div className="bg-black/3 rounded-lg p-3">
+              <h3 className="text-xs font-semibold text-black mb-2">All specifications</h3>
+              <div className="space-y-1.5">
+                {entries.map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-black/70 font-medium">{labelFor(key)}</span>
+                    <span className="text-xs text-black font-semibold text-right">
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Description */}
         {(product as { description?: string }).description && (
           <div className="bg-black/3 rounded-lg p-3">
