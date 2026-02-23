@@ -313,6 +313,8 @@ export default function Home() {
         k
       );
       const tResponse = performance.now();
+      // Persist session ID so subsequent messages use the same backend session
+      if (response.session_id) setSessionId(response.session_id);
       logFrontendLatency('API Response Received', {
         session_id: response.session_id,
         tRequest,
@@ -378,7 +380,7 @@ export default function Home() {
   };
 
   return (
-  <div className={`h-screen bg-[var(--color-bg)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
+    <div className={`h-screen bg-[var(--color-bg)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
       {/* Location permission alert (sticky, disappears once enabled) */}
       {showLocationBanner && (
         <div className="fixed top-0 left-0 right-0 z-50">
@@ -425,7 +427,7 @@ export default function Home() {
         </div>
 
         {/* Auth + Cart + Favorites - Top Right */}
-  <div className="absolute top-4 right-4 flex items-center gap-4 z-[1000]">
+        <div className="absolute top-4 right-4 flex items-center gap-4 z-[1000]">
           <AuthButton />
           {/* Cart Icon Button */}
           <button
