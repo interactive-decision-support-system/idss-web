@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Product } from '@/types/chat';
 import Image from 'next/image';
 import { getDomainConfigForProduct } from '@/config/domain-config';
@@ -61,7 +62,7 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
     if (value === undefined || value === null) {
       return null;
     }
-    const displayValue = fieldConfig.format 
+    const displayValue = fieldConfig.format
       ? fieldConfig.format(value)
       : String(value);
     return (
@@ -161,7 +162,11 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
 
         {/* Details grid */}
         <div className="grid grid-cols-1 gap-2">
-          {config.detailPageFields.map(renderField)}
+          {config.detailPageFields.map((fieldConfig) => (
+            <React.Fragment key={fieldConfig.key}>
+              {renderField(fieldConfig)}
+            </React.Fragment>
+          ))}
         </div>
 
         {/* Description */}

@@ -41,12 +41,34 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
     const imageUrl = typeof upImage === 'string' ? upImage
       : (vehicle.image_url as string) || (retailListing as { photo_url?: string })?.photo_url;
 
+    // For laptops, promote laptop.specs fields to top-level so domain-config field keys resolve
+    const laptopSpecs = productType === 'laptop'
+      ? {
+        ...((up as { laptop?: { specs?: Record<string, unknown> } }).laptop?.specs ?? {}),
+        // Promote fields from the raw blob that aren't in LaptopSpecs
+        battery_life: (vehicle as Record<string, unknown>).battery_life,
+        os: (vehicle as Record<string, unknown>).os,
+        weight: (vehicle as Record<string, unknown>).weight,
+        color: (vehicle as Record<string, unknown>).color,
+        storage_type: (vehicle as Record<string, unknown>).storage_type,
+        refresh_rate_hz: (vehicle as Record<string, unknown>).refresh_rate_hz,
+        resolution: (vehicle as Record<string, unknown>).resolution,
+        // screen_size is stored as 'display' in LaptopSpecs — alias it
+        screen_size: (up as { laptop?: { specs?: { display?: unknown } } }).laptop?.specs?.display
+          ?? (vehicle as Record<string, unknown>).screen_size,
+        gpu: (up as { laptop?: { specs?: { graphics?: unknown } } }).laptop?.specs?.graphics
+          ?? (vehicle as Record<string, unknown>).gpu,
+      }
+      : {};
+
     return {
       // Include legacy fields if they exist as base
       ...vehicle,
       ...retailListing,
       // Overlay UnifiedProduct fields (preserves productType, category, part_type for multi-domain)
       ...up,
+      // Spread laptop specs to top level so laptopConfig detailPageFields can read them directly
+      ...laptopSpecs,
       // Ensure ID is robust
       id: up.id || `${vehicle.make || 'unknown'}-${vehicle.model || 'product'}-${vehicle.year || '0'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       // Legacy fallback fields for components that haven't migrated
@@ -59,6 +81,7 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       ...(up.part_type !== undefined && { part_type: up.part_type }),
     } as Product;
   }
+
 
   // Extract common fields
   const make = vehicle.make as string;

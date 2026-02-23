@@ -17,7 +17,7 @@ export interface DomainConfig {
   // Product naming
   productName: string; // e.g., "vehicle", "product", "item"
   productNamePlural: string; // e.g., "vehicles", "products", "items"
-  
+
   // UI text
   welcomeMessage: string;
   inputPlaceholder: string;
@@ -27,7 +27,7 @@ export interface DomainConfig {
   viewListingButtonText?: string; // e.g., "View Listing", "View on Site", etc.
   dealerLabel?: string; // e.g., "Dealer" for vehicles, "Store" for products
   storeLabel?: string;
-  
+
   // Recommendation card fields
   recommendationCardFields: FieldConfig[];
 
@@ -35,10 +35,10 @@ export interface DomainConfig {
   // (e.g., "Dealer" / "Retailer" / "Store" name). This is not shown on the detail page.
   recommendationCardSubtitleKey?: string;
   recommendationCardSubtitleClassName?: string;
-  
+
   // View details page fields (for future implementation)
   detailPageFields: FieldConfig[];
-  
+
   // Quick reply suggestions
   defaultQuickReplies: string[];
 }
@@ -66,7 +66,7 @@ const createRecommendationFields = () => [
 export const vehicleConfig: DomainConfig = {
   productName: 'vehicle',
   productNamePlural: 'vehicles',
-  
+
   welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of vehicle are you looking for?",
   examplePlaceholderQueries: [
@@ -79,11 +79,11 @@ export const vehicleConfig: DomainConfig = {
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
   dealerLabel: "Dealer",
-  
+
   recommendationCardFields: createRecommendationFields(),
   recommendationCardSubtitleKey: 'source',
   recommendationCardSubtitleClassName: 'text-base text-black/60',
-  
+
   detailPageFields: [
     {
       label: 'Make',
@@ -155,7 +155,7 @@ export const vehicleConfig: DomainConfig = {
       condition: (product) => product.rating !== undefined,
     },
   ],
-  
+
   defaultQuickReplies: [
     "Show me SUVs",
     "I'm looking for a sedan",
@@ -175,11 +175,11 @@ const createPCPartsRecommendationFields = () => [
     key: 'brand',
     condition: (product: Record<string, unknown>) => product.brand !== undefined,
   },
-    {
-      label: 'Category',
-      key: 'part_type', // Use part_type as primary, falls back to category in renderField
-      condition: (product: Record<string, unknown>) => product.category !== undefined || product.part_type !== undefined,
-    },
+  {
+    label: 'Category',
+    key: 'part_type', // Use part_type as primary, falls back to category in renderField
+    condition: (product: Record<string, unknown>) => product.category !== undefined || product.part_type !== undefined,
+  },
   {
     label: 'Rating',
     key: 'rating',
@@ -200,7 +200,7 @@ const createPCPartsRecommendationFields = () => [
 export const pcPartsConfig: DomainConfig = {
   productName: 'part',
   productNamePlural: 'parts',
-  
+
   welcomeMessage: "Hi! What are you looking for today?",
   inputPlaceholder: "What kind of PC part are you looking for?",
   examplePlaceholderQueries: [
@@ -213,9 +213,9 @@ export const pcPartsConfig: DomainConfig = {
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
   storeLabel: "Retailer",
-  
+
   recommendationCardFields: createPCPartsRecommendationFields(),
-  
+
   detailPageFields: [
     {
       label: 'Brand',
@@ -363,7 +363,7 @@ export const pcPartsConfig: DomainConfig = {
       condition: (product) => product.source !== undefined,
     },
   ],
-  
+
   defaultQuickReplies: [
     "Show me GPUs",
     "I'm looking for a CPU",
@@ -411,6 +411,140 @@ export const genericConfig: DomainConfig = {
   defaultQuickReplies: [],
 };
 
+// Laptop configuration
+export const laptopConfig: DomainConfig = {
+  productName: 'laptop',
+  productNamePlural: 'laptops',
+  welcomeMessage: "Hi! What are you looking for today?",
+  inputPlaceholder: "What kind of laptop are you looking for?",
+  examplePlaceholderQueries: [
+    "Gaming laptop under $1500",
+    "MacBook-level build quality, Windows preferred",
+    "Thin and light for travel, all-day battery",
+    "Best laptop for machine learning / PyTorch",
+  ],
+  viewDetailsButtonText: "View Details",
+  viewListingButtonText: "View Listing",
+  storeLabel: "Retailer",
+  recommendationCardFields: [
+    {
+      label: 'Price',
+      key: 'price',
+      format: (value: unknown) => `$${typeof value === 'number' ? value.toLocaleString() : value}`,
+      labelClassName: 'text-base text-black/60',
+      valueClassName: 'text-xl font-bold text-[#8C1515]',
+    },
+    {
+      label: 'RAM',
+      key: 'ram',
+      condition: (p: Record<string, unknown>) => p.ram != null,
+    },
+    {
+      label: 'Storage',
+      key: 'storage',
+      condition: (p: Record<string, unknown>) => p.storage != null,
+    },
+  ],
+  recommendationCardSubtitleKey: 'brand',
+  recommendationCardSubtitleClassName: 'text-base text-black/60',
+  detailPageFields: [
+    {
+      label: 'Brand',
+      key: 'brand',
+      condition: (p) => p.brand != null,
+    },
+    {
+      label: 'Price',
+      key: 'price',
+      format: (v) => `$${typeof v === 'number' ? v.toLocaleString() : v}`,
+    },
+    {
+      label: 'Processor',
+      key: 'processor',
+      condition: (p) => p.processor != null,
+    },
+    {
+      label: 'RAM',
+      key: 'ram',
+      condition: (p) => p.ram != null,
+    },
+    {
+      label: 'Storage',
+      key: 'storage',
+      condition: (p) => p.storage != null,
+    },
+    {
+      label: 'Storage Type',
+      key: 'storage_type',
+      condition: (p) => p.storage_type != null,
+    },
+    {
+      label: 'Display',
+      key: 'screen_size',
+      condition: (p) => p.screen_size != null,
+      format: (v) => typeof v === 'number' ? `${v}"` : String(v),
+    },
+    {
+      label: 'Refresh Rate',
+      key: 'refresh_rate_hz',
+      condition: (p) => p.refresh_rate_hz != null,
+      format: (v) => `${v} Hz`,
+    },
+    {
+      label: 'Resolution',
+      key: 'resolution',
+      condition: (p) => p.resolution != null,
+    },
+    {
+      label: 'GPU',
+      key: 'gpu',
+      condition: (p) => p.gpu != null,
+    },
+    {
+      label: 'Battery Life',
+      key: 'battery_life',
+      condition: (p) => p.battery_life != null,
+      format: (v) => typeof v === 'number' ? `${v} hrs` : String(v),
+    },
+    {
+      label: 'Operating System',
+      key: 'os',
+      condition: (p) => p.os != null,
+    },
+    {
+      label: 'Weight',
+      key: 'weight',
+      condition: (p) => p.weight != null,
+      format: (v) => typeof v === 'number' ? `${v} lbs` : String(v),
+    },
+    {
+      label: 'Color',
+      key: 'color',
+      condition: (p) => p.color != null,
+    },
+    {
+      label: 'Rating',
+      key: 'rating',
+      format: (v) => {
+        const r = typeof v === 'number' ? v : parseFloat(String(v));
+        return `${r.toFixed(1)} ★`;
+      },
+      condition: (p) => p.rating != null,
+    },
+    {
+      label: 'Retailer',
+      key: 'source',
+      condition: (p) => p.source != null,
+    },
+  ],
+  defaultQuickReplies: [
+    "Gaming laptops",
+    "Best for ML / AI",
+    "Thin and light",
+  ],
+};
+
+
 // Multi-domain: map domain id -> config (used to pick config per product)
 export const DOMAIN_IDS = ['vehicle', 'pc_parts', 'generic'] as const;
 export type DomainId = (typeof DOMAIN_IDS)[number];
@@ -439,7 +573,8 @@ export function getDomainConfigForProduct(
   const cat = category?.toLowerCase?.();
 
   if (productType === 'vehicle') return vehicleConfig;
-  if (productType === 'laptop' || productType === 'book') return genericConfig;
+  if (productType === 'laptop') return laptopConfig;
+  if (productType === 'book') return genericConfig;
 
   if (cat && PC_PART_CATEGORIES.has(cat)) return pcPartsConfig;
 
