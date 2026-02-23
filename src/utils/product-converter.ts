@@ -61,6 +61,14 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       }
       : {};
 
+    const laptopAttrs = productType === 'laptop'
+      ? (() => {
+          const u = up as Record<string, unknown>;
+          const lap = u.laptop as { attributes?: Record<string, unknown> } | undefined;
+          return lap?.attributes;
+        })()
+      : undefined;
+
     return {
       // Include legacy fields if they exist as base
       ...vehicle,
@@ -79,6 +87,8 @@ export function convertAPIVehicleToProduct(apiVehicle: APIVehicle): Product {
       // Preserve category/part_type for getDomainConfigForProduct when API sends them
       ...(up.category !== undefined && { category: up.category }),
       ...(up.part_type !== undefined && { part_type: up.part_type }),
+      // Full attributes blob for laptops so detail view can show all specifications
+      ...(laptopAttrs != null ? { attributes: laptopAttrs } : {}),
     } as Product;
   }
 

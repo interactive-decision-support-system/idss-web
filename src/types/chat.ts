@@ -105,10 +105,19 @@ export interface UnifiedProduct {
       storage?: string;
       display?: string;
       graphics?: string;
+      storage_type?: string;
+      screen_size?: string;
+      resolution?: string;
+      battery_life?: string;
+      os?: string;
+      weight?: string;
+      refresh_rate_hz?: number;
     };
     gpuVendor?: string;
     gpuModel?: string;
     tags: string[];
+    /** Full attributes blob from API (e.g. Supabase attributes JSONB) for displaying all fields. */
+    attributes?: Record<string, unknown>;
   };
   // Present if productType === 'book'
   book?: {

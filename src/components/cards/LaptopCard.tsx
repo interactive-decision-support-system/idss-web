@@ -98,10 +98,30 @@ export default function LaptopCard({
                                 <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.storage}</span>
                             </div>
                         )}
-                        {laptop.specs.display && (
+                        {laptop.specs.storage_type && (
+                            <div className="flex justify-between gap-2">
+                                <span>Storage type</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.storage_type}</span>
+                            </div>
+                        )}
+                        {(laptop.specs.screen_size || laptop.specs.display) && (
                             <div className="flex justify-between gap-2">
                                 <span>Display</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.display}</span>
+                                <span className="font-medium text-gray-900 text-right truncate">
+                                    {laptop.specs.screen_size || laptop.specs.display}
+                                </span>
+                            </div>
+                        )}
+                        {laptop.specs.resolution && (
+                            <div className="flex justify-between gap-2">
+                                <span>Resolution</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.resolution}</span>
+                            </div>
+                        )}
+                        {(laptop.specs.refresh_rate_hz != null && laptop.specs.refresh_rate_hz > 0) && (
+                            <div className="flex justify-between gap-2">
+                                <span>Refresh</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.refresh_rate_hz} Hz</span>
                             </div>
                         )}
                         {laptop.specs.graphics && (
@@ -110,6 +130,48 @@ export default function LaptopCard({
                                 <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.graphics}</span>
                             </div>
                         )}
+                        {laptop.specs.battery_life && (
+                            <div className="flex justify-between gap-2">
+                                <span>Battery</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.battery_life}</span>
+                            </div>
+                        )}
+                        {laptop.specs.os && (
+                            <div className="flex justify-between gap-2">
+                                <span>OS</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.os}</span>
+                            </div>
+                        )}
+                        {laptop.specs.weight && (
+                            <div className="flex justify-between gap-2">
+                                <span>Weight</span>
+                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.weight}</span>
+                            </div>
+                        )}
+                        {/* Any extra attributes not already in specs */}
+                        {laptop.attributes && Object.keys(laptop.attributes).length > 0 && (() => {
+                            const specKeys = new Set([
+                                'processor', 'ram', 'storage', 'storage_type', 'display', 'screen_size',
+                                'resolution', 'graphics', 'battery_life', 'os', 'weight', 'refresh_rate_hz',
+                            ]);
+                            const entries = Object.entries(laptop.attributes).filter(
+                                ([k]) => !specKeys.has(k) && laptop.attributes![k] != null && String(laptop.attributes![k]).trim() !== ''
+                            );
+                            if (entries.length === 0) return null;
+                            return (
+                                <>
+                                    {entries.slice(0, 3).map(([key, value]) => (
+                                        <div key={key} className="flex justify-between gap-2">
+                                            <span className="capitalize">{key.replace(/_/g, ' ')}</span>
+                                            <span className="font-medium text-gray-900 text-right truncate">{String(value)}</span>
+                                        </div>
+                                    ))}
+                                    {entries.length > 3 && (
+                                        <div className="text-xs text-gray-500">+{entries.length - 3} more</div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
