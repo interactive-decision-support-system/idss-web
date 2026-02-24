@@ -81,8 +81,45 @@ export default function LaptopCard({
                     ${price.toLocaleString()}
                 </p>
 
+                {/* Star Rating — always shown */}
+                <div className="flex items-center gap-1 mt-1">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                        const hasRating = typeof (data.rating as number | undefined) === 'number';
+                        const filled = hasRating && i < Math.round(data.rating as number);
+                        return (
+                            <svg
+                                key={i}
+                                className={`w-3.5 h-3.5 ${filled ? 'text-yellow-400' : 'text-black/15'}`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.462a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.538 1.118l-3.388-2.462a1 1 0 00-1.175 0l-3.388 2.462c-.783.57-1.838-.197-1.538-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.049 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z" />
+                            </svg>
+                        );
+                    })}
+                    <span className="text-xs text-black/50 ml-0.5">
+                        {typeof (data.rating as number | undefined) === 'number'
+                            ? `${(data.rating as number).toFixed(1)}/5`
+                            : 'No rating yet'}
+                    </span>
+                </div>
+
+                {/* Source / Scrape Origin */}
+                <p className="text-xs text-black/50 mt-0.5">
+                    From: <span className="font-medium">{(data.source as string | undefined) || 'N/A'}</span>
+                </p>
+
+                {/* Brand — always shown */}
+                <div className="mt-3 space-y-1 text-sm text-gray-600">
+                    <div className="flex justify-between gap-2">
+                        <span>Brand</span>
+                        <span className="font-medium text-gray-900 text-right truncate">{data.brand || 'N/A'}</span>
+                    </div>
+                </div>
+
                 {laptop && laptop.specs && (
-                    <div className="mt-3 space-y-1 text-sm text-gray-600">
+                    <div className="mt-1 space-y-1 text-sm text-gray-600">
+                        {/* Brand already rendered above */}
                         {laptop.specs.processor && (
                             <div className="flex justify-between gap-2">
                                 <span>CPU</span>

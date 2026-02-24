@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ProductDetailView from '@/components/ProductDetailView';
@@ -8,6 +8,7 @@ import FavoritesPage from '@/components/FavoritesPage';
 import CartPage from '@/components/CartPage';
 import ComparisonTable from '@/components/ComparisonTable';
 import AuthButton from '@/components/AuthButton';
+import RecommendationActionBar from '@/components/RecommendationActionBar';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { favoritesService } from '@/services/favorites';
@@ -15,6 +16,29 @@ import { cartService, type CartItem } from '@/services/cart';
 import { useAuth } from '@/hooks/useAuth';
 import { getMultiDomainDefaults } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
+
+// --- Format long recommendation text as bullet points ---
+function formatRecommendationText(content: string, hasRecommendations: boolean): React.ReactNode {
+  if (!hasRecommendations || content.length < 180) return content;
+
+  // Split on common transition phrases that separate product descriptions
+  const parts = content.split(
+    /(?<=\.\s*)(?=Meanwhile[,\s]|On the other hand[,\s]|However[,\s]|Given these|Overall[,\s]|In conclusion|Additionally[,\s]|Furthermore[,\s]|That said[,\s])/
+  );
+
+  if (parts.length <= 1) return content;
+
+  return (
+    <ul className="space-y-2 list-none">
+      {parts.map((part, i) => (
+        <li key={i} className="flex gap-2 leading-relaxed">
+          <span className="text-[#8C1515] font-bold mt-0.5 shrink-0">•</span>
+          <span>{part.trim()}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 // --- Frontend Latency Logging ---
 const logFrontendLatency = async (label: string, data: Record<string, unknown>) => {
@@ -473,23 +497,31 @@ export default function Home() {
                   {multiDomainDefaults.welcomeMessage}
                 </div>
                 <div className="mt-6 flex flex-wrap justify-center gap-6">
-                  {/* Feature Tiles */}
-                  <div className="card card-peach flex flex-col items-center w-40 shadow-md">
-                    <span className="text-3xl mb-2">🚗</span>
-                    <span className="font-semibold text-lg text-black">Vehicles</span>
-                  </div>
-                  <div className="card card-blue flex flex-col items-center w-40 shadow-md">
-                    <span className="text-3xl mb-2">💻</span>
-                    <span className="font-semibold text-lg text-black">Laptops</span>
-                  </div>
-                  <div className="card card-yellow flex flex-col items-center w-40 shadow-md">
-                    <span className="text-3xl mb-2">📚</span>
-                    <span className="font-semibold text-lg text-black">Books</span>
-                  </div>
-                  <div className="card card-green flex flex-col items-center w-40 shadow-md">
-                    <span className="text-3xl mb-2">🛒</span>
-                    <span className="font-semibold text-lg text-black">Cart & Deals</span>
-                  </div>
+                  {/* Laptop Category Tiles */}
+                  <button
+                    onClick={() => handleChatMessage('Show me school laptops')}
+                    className="card card-blue flex flex-col items-center w-44 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left"
+                  >
+                    <span className="text-3xl mb-2">🎓</span>
+                    <span className="font-semibold text-base text-black">School Laptops</span>
+                    <span className="text-xs text-black/50 mt-1 text-center">Budget-friendly, lightweight</span>
+                  </button>
+                  <button
+                    onClick={() => handleChatMessage('Show me Mac laptops')}
+                    className="card card-peach flex flex-col items-center w-44 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left"
+                  >
+                    <span className="text-3xl mb-2">🍎</span>
+                    <span className="font-semibold text-base text-black">Mac Laptops</span>
+                    <span className="text-xs text-black/50 mt-1 text-center">Apple MacBook lineup</span>
+                  </button>
+                  <button
+                    onClick={() => handleChatMessage('Show me Framework laptops')}
+                    className="card card-green flex flex-col items-center w-44 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left"
+                  >
+                    <span className="text-3xl mb-2">⚙️</span>
+                    <span className="font-semibold text-base text-black">Framework Laptops</span>
+                    <span className="text-xs text-black/50 mt-1 text-center">Modular & repairable</span>
+                  </button>
                 </div>
               </div>
 
@@ -521,24 +553,30 @@ export default function Home() {
                     // Assistant message - no bubble, full width
                     <div className="space-y-4">
                       <div className="text-base leading-relaxed text-black">
-                        {message.content}
+                        {formatRecommendationText(message.content, !!(message.recommendations && message.recommendations.length > 0))}
                       </div>
 
                       {/* Show stacked recommendation cards if present */}
                       {message.recommendations && message.recommendations.length > 0 && (
-                        <StackedRecommendationCards
-                          recommendations={message.recommendations}
-                          bucket_labels={message.bucket_labels}
-                          diversification_dimension={message.diversification_dimension}
-                          onItemSelect={(p) => {
-                            setSelectedProduct(p);
-                            setShowFavorites(false);
-                            setShowCart(false);
-                          }}
-                          onToggleFavorite={toggleFavorite}
-                          isFavorite={isFavorite}
-                          onAddToCart={addToCart}
-                        />
+                        <>
+                          <StackedRecommendationCards
+                            recommendations={message.recommendations}
+                            bucket_labels={message.bucket_labels}
+                            diversification_dimension={message.diversification_dimension}
+                            onItemSelect={(p) => {
+                              setSelectedProduct(p);
+                              setShowFavorites(false);
+                              setShowCart(false);
+                            }}
+                            onToggleFavorite={toggleFavorite}
+                            isFavorite={isFavorite}
+                            onAddToCart={addToCart}
+                          />
+                          <RecommendationActionBar
+                            products={message.recommendations.flat()}
+                            onSendMessage={handleChatMessage}
+                          />
+                        </>
                       )}
 
                       {/* Quick reply buttons */}
