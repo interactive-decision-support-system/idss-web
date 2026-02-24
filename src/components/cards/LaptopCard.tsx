@@ -192,13 +192,27 @@ export default function LaptopCard({
                         )}
                         {/* Any extra attributes not already in specs */}
                         {laptop.attributes && Object.keys(laptop.attributes).length > 0 && (() => {
+                            // Keys already shown in the structured spec rows above
                             const specKeys = new Set([
-                                'processor', 'ram', 'storage', 'storage_type', 'display', 'screen_size',
-                                'resolution', 'graphics', 'battery_life', 'os', 'weight', 'refresh_rate_hz',
+                                'processor', 'cpu', 'ram', 'ram_gb', 'storage', 'storage_gb',
+                                'storage_type', 'display', 'screen_size', 'resolution', 'graphics',
+                                'gpu', 'gpu_model', 'gpu_vendor', 'battery_life', 'battery_life_hours',
+                                'os', 'operating_system', 'weight', 'refresh_rate_hz', 'color',
                             ]);
-                            const entries = Object.entries(laptop.attributes).filter(
-                                ([k]) => !specKeys.has(k) && laptop.attributes![k] != null && String(laptop.attributes![k]).trim() !== ''
-                            );
+                            // Metadata / condition flags that are not useful to display as raw rows
+                            const metaKeys = new Set([
+                                'refurbished', 'certified', 'renewed', 'open_box', 'condition',
+                                'good_for_creative', 'good_for_gaming', 'good_for_work', 'good_for_school',
+                                'is_used', 'norm_is_used', 'description', 'tags', 'source',
+                                'listing_url', 'link', 'merchant_product_url',
+                            ]);
+                            const entries = Object.entries(laptop.attributes).filter(([k, v]) => {
+                                if (specKeys.has(k) || metaKeys.has(k)) return false;
+                                if (v == null || String(v).trim() === '') return false;
+                                // Skip booleans — "true"/"false" as a spec row is not useful
+                                if (typeof v === 'boolean') return false;
+                                return true;
+                            });
                             if (entries.length === 0) return null;
                             return (
                                 <>

@@ -109,10 +109,17 @@ export default function RecommendationActionBar({ products, onSendMessage }: Rec
         </button>
 
         <button
-          onClick={() => onSendMessage('Tell me more about these products — what are the pros and cons of each?')}
+          onClick={() => {
+            // Encode the IDs of the currently displayed products so the backend
+            // analyzes exactly these products, not all historical session products.
+            const ids = products.map(p => p.id).filter(Boolean).join(',');
+            const tag = ids ? ` [ctx:${ids}]` : '';
+            onSendMessage(`Tell me more about these products — what are the pros and cons of each?${tag}`);
+          }}
           className="px-3 py-1.5 text-sm rounded-lg border border-black/20 bg-white hover:bg-black/5 text-black/80 font-medium transition-colors"
+          title="Get pros and cons for each product currently shown"
         >
-          Research
+          Tell me more about these products
         </button>
 
         <button

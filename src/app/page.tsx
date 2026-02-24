@@ -382,11 +382,13 @@ export default function Home() {
   }, [chatMessages, isLoading, isInitialState]);
 
   const handleChatMessage = async (message: string) => {
-    // Add user message immediately
+    // Strip hidden [ctx:...] context tag before displaying in chat.
+    // The full message (with tag) is still sent to the backend for routing.
+    const displayContent = message.replace(/\s*\[ctx:[^\]]*\]/g, '').trim();
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content: message,
+      content: displayContent,
       timestamp: new Date(),
     };
     setChatMessages((prev) => [...prev, userMessage]);

@@ -19,29 +19,48 @@ function _parseHours(s: unknown): number {
   return 0;
 }
 
+/**
+ * Read a spec field from a UnifiedProduct, trying laptop.specs first then
+ * top-level (for legacy/vehicle products that store fields flat).
+ */
+function _spec(product: Product, laptopKey: string, altKey?: string): unknown {
+  const p = product as Record<string, unknown>;
+  const specs = ((p.laptop as Record<string, unknown> | undefined)?.specs) as Record<string, unknown> | undefined;
+  if (specs) {
+    if (specs[laptopKey] != null) return specs[laptopKey];
+    if (altKey && specs[altKey] != null) return specs[altKey];
+  }
+  if (p[laptopKey] != null) return p[laptopKey];
+  if (altKey && p[altKey] != null) return p[altKey];
+  return undefined;
+}
+
 /** Return up to 4 factual pros tags for a product. */
 function getProductPros(product: Product): string[] {
   const p = product as Record<string, unknown>;
   const pros: string[] = [];
 
   // Storage type — fast SSD vs HDD
-  const st = typeof p.storage_type === 'string' ? p.storage_type.toUpperCase() : '';
+  const stRaw = _spec(product, 'storage_type');
+  const st = typeof stRaw === 'string' ? stRaw.toUpperCase() : '';
   if (st === 'SSD') pros.push('Fast SSD');
 
-  // RAM tier
-  const ram = _parseGb(p.ram);
+  // RAM tier — "16 GB" string or raw number
+  const ram = _parseGb(_spec(product, 'ram'));
   if (ram >= 32) pros.push(`${ram} GB RAM`);
   else if (ram >= 16) pros.push('16 GB RAM');
 
-  // Dedicated GPU
-  if (p.gpu && typeof p.gpu === 'string') pros.push('Dedicated GPU');
+  // Dedicated GPU (laptop.specs uses 'graphics'; top-level raw may use 'gpu')
+  const gpuRaw = _spec(product, 'graphics', 'gpu');
+  if (gpuRaw && typeof gpuRaw === 'string') pros.push('Dedicated GPU');
 
   // High-end CPU keywords
-  const cpu = typeof p.processor === 'string' ? p.processor.toLowerCase() : '';
+  const cpuRaw = _spec(product, 'processor', 'cpu');
+  const cpu = typeof cpuRaw === 'string' ? cpuRaw.toLowerCase() : '';
   if (cpu.match(/\b(m3|m4|i9|ryzen 9|ultra 9|ultra 7)\b/)) pros.push('High-end CPU');
 
-  // Long battery life
-  const batt = _parseHours(p.battery_life);
+  // Long battery life — "12 hrs" string or raw number
+  const batt = _parseHours(_spec(product, 'battery_life'));
   if (batt >= 12) pros.push('All-day battery');
   else if (batt >= 8) pros.push('Good battery');
 
@@ -69,31 +88,34 @@ function getProductHighlight(product: Product, row: Product[]): string | null {
   if (row.length <= 1) return null;
 
   const p = product as Record<string, unknown>;
-  const others = row.filter(o => o.id !== product.id) as Record<string, unknown>[];
+  const others = row.filter(o => o.id !== product.id);
 
   const price = typeof p.price === 'number' ? p.price : Infinity;
-  const otherPrices = others.map(o => typeof o.price === 'number' ? o.price as number : Infinity);
+  const otherPrices = others.map(o => typeof (o as Record<string, unknown>).price === 'number' ? (o as Record<string, unknown>).price as number : Infinity);
   if (price < Infinity && otherPrices.every(op => price < op)) return 'Cheapest option in this tier';
   if (price < Infinity && otherPrices.every(op => price > op)) return 'Top-tier performance pick';
 
-  const ram = _parseGb(p.ram);
-  const otherRams = others.map(o => _parseGb(o.ram));
-  if (ram > 0 && otherRams.every(or => ram > or)) return `Most RAM — ${p.ram}`;
+  const ram = _parseGb(_spec(product, 'ram'));
+  const otherRams = others.map(o => _parseGb(_spec(o, 'ram')));
+  if (ram > 0 && otherRams.every(or => ram > or)) return `Most RAM — ${_spec(product, 'ram')}`;
 
-  const batt = _parseHours(p.battery_life);
-  const otherBatts = others.map(o => _parseHours(o.battery_life));
-  if (batt > 0 && otherBatts.every(ob => batt > ob)) return `Best battery — ${p.battery_life}`;
+  const batt = _parseHours(_spec(product, 'battery_life'));
+  const otherBatts = others.map(o => _parseHours(_spec(o, 'battery_life')));
+  if (batt > 0 && otherBatts.every(ob => batt > ob)) return `Best battery — ${_spec(product, 'battery_life')}`;
 
   const rating = typeof p.rating === 'number' ? p.rating : 0;
-  const otherRatings = others.map(o => typeof o.rating === 'number' ? o.rating as number : 0);
+  const otherRatings = others.map(o => typeof (o as Record<string, unknown>).rating === 'number' ? (o as Record<string, unknown>).rating as number : 0);
   if (rating >= 4.0 && otherRatings.every(or => rating > or)) return 'Best-rated in this group';
 
-  if (p.gpu && others.every(o => !o.gpu)) return 'Only one with dedicated GPU';
+  const gpuRaw = _spec(product, 'graphics', 'gpu');
+  if (gpuRaw && others.every(o => !_spec(o, 'graphics', 'gpu'))) return 'Only one with dedicated GPU';
 
-  const st = typeof p.storage_type === 'string' ? p.storage_type.toUpperCase() : '';
-  if (st === 'SSD' && others.every(o => (o.storage_type as string | undefined)?.toUpperCase() !== 'SSD')) {
-    return 'Only SSD option here';
-  }
+  const stRaw = _spec(product, 'storage_type');
+  const st = typeof stRaw === 'string' ? stRaw.toUpperCase() : '';
+  if (st === 'SSD' && others.every(o => {
+    const oSt = _spec(o, 'storage_type');
+    return typeof oSt !== 'string' || oSt.toUpperCase() !== 'SSD';
+  })) return 'Only SSD option here';
 
   return null;
 }
