@@ -190,7 +190,7 @@ const createPCPartsRecommendationFields = () => [
     condition: (product: Record<string, unknown>) => product.rating !== undefined && product.rating !== null,
   },
   {
-    label: 'Retailer',
+    label: 'Listed at',
     key: 'source',
     condition: (product: Record<string, unknown>) => product.source !== undefined && product.source !== null,
   },
@@ -212,7 +212,7 @@ export const pcPartsConfig: DomainConfig = {
   ],
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
-  storeLabel: "Retailer",
+  storeLabel: "Listed at",
 
   recommendationCardFields: createPCPartsRecommendationFields(),
 
@@ -358,7 +358,7 @@ export const pcPartsConfig: DomainConfig = {
       format: (value) => `${value}W`,
     },
     {
-      label: 'Retailer',
+      label: 'Listed at',
       key: 'source',
       condition: (product) => product.source !== undefined,
     },
@@ -386,7 +386,7 @@ const createGenericRecommendationFields = (): FieldConfig[] => [
     condition: (p: Record<string, unknown>) => p.brand != null,
   },
   {
-    label: 'Retailer',
+    label: 'Listed at',
     key: 'source',
     condition: (p: Record<string, unknown>) => p.source != null,
   },
@@ -406,7 +406,7 @@ export const genericConfig: DomainConfig = {
   detailPageFields: [
     { label: 'Brand', key: 'brand', condition: (p) => p.brand != null },
     { label: 'Price', key: 'price', format: (v) => `$${typeof v === 'number' ? v.toLocaleString() : v}` },
-    { label: 'Retailer', key: 'source', condition: (p) => p.source != null },
+    { label: 'Listed at', key: 'source', condition: (p) => p.source != null },
   ],
   defaultQuickReplies: [],
 };
@@ -425,7 +425,7 @@ export const laptopConfig: DomainConfig = {
   ],
   viewDetailsButtonText: "View Details",
   viewListingButtonText: "View Listing",
-  storeLabel: "Retailer",
+  storeLabel: "Listed at",
   recommendationCardFields: [
     {
       label: 'Price',
@@ -532,7 +532,7 @@ export const laptopConfig: DomainConfig = {
       condition: (p) => p.rating != null,
     },
     {
-      label: 'Retailer',
+      label: 'Listed at',
       key: 'source',
       condition: (p) => p.source != null,
     },
