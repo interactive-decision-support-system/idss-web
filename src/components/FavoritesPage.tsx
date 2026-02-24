@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Product } from '@/types/chat';
 import Image from 'next/image';
+import ComparisonTable from '@/components/ComparisonTable';
 
 interface FavoritesPageProps {
   favorites: Product[];
@@ -21,6 +23,7 @@ function getPrimaryImage(product: Product): string | undefined {
 }
 
 export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite: _isFavorite, onItemSelect, onClose }: FavoritesPageProps) {
+  const [showCompare, setShowCompare] = useState(false);
   const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {
     const img = primaryImage(product);
@@ -106,6 +109,23 @@ export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite:
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Compare button — only when 2+ favorites */}
+        {favorites.length >= 2 && (
+          <div className="mt-4 pt-4 border-t border-black/10">
+            <button
+              onClick={() => setShowCompare(v => !v)}
+              className={`w-full px-3 py-2 text-sm rounded-lg border font-medium transition-colors ${showCompare ? 'border-[#8C1515] bg-[#8C1515]/5 text-[#8C1515]' : 'border-black/20 bg-white hover:bg-black/5 text-black/80'}`}
+            >
+              {showCompare ? 'Hide comparison' : 'Compare favorites'}
+            </button>
+            {showCompare && (
+              <div className="mt-3">
+                <ComparisonTable products={favorites} />
+              </div>
+            )}
           </div>
         )}
       </div>

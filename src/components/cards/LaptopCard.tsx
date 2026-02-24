@@ -104,10 +104,12 @@ export default function LaptopCard({
                     </span>
                 </div>
 
-                {/* Source / Scrape Origin */}
-                <p className="text-xs text-black/50 mt-0.5">
-                    From: <span className="font-medium">{(data.source as string | undefined) || 'N/A'}</span>
-                </p>
+                {/* Source / Scrape Origin — only shown when available */}
+                {(data.source as string | undefined) && (
+                  <p className="text-xs text-black/50 mt-0.5">
+                    From: <span className="font-medium">{data.source as string}</span>
+                  </p>
+                )}
 
                 {/* Brand — always shown */}
                 <div className="mt-3 space-y-1 text-sm text-gray-600">

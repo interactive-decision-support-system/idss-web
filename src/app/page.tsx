@@ -6,7 +6,6 @@ import StackedRecommendationCards from '@/components/StackedRecommendationCards'
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
 import CartPage from '@/components/CartPage';
-import ComparisonTable from '@/components/ComparisonTable';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
@@ -29,6 +28,22 @@ function parseBold(text: string): React.ReactNode {
           : (part || null)
       )}
     </>
+  );
+}
+
+// --- Render a single bullet item that may contain \n-separated sub-lines ---
+// Line 0: product name (usually **bold**) — normal weight
+// Lines 1+: spec values and insight — smaller, muted
+function renderBulletLines(text: string): React.ReactNode {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length <= 1) return <span>{parseBold(text.trim())}</span>;
+  return (
+    <div className="space-y-0.5">
+      <p className="leading-snug">{parseBold(lines[0])}</p>
+      {lines.slice(1).map((line, i) => (
+        <p key={i} className="text-sm text-black/65 leading-snug">{parseBold(line)}</p>
+      ))}
+    </div>
   );
 }
 
@@ -59,11 +74,11 @@ function formatRecommendationText(content: string): React.ReactNode {
       <div className="space-y-2">
         {intro && <p className="leading-relaxed">{parseBold(intro)}</p>}
         {rawBullets.length > 0 && (
-          <ul className="space-y-1.5 list-none">
+          <ul className="space-y-2.5 list-none">
             {rawBullets.map((item, i) => (
               <li key={i} className="flex gap-2 leading-relaxed">
                 <span className="text-[#8C1515] font-bold shrink-0 mt-0.5">•</span>
-                <span>{parseBold(item)}</span>
+                <span className="flex-1">{renderBulletLines(item)}</span>
               </li>
             ))}
           </ul>
@@ -626,14 +641,14 @@ export default function Home() {
                             onAddToCart={addToCart}
                           />
                           <RecommendationActionBar
-                            products={message.recommendations.flat()}
+                            products={message.recommendations.flat().filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)}
                             onSendMessage={handleChatMessage}
                           />
                         </>
                       )}
 
-                      {/* Quick reply buttons */}
-                      {message.quick_replies && message.quick_replies.length > 0 && (
+                      {/* Quick reply buttons — hidden when RecommendationActionBar is already shown */}
+                      {message.quick_replies && message.quick_replies.length > 0 && !(message.recommendations && message.recommendations.length > 0) && (
                         <div className="flex flex-wrap gap-2">
                           {message.quick_replies.map((reply, idx) => (
                             <button
@@ -703,23 +718,16 @@ export default function Home() {
             />
           )}
           {showFavorites && !showCart && (
-            <>
-              <FavoritesPage
-                favorites={favorites}
-                onToggleFavorite={toggleFavorite}
-                isFavorite={isFavorite}
-                onItemSelect={(product) => {
-                  setSelectedProduct(product);
-                  setShowFavorites(false);
-                }}
-                onClose={() => setShowFavorites(false)}
-              />
-              {/* Comparison Table Demo: show for favorites */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-2 text-black">Compare Favorites</h3>
-                <ComparisonTable products={favorites} />
-              </div>
-            </>
+            <FavoritesPage
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              isFavorite={isFavorite}
+              onItemSelect={(product) => {
+                setSelectedProduct(product);
+                setShowFavorites(false);
+              }}
+              onClose={() => setShowFavorites(false)}
+            />
           )}
           {selectedProduct && !showCart && !showFavorites && (
             <ProductDetailView
