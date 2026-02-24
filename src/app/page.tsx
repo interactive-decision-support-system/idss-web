@@ -17,27 +17,80 @@ import { useAuth } from '@/hooks/useAuth';
 import { getMultiDomainDefaults } from '@/config/domain-config';
 import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
 
-// --- Format long recommendation text as bullet points ---
-function formatRecommendationText(content: string, hasRecommendations: boolean): React.ReactNode {
-  if (!hasRecommendations || content.length < 180) return content;
-
-  // Split on common transition phrases that separate product descriptions
-  const parts = content.split(
-    /(?<=\.\s*)(?=Meanwhile[,\s]|On the other hand[,\s]|However[,\s]|Given these|Overall[,\s]|In conclusion|Additionally[,\s]|Furthermore[,\s]|That said[,\s])/
-  );
-
-  if (parts.length <= 1) return content;
-
+// --- Parse **bold** markdown into <strong> elements ---
+function parseBold(text: string): React.ReactNode {
+  if (!text.includes('**')) return text;
+  const parts = text.split(/\*\*(.+?)\*\*/g);
   return (
-    <ul className="space-y-2 list-none">
-      {parts.map((part, i) => (
-        <li key={i} className="flex gap-2 leading-relaxed">
-          <span className="text-[#8C1515] font-bold mt-0.5 shrink-0">•</span>
-          <span>{part.trim()}</span>
-        </li>
-      ))}
-    </ul>
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <strong key={i} className="font-semibold">{part}</strong>
+          : (part || null)
+      )}
+    </>
   );
+}
+
+// --- Render AI response text: bullet list + bold markdown ---
+function formatRecommendationText(content: string): React.ReactNode {
+  if (!content) return null;
+
+  // Bullet-point format: text contains '•' characters
+  if (content.includes('•')) {
+    const segments = content.split(/\s*•\s*/);
+    const intro = segments[0].trim();
+    const rawBullets = segments.slice(1).map(s => s.trim()).filter(Boolean);
+
+    // Extract "Best pick:" suffix from last bullet (LLM often appends it inline)
+    let bestPick: string | null = null;
+    if (rawBullets.length > 0) {
+      const last = rawBullets[rawBullets.length - 1];
+      const bpIdx = last.indexOf('Best pick:');
+      if (bpIdx !== -1) {
+        const before = last.slice(0, bpIdx).trim();
+        bestPick = last.slice(bpIdx).trim();
+        if (before) rawBullets[rawBullets.length - 1] = before;
+        else rawBullets.pop();
+      }
+    }
+
+    return (
+      <div className="space-y-2">
+        {intro && <p className="leading-relaxed">{parseBold(intro)}</p>}
+        {rawBullets.length > 0 && (
+          <ul className="space-y-1.5 list-none">
+            {rawBullets.map((item, i) => (
+              <li key={i} className="flex gap-2 leading-relaxed">
+                <span className="text-[#8C1515] font-bold shrink-0 mt-0.5">•</span>
+                <span>{parseBold(item)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {bestPick && (
+          <p className="font-semibold mt-1 leading-relaxed">{parseBold(bestPick)}</p>
+        )}
+      </div>
+    );
+  }
+
+  // Prose text (no bullets): parse **bold** and render with proper line breaks
+  if (content.includes('**') || content.includes('\n')) {
+    const lines = content.split('\n').filter(l => l.trim());
+    if (lines.length > 1) {
+      return (
+        <div className="space-y-2">
+          {lines.map((line, i) => (
+            <p key={i} className="leading-relaxed">{parseBold(line)}</p>
+          ))}
+        </div>
+      );
+    }
+    return <span className="leading-relaxed">{parseBold(content)}</span>;
+  }
+
+  return content;
 }
 
 // --- Frontend Latency Logging ---
@@ -553,7 +606,7 @@ export default function Home() {
                     // Assistant message - no bubble, full width
                     <div className="space-y-4">
                       <div className="text-base leading-relaxed text-black">
-                        {formatRecommendationText(message.content, !!(message.recommendations && message.recommendations.length > 0))}
+                        {formatRecommendationText(message.content)}
                       </div>
 
                       {/* Show stacked recommendation cards if present */}
