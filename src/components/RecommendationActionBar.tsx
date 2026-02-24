@@ -147,8 +147,10 @@ export default function RecommendationActionBar({ products, onSendMessage }: Rec
         <button
           onClick={() => onSendMessage('Refine my search')}
           className="px-3 py-1.5 text-sm rounded-lg border border-black/20 bg-white hover:bg-black/5 text-black/80 font-medium transition-colors"
+          title="Change your requirements — the AI will ask follow-up questions to narrow or update your search"
         >
           Refine search
+          <span className="text-xs text-black/40 ml-1">(change criteria)</span>
         </button>
       </div>
 
