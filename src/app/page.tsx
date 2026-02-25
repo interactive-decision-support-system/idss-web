@@ -6,7 +6,7 @@ import StackedRecommendationCards from '@/components/StackedRecommendationCards'
 import ComparisonSideBySide from '@/components/ComparisonSideBySide';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
-import CartPage from '@/components/CartPage';
+import CartPage, { type ShippingMethod } from '@/components/CartPage';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
@@ -52,7 +52,112 @@ function renderBulletLines(text: string): React.ReactNode {
 function formatRecommendationText(content: string): React.ReactNode {
   if (!content) return null;
 
-  // Bullet-point format: text contains '•' characters
+  // ── Detect "Tell me more" / feature-list style content ─────────────────────
+  // Pattern: multi-line text with "- item" markdown lists and/or "Great for:" sections
+  const hasMarkdownList = /^[\s\S]*?^[ \t]*-[ \t]+\S/m.test(content);
+  if (hasMarkdownList || content.includes('\n')) {
+    const lines = content.split('\n');
+    const nodes: React.ReactNode[] = [];
+    let key = 0;
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i].trim();
+      if (!line) { i++; continue; }
+
+      // "- item" or "* item" markdown bullet
+      if (/^[-*]\s+/.test(line)) {
+        // Collect consecutive bullet lines into a list
+        const bullets: string[] = [];
+        while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+          bullets.push(lines[i].trim().replace(/^[-*]\s+/, ''));
+          i++;
+        }
+        nodes.push(
+          <ul key={key++} className="space-y-1.5 list-none mt-1">
+            {bullets.map((b, bi) => (
+              <li key={bi} className="flex gap-2 text-sm leading-relaxed">
+                <span className="text-[#8C1515] font-bold shrink-0 mt-0.5">•</span>
+                <span className="flex-1">{parseBold(b)}</span>
+              </li>
+            ))}
+          </ul>
+        );
+        continue;
+      }
+
+      // "Great for:" or "Best for:" section label
+      if (/^(great for|best for|ideal for|perfect for):/i.test(line)) {
+        const [label, ...rest] = line.split(':');
+        const items = rest.join(':').split(/[,;]/).map(s => s.trim()).filter(Boolean);
+        nodes.push(
+          <div key={key++} className="mt-2">
+            <p className="text-xs font-semibold text-black/50 uppercase tracking-wide mb-1">{label}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {items.map((item, ii) => (
+                <span key={ii} className="px-2 py-0.5 text-xs rounded-full bg-[#8C1515]/8 text-[#8C1515] font-medium border border-[#8C1515]/20">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+        i++;
+        continue;
+      }
+
+      // "**Product Name:**" or "### Header" section header
+      if (/^\*\*.+\*\*:?$/.test(line) || /^#{1,3}\s+/.test(line)) {
+        const headerText = line.replace(/^#{1,3}\s+/, '').replace(/\*\*/g, '');
+        nodes.push(
+          <p key={key++} className="font-semibold text-black text-sm mt-3 first:mt-0 pb-0.5 border-b border-black/10">
+            {parseBold(headerText)}
+          </p>
+        );
+        i++;
+        continue;
+      }
+
+      // "• bullet" style (existing)
+      if (line.startsWith('•')) {
+        const bullets: string[] = [];
+        while (i < lines.length && lines[i].trim().startsWith('•')) {
+          bullets.push(lines[i].trim().replace(/^•\s*/, ''));
+          i++;
+        }
+        nodes.push(
+          <ul key={key++} className="space-y-2 list-none mt-1">
+            {bullets.map((b, bi) => (
+              <li key={bi} className="flex gap-2 leading-relaxed">
+                <span className="text-[#8C1515] font-bold shrink-0 mt-0.5">•</span>
+                <span className="flex-1">{renderBulletLines(b)}</span>
+              </li>
+            ))}
+          </ul>
+        );
+        continue;
+      }
+
+      // "Best pick:" standalone line
+      if (/^best pick:/i.test(line)) {
+        nodes.push(
+          <p key={key++} className="font-semibold mt-1 leading-relaxed text-[#8C1515]">
+            {parseBold(line)}
+          </p>
+        );
+        i++;
+        continue;
+      }
+
+      // Regular paragraph
+      nodes.push(<p key={key++} className="leading-relaxed text-sm">{parseBold(line)}</p>);
+      i++;
+    }
+
+    return <div className="space-y-1">{nodes}</div>;
+  }
+
+  // Bullet-point format: text contains '•' characters (no newlines)
   if (content.includes('•')) {
     const segments = content.split(/\s*•\s*/);
     const intro = segments[0].trim();
@@ -91,18 +196,8 @@ function formatRecommendationText(content: string): React.ReactNode {
     );
   }
 
-  // Prose text (no bullets): parse **bold** and render with proper line breaks
-  if (content.includes('**') || content.includes('\n')) {
-    const lines = content.split('\n').filter(l => l.trim());
-    if (lines.length > 1) {
-      return (
-        <div className="space-y-2">
-          {lines.map((line, i) => (
-            <p key={i} className="leading-relaxed">{parseBold(line)}</p>
-          ))}
-        </div>
-      );
-    }
+  // Plain text with **bold**
+  if (content.includes('**')) {
     return <span className="leading-relaxed">{parseBold(content)}</span>;
   }
 
@@ -255,11 +350,11 @@ export default function Home() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (shippingMethod: ShippingMethod) => {
     setCheckoutResult(null);
     setCheckoutLoading(true);
     try {
-      const result = await cartService.checkout(userId, cartItems);
+      const result = await cartService.checkout(userId, cartItems, undefined, shippingMethod);
       if (result.success) {
         setCheckoutResult({ success: true, orderId: result.orderId ?? '' });
         setCartItems([]);
@@ -609,7 +704,7 @@ export default function Home() {
           ) : (
             // Regular chat messages
             <div className="max-w-4xl mx-auto flex flex-col space-y-8">
-              {chatMessages.map((message) => (
+              {chatMessages.map((message, msgIdx) => (
                 <div key={message.id} className="flex flex-col">
                   {message.role === 'user' ? (
                     // User message with bubble
@@ -633,20 +728,33 @@ export default function Home() {
                         return idx !== -1 ? message.content.slice(idx).split('\n')[0].trim() : null;
                       })() : null;
 
+                      // Extract criteria from the user message that triggered this comparison
+                      // Message format: "Compare X vs Y by Weight, GPU [ctx:id1,id2]"
+                      const selectedCriteria: string[] = (() => {
+                        if (!isCompare) return [];
+                        const prevUserMsg = chatMessages.slice(0, msgIdx).reverse().find(m => m.role === 'user');
+                        if (!prevUserMsg) return [];
+                        const byMatch = prevUserMsg.content.match(/\bby\s+(.*?)(?:\s*\[ctx:|$)/i);
+                        if (!byMatch) return [];
+                        return byMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+                      })();
+
                       return (
                         <div className="space-y-4">
-                          <div className="text-base leading-relaxed text-black">
-                            {isCompare
-                              ? (bestPickText
-                                  ? <p className="font-semibold leading-relaxed">{bestPickText}</p>
-                                  : null)
-                              : formatRecommendationText(message.content)
-                            }
-                          </div>
+                          {/* For comparison responses, only show the non-bestPickText content portion */}
+                          {!isCompare && (
+                            <div className="text-base leading-relaxed text-black">
+                              {formatRecommendationText(message.content)}
+                            </div>
+                          )}
 
-                          {/* Compare: side-by-side spec table */}
+                          {/* Compare: side-by-side spec table (handles bullet summary + bestPickText internally) */}
                           {isCompare && allProducts.length > 0 && (
-                            <ComparisonSideBySide products={allProducts} />
+                            <ComparisonSideBySide
+                              products={allProducts}
+                              bestPickText={bestPickText}
+                              selectedCriteria={selectedCriteria}
+                            />
                           )}
 
                           {/* Regular recommendations: stacked cards */}
