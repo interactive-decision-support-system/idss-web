@@ -220,12 +220,15 @@ function RecommendationRow({
                 onAddToCart={onAddToCart}
               />
               {pros.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2 px-1">
-                  {pros.map((pro, i) => (
-                    <span key={i} className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-black/5 text-black/70 border border-black/10">
-                      ✓ {pro}
-                    </span>
-                  ))}
+                <div className="mt-2 px-1">
+                  <p className="text-[10px] font-semibold text-black/35 uppercase tracking-wide mb-1">Why we picked this</p>
+                  <div className="flex flex-wrap gap-1">
+                    {pros.map((pro, i) => (
+                      <span key={i} className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-black/5 text-black/70 border border-black/10">
+                        ✓ {pro}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
               {highlight && (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
+import ComparisonSideBySide from '@/components/ComparisonSideBySide';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
 import CartPage from '@/components/CartPage';
@@ -621,50 +622,76 @@ export default function Home() {
                     </div>
                   ) : (
                     // Assistant message - no bubble, full width
-                    <div className="space-y-4">
-                      <div className="text-base leading-relaxed text-black">
-                        {formatRecommendationText(message.content)}
-                      </div>
+                    (() => {
+                      const isCompare = message.bucket_labels?.[0] === 'Compared Items';
+                      const allProducts = message.recommendations
+                        ? message.recommendations.flat().filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
+                        : [];
+                      // Extract "Best pick:" line from comparison narrative
+                      const bestPickText = isCompare ? (() => {
+                        const idx = message.content.indexOf('Best pick:');
+                        return idx !== -1 ? message.content.slice(idx).split('\n')[0].trim() : null;
+                      })() : null;
 
-                      {/* Show stacked recommendation cards if present */}
-                      {message.recommendations && message.recommendations.length > 0 && (
-                        <>
-                          <StackedRecommendationCards
-                            recommendations={message.recommendations}
-                            bucket_labels={message.bucket_labels}
-                            diversification_dimension={message.diversification_dimension}
-                            onItemSelect={(p) => {
-                              setSelectedProduct(p);
-                              setShowFavorites(false);
-                              setShowCart(false);
-                            }}
-                            onToggleFavorite={toggleFavorite}
-                            isFavorite={isFavorite}
-                            onAddToCart={addToCart}
-                          />
-                          <RecommendationActionBar
-                            products={message.recommendations.flat().filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)}
-                            onSendMessage={handleChatMessage}
-                          />
-                        </>
-                      )}
+                      return (
+                        <div className="space-y-4">
+                          <div className="text-base leading-relaxed text-black">
+                            {isCompare
+                              ? (bestPickText
+                                  ? <p className="font-semibold leading-relaxed">{bestPickText}</p>
+                                  : null)
+                              : formatRecommendationText(message.content)
+                            }
+                          </div>
 
-                      {/* Quick reply buttons — hidden when RecommendationActionBar is already shown */}
-                      {message.quick_replies && message.quick_replies.length > 0 && !(message.recommendations && message.recommendations.length > 0) && (
-                        <div className="flex flex-wrap gap-2">
-                          {message.quick_replies.map((reply, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleChatMessage(reply)}
-                              disabled={isLoading}
-                              className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                            >
-                              {reply}
-                            </button>
-                          ))}
+                          {/* Compare: side-by-side spec table */}
+                          {isCompare && allProducts.length > 0 && (
+                            <ComparisonSideBySide products={allProducts} />
+                          )}
+
+                          {/* Regular recommendations: stacked cards */}
+                          {!isCompare && message.recommendations && message.recommendations.length > 0 && (
+                            <StackedRecommendationCards
+                              recommendations={message.recommendations}
+                              bucket_labels={message.bucket_labels}
+                              diversification_dimension={message.diversification_dimension}
+                              onItemSelect={(p) => {
+                                setSelectedProduct(p);
+                                setShowFavorites(false);
+                                setShowCart(false);
+                              }}
+                              onToggleFavorite={toggleFavorite}
+                              isFavorite={isFavorite}
+                              onAddToCart={addToCart}
+                            />
+                          )}
+
+                          {/* Action bar — shown for both compare and regular recommendations */}
+                          {message.recommendations && message.recommendations.length > 0 && (
+                            <RecommendationActionBar
+                              products={allProducts}
+                              onSendMessage={handleChatMessage}
+                            />
+                          )}
+
+                          {/* Quick reply buttons — hidden when RecommendationActionBar is shown */}
+                          {message.quick_replies && message.quick_replies.length > 0 && !(message.recommendations && message.recommendations.length > 0) && (
+                            <div className="flex flex-wrap gap-2">
+                              {message.quick_replies.map((reply, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleChatMessage(reply)}
+                                  disabled={isLoading}
+                                  className="px-4 py-2 bg-white hover:bg-black/5 border border-black/20 hover:border-black/40 text-black hover:text-black text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                >
+                                  {reply}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      );
+                    })()
                   )}
                 </div>
               ))}
