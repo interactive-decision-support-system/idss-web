@@ -162,6 +162,7 @@ export async function checkout(
   options?: {
     items?: Array<{ product_id: string; quantity: number }>;
     product_type?: 'books';
+    shipping_method?: string;
   }
 ): Promise<CheckoutResponse> {
   const base = getBaseUrl();
@@ -171,6 +172,7 @@ export async function checkout(
   const body: Record<string, unknown> = { user_id: userId };
   if (options?.items?.length) body.items = options.items;
   if (options?.product_type) body.product_type = options.product_type;
+  if (options?.shipping_method) body.shipping_method = options.shipping_method;
 
   const res = await fetch(`${base}/api/action/checkout`, {
     method: 'POST',

@@ -128,6 +128,20 @@ export interface UnifiedProduct {
     isbn?: string;
   };
 
+  // Social proof
+  rating?: number;
+  reviews_count?: number;
+  reviews?: string;
+
+  // Buyer protection
+  warranty?: string;
+  return_policy?: string;
+
+  // Misc display
+  source?: string;        // Scrape origin e.g. 'System76', 'Framework'
+  description?: string;
+  category?: string;
+
   // Allow for existing fields to coexist for now if needed, or strictly index signature
   [key: string]: unknown;
 }

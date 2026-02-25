@@ -81,7 +81,7 @@ export default function LaptopCard({
                     ${price.toLocaleString()}
                 </p>
 
-                {/* Star Rating — always shown */}
+                {/* Star Rating + review count — always shown */}
                 <div className="flex items-center gap-1 mt-1">
                     {Array.from({ length: 5 }).map((_, i) => {
                         const hasRating = typeof (data.rating as number | undefined) === 'number';
@@ -101,6 +101,9 @@ export default function LaptopCard({
                         {typeof (data.rating as number | undefined) === 'number'
                             ? `${(data.rating as number).toFixed(1)}/5`
                             : 'No rating yet'}
+                        {typeof data.reviews_count === 'number' && data.reviews_count > 0 && (
+                            <> · {data.reviews_count.toLocaleString()} reviews</>
+                        )}
                     </span>
                 </div>
 
@@ -238,6 +241,28 @@ export default function LaptopCard({
                                 {tag}
                             </span>
                         ))}
+                    </div>
+                )}
+
+                {/* Warranty & Return Policy */}
+                {(!!data.warranty || !!data.return_policy) && (
+                    <div className="mt-3 space-y-1">
+                        {!!data.warranty && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-600">
+                                <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <span><span className="font-medium text-gray-700">Warranty:</span> {String(data.warranty)}</span>
+                            </div>
+                        )}
+                        {!!data.return_policy && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-600">
+                                <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                                <span><span className="font-medium text-gray-700">Returns:</span> {String(data.return_policy)}</span>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

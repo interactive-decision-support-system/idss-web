@@ -37,7 +37,7 @@ export interface CartService {
   remove: (userId: string | null, productId: string) => Promise<void>;
   setQuantity: (userId: string | null, productId: string, quantity: number) => Promise<void>;
   migrateLocalToSupabase: (userId: string) => Promise<CartItem[]>;
-  checkout: (userId: string | null, items: CartItem[], productType?: 'books') => Promise<CheckoutResult>;
+  checkout: (userId: string | null, items: CartItem[], productType?: 'books', shippingMethod?: string) => Promise<CheckoutResult>;
 }
 
 function snapshotToProduct(snapshot: Record<string, unknown>): Product {
@@ -186,7 +186,8 @@ export const cartService: CartService = {
   async checkout(
     userId: string | null,
     _items: CartItem[],
-    productType?: 'books'
+    productType?: 'books',
+    shippingMethod?: string
   ): Promise<CheckoutResult> {
     if (!userId) {
       return { success: false, error: 'Sign in to checkout' };
@@ -198,6 +199,7 @@ export const cartService: CartService = {
     // Option A: omit items so MCP loads cart from Supabase for this user_id
     const response: CheckoutResponse = await ucpCheckout(userId, {
       ...(productType && { product_type: productType }),
+      ...(shippingMethod && { shipping_method: shippingMethod }),
     });
 
     if (response.status === 'success') {
