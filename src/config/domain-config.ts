@@ -594,28 +594,20 @@ export function getMultiDomainDefaults(): {
   defaultQuickReplies: string[];
   examplePlaceholderQueries: string[];
 } {
-  const configs = [vehicleConfig, pcPartsConfig];
-  const welcomeMessage = configs[0].welcomeMessage;
-  const defaultQuickReplies: string[] = [];
-  const seen = new Set<string>();
-  for (const c of configs) {
-    for (const q of c.defaultQuickReplies ?? []) {
-      if (!seen.has(q)) {
-        seen.add(q);
-        defaultQuickReplies.push(q);
-      }
-    }
-  }
-  const examplePlaceholderQueries: string[] = [];
-  const seenPlaceholders = new Set<string>();
-  for (const c of configs) {
-    const list = c.examplePlaceholderQueries ?? [c.inputPlaceholder];
-    for (const p of list) {
-      if (!seenPlaceholders.has(p)) {
-        seenPlaceholders.add(p);
-        examplePlaceholderQueries.push(p);
-      }
-    }
-  }
-  return { welcomeMessage, defaultQuickReplies, examplePlaceholderQueries };
+  return {
+    welcomeMessage: "Hi! What are you looking for today?",
+    defaultQuickReplies: [],
+    examplePlaceholderQueries: [
+      "I want a cheap laptop for school",
+      "Durable gaming laptop under $1,500",
+      "MacBook-level build quality, Windows preferred",
+      "Best laptop for machine learning / PyTorch",
+      "Thin and light for travel, all-day battery",
+      "32GB RAM, 1TB SSD, under $2,000",
+      "Laptop for video editing and Figma",
+      "Framework or System76 modular laptop",
+      "Refurbished ThinkPad under $400",
+      "Best value laptop for college student",
+    ],
+  };
 }

@@ -71,7 +71,9 @@ export default function RecommendationActionBar({ products, onSendMessage }: Rec
       .map(id => products.find(p => p.id === id))
       .filter(Boolean)
       .map(p => getProductName(p!));
-    const msg = `Compare ${names.join(' vs ')} by ${selectedCriteria.join(', ')}`;
+    // Include [ctx:...] so backend filters to exactly these selected products,
+    // not all historical session products. page.tsx strips tag before display.
+    const msg = `Compare ${names.join(' vs ')} by ${selectedCriteria.join(', ')} [ctx:${selectedProductIds.join(',')}]`;
     onSendMessage(msg);
     setShowCompare(false);
     setSelectedProductIds([]);
