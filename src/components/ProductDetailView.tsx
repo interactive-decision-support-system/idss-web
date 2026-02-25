@@ -161,6 +161,40 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
           )}
         </div>
 
+        {/* Trust badges — Amazon style: Shipping / Warranty / Returns */}
+        {(() => {
+          const warranty = (product as { warranty?: string }).warranty;
+          const returnPolicy = (product as { return_policy?: string }).return_policy;
+          // Extract warranty duration e.g. "1-year" or "2 Year"
+          const warrantyLabel = warranty
+            ? (warranty.match(/(\d+[-\s]?(?:year|yr|month|day)s?)/i)?.[1] ?? warranty.slice(0, 20))
+            : null;
+          // Extract return window e.g. "30-day"
+          const returnLabel = returnPolicy
+            ? (returnPolicy.match(/(\d+[-\s]?day)/i)?.[1] ?? (/free/i.test(returnPolicy) ? 'Free' : null))
+            : null;
+
+          const badges = [
+            { icon: '🚚', label: 'Free Standard Shipping', sub: '5–7 business days', always: true },
+            ...(warrantyLabel ? [{ icon: '🛡️', label: `${warrantyLabel} Warranty`, sub: 'Manufacturer covered' }] : []),
+            ...(returnLabel ? [{ icon: '↩️', label: `${returnLabel} Returns`, sub: 'Hassle-free' }] : []),
+          ] as { icon: string; label: string; sub: string; always?: boolean }[];
+
+          return (
+            <div className="rounded-lg border border-black/8 divide-y divide-black/8">
+              {badges.map((b, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                  <span className="text-lg shrink-0">{b.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-black">{b.label}</p>
+                    <p className="text-[11px] text-black/50">{b.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         {/* Details grid */}
         <div className="grid grid-cols-1 gap-2">
           {config.detailPageFields.map((fieldConfig) => (

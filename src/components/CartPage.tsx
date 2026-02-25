@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { CartItem } from '@/services/cart';
 import type { Product } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
@@ -9,11 +10,28 @@ export type CheckoutResultProp =
   | { success: false; error: string; soldOutIds?: string[] }
   | null;
 
+export type ShippingMethod = 'standard' | 'express' | 'overnight';
+
+interface ShippingOption {
+  id: ShippingMethod;
+  label: string;
+  description: string;
+  cost: number; // cents
+}
+
+const SHIPPING_OPTIONS: ShippingOption[] = [
+  { id: 'standard',  label: 'Standard',  description: '5–7 days', cost: 0 },
+  { id: 'express',   label: 'Express',   description: '2–3 days', cost: 599 },
+  { id: 'overnight', label: 'Overnight', description: '1 day',    cost: 1499 },
+];
+
+const TAX_RATE = 0.0875; // CA 8.75%
+
 interface CartPageProps {
   cartItems: CartItem[];
   onRemove: (productId: string) => void;
   onSetQuantity?: (productId: string, quantity: number) => void;
-  onCheckout: () => void;
+  onCheckout: (shippingMethod: ShippingMethod) => void;
   checkoutLoading?: boolean;
   checkoutResult?: CheckoutResultProp;
   onDismissCheckoutResult?: () => void;
@@ -46,8 +64,20 @@ export default function CartPage({
   onItemSelect,
   onClose,
 }: CartPageProps) {
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard');
+
   const hasSoldOutItem = cartItems.some((item) => isSoldOut(item.product));
   const canCheckout = cartItems.length > 0 && !hasSoldOutItem && !checkoutLoading;
+
+  // Cost breakdown (client-side preview; backend recalculates authoritatively)
+  const subtotalCents = cartItems.reduce((sum, { product, quantity }) => {
+    const price = (product as { price?: number }).price ?? 0;
+    return sum + Math.round(price * 100) * quantity;
+  }, 0);
+  const shippingCents = SHIPPING_OPTIONS.find((o) => o.id === shippingMethod)?.cost ?? 0;
+  const taxCents = Math.round(subtotalCents * TAX_RATE);
+  const totalCents = subtotalCents + shippingCents + taxCents;
+  const fmt = (cents: number) => `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {
@@ -206,11 +236,65 @@ export default function CartPage({
         )}
       </div>
 
-      {/* Checkout */}
+      {/* Shipping + Cost Breakdown + Checkout */}
       {cartItems.length > 0 && (
-        <div className="p-4 border-t border-black/10 flex-shrink-0">
+        <div className="p-4 border-t border-black/10 flex-shrink-0 space-y-3">
+          {/* Shipping selector */}
+          <div>
+            <p className="text-xs font-semibold text-black/60 uppercase tracking-wide mb-1.5">Choose delivery</p>
+            <div className="flex gap-2">
+              {SHIPPING_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setShippingMethod(opt.id)}
+                  className={`flex-1 rounded-lg border py-2 px-1.5 text-center transition-all text-xs ${
+                    shippingMethod === opt.id
+                      ? 'border-[#8C1515] bg-[#8C1515]/5 text-[#8C1515] font-semibold'
+                      : 'border-black/15 text-black/60 hover:border-black/30'
+                  }`}
+                >
+                  <div className="font-medium">{opt.label}</div>
+                  <div className="text-[10px] opacity-75">{opt.description}</div>
+                  <div className={`font-bold mt-0.5 ${opt.cost === 0 ? 'text-green-600' : ''}`}>
+                    {opt.cost === 0 ? 'FREE' : fmt(opt.cost)}
+                  </div>
+                </button>
+              ))}
+            </div>
+            {shippingMethod === 'standard' && (
+              <p className="text-[11px] text-green-700 mt-1.5 flex items-center gap-1">
+                <span>✓</span> FREE standard shipping on all orders
+              </p>
+            )}
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex gap-3 text-[10px] text-black/50 py-1 border-y border-black/5">
+            <span className="flex items-center gap-1"><span>🛡️</span> 1-Year Warranty</span>
+            <span className="flex items-center gap-1"><span>↩️</span> 30-Day Returns</span>
+            <span className="flex items-center gap-1"><span>🔒</span> Secure Checkout</span>
+          </div>
+
+          {/* Cost breakdown */}
+          <div className="space-y-1 text-sm text-black/70">
+            <div className="flex justify-between">
+              <span>Subtotal</span><span>{fmt(subtotalCents)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping</span>
+              <span>{shippingCents === 0 ? <span className="text-green-600 font-semibold">FREE</span> : fmt(shippingCents)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax (8.75%)</span><span>{fmt(taxCents)}</span>
+            </div>
+            <div className="flex justify-between font-semibold text-black pt-1 border-t border-black/10">
+              <span>Total</span><span>{fmt(totalCents)}</span>
+            </div>
+          </div>
+
           <button
-            onClick={onCheckout}
+            onClick={() => onCheckout(shippingMethod)}
             disabled={!canCheckout}
             className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-colors ${
               canCheckout
@@ -218,8 +302,11 @@ export default function CartPage({
                 : 'bg-black/20 text-black/50 cursor-not-allowed'
             }`}
           >
-            {checkoutLoading ? 'Processing…' : hasSoldOutItem ? 'Remove sold-out items to checkout' : 'Checkout'}
+            {checkoutLoading ? 'Processing…' : hasSoldOutItem ? 'Remove sold-out items to checkout' : `Place Order · ${fmt(totalCents)}`}
           </button>
+          <p className="text-[10px] text-black/40 text-center">
+            By placing your order, you agree to our Terms of Service and Privacy Policy.
+          </p>
         </div>
       )}
     </div>
