@@ -560,40 +560,40 @@ export default function Home() {
 
   return (
     <div className={`h-screen bg-[var(--color-bg)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
-      {/* Location permission alert (sticky, disappears once enabled) */}
+      {/* Location permission alert — compact chip below header, clear of top-right icons */}
       {showLocationBanner && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="mx-auto max-w-6xl px-4 py-2">
-            <div className="flex items-center justify-between gap-4 rounded-lg border border-black/10 bg-white/95 backdrop-blur shadow-sm px-4 py-2">
-              <div className="text-sm text-black/80">
-                {locationPermission === 'denied' ? (
-                  <>Location permission is blocked in your browser settings.</>
-                ) : locationPermission === 'error' ? (
-                  <>Couldn’t access your location. You can try again.</>
-                ) : (
-                  <>Enable location to personalize recommendations near you.</>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3">
-                {locationPermission !== 'denied' && (
-                  <button
-                    type="button"
-                    onClick={requestUserLocation}
-                    className="text-sm font-medium text-[#8C1515] hover:text-[#750013] transition-colors"
-                  >
-                    Enable
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setLocationDismissed(true)}
-                  className="text-sm font-medium text-black/60 hover:text-black transition-colors"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
+        <div className="fixed top-[60px] left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-black/10 bg-white/95 backdrop-blur shadow-sm px-4 py-1.5 whitespace-nowrap">
+            <svg className="w-3.5 h-3.5 text-black/40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs text-black/70">
+              {locationPermission === 'denied'
+                ? 'Location blocked in browser settings.'
+                : locationPermission === 'error'
+                ? "Couldn't access location."
+                : 'Enable location for nearby recommendations.'}
+            </span>
+            {locationPermission !== 'denied' && (
+              <button
+                type="button"
+                onClick={requestUserLocation}
+                className="text-xs font-semibold text-[#8C1515] hover:text-[#750013] transition-colors"
+              >
+                Enable
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setLocationDismissed(true)}
+              className="text-black/30 hover:text-black/60 transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
