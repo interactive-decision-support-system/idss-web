@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import type { CartItem } from '@/services/cart';
 import type { Product } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
@@ -318,12 +319,13 @@ export default function CartPage({
                     onClick={() => !soldOut && onItemSelect(product)}
                   >
                     {/* Image */}
-                    <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg overflow-hidden">
+                    <div className="relative w-20 h-20 flex-shrink-0 bg-gradient-to-br from-[#8C1515]/10 to-white rounded-lg overflow-hidden">
                       {hasValidImage(product) ? (
-                        <img
+                        <Image
                           src={primaryImage(product)!}
                           alt={getDisplayTitle(product)}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-black/30 text-xs">No Image</div>

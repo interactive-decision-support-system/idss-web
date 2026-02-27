@@ -22,7 +22,7 @@ function getPrimaryImage(product: Product): string | undefined {
   return p.image?.primary || p.image_url || p.primaryImage || undefined;
 }
 
-export default function FavoritesPage({ favorites, onToggleFavorite, isFavorite: _isFavorite, onItemSelect, onClose }: FavoritesPageProps) {
+export default function FavoritesPage({ favorites, onToggleFavorite, onItemSelect, onClose }: FavoritesPageProps) {
   const [showCompare, setShowCompare] = useState(false);
   const primaryImage = (product: Product) => getPrimaryImage(product);
   const hasValidImage = (product: Product) => {

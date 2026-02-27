@@ -50,6 +50,9 @@ export default function ResetPasswordPage() {
       else setError('Invalid or expired reset link. Please request a new one.');
     };
     run();
+  // supabase is also used in handleSubmit outside this effect, so it cannot
+  // be moved inside the effect or memoized without a larger refactor.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

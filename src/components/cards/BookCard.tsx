@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { UnifiedProduct } from '@/types/chat';
 import { isSoldOut } from '@/utils/inventory';
 
@@ -32,10 +33,11 @@ export default function BookCard({
             {/* Image - Books usually portrait */}
             <div className="aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden relative mb-3 self-center w-2/3 shadow-sm group-hover:shadow-md transition-shadow">
                 {imageSrc ? (
-                    <img
+                    <Image
                         src={imageSrc}
                         alt={name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">

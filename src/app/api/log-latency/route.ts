@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     // For now, just print to server logs
     console.log('[FRONTEND LATENCY LOG]', body);
     return new Response('ok', { status: 200 });
-  } catch (err) {
+  } catch {
     return new Response('error', { status: 400 });
   }
 }
