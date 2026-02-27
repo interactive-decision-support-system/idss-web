@@ -6,7 +6,7 @@ import StackedRecommendationCards from '@/components/StackedRecommendationCards'
 import ComparisonSideBySide from '@/components/ComparisonSideBySide';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
-import CartPage, { type ShippingMethod } from '@/components/CartPage';
+import CartPage, { type CheckoutOptions } from '@/components/CartPage';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
@@ -350,7 +350,7 @@ export default function Home() {
     }
   };
 
-  const handleCheckout = async (shippingMethod: ShippingMethod) => {
+  const handleCheckout = async ({ shippingMethod }: CheckoutOptions) => {
     setCheckoutResult(null);
     setCheckoutLoading(true);
     try {
