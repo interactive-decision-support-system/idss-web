@@ -343,7 +343,11 @@ export default function ComparisonSideBySide({ products, bestPickText, selectedC
               const displayVals = products.map(p =>
                 row.getDisplayVal ? row.getDisplayVal(p) : row.getVal(p)
               );
-              if (displayVals.every(v => v == null || v === '')) return null;
+              // When user explicitly selected criteria, always show those rows even if
+              // all values are missing — display "—" so they know data isn't available.
+              // Only silently drop all-empty rows in the unfiltered full-spec table.
+              const allEmpty = displayVals.every(v => v == null || v === '');
+              if (allEmpty && (!selectedCriteria || selectedCriteria.length === 0)) return null;
               const bestIdx = getBestIdx(row);
               return (
                 <tr key={row.label} className={ri % 2 === 0 ? 'bg-white' : 'bg-black/[0.015]'}>
