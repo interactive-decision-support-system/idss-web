@@ -9,7 +9,9 @@ import FavoritesPage from '@/components/FavoritesPage';
 import CartPage, { type CheckoutOptions } from '@/components/CartPage';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
+import ConversationSidebar from '@/components/ConversationSidebar';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
+import type { SavedSession } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { favoritesService } from '@/services/favorites';
 import { cartService, type CartItem } from '@/services/cart';
@@ -238,6 +240,8 @@ export default function Home() {
     'unknown' | 'prompt' | 'granted' | 'denied' | 'unavailable' | 'error'
   >('unknown');
   const [locationDismissed, setLocationDismissed] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
   const multiDomainDefaults = getMultiDomainDefaults();
 
@@ -245,6 +249,69 @@ export default function Home() {
   const isInitialState = chatMessages.length === 1 && chatMessages[0]?.role === 'assistant';
   const showLocationBanner =
     !locationDismissed && !userLocation && locationPermission !== 'unavailable';
+
+  // Load conversation history from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('idss_history');
+      if (raw) setSavedSessions(JSON.parse(raw));
+    } catch {
+      // ignore corrupt data
+    }
+  }, []);
+
+  // Save current session snapshot to localStorage
+  const saveSessionSnapshot = () => {
+    if (!sessionId || chatMessages.length <= 1) return; // nothing to save
+    const userMsg = chatMessages.find(m => m.role === 'user');
+    if (!userMsg) return;
+    const title = (userMsg.content || '').slice(0, 42).trim() + ((userMsg.content || '').length > 42 ? '…' : '');
+    // Determine domain from last recommendations or bucket labels
+    const lastRec = [...chatMessages].reverse().find(m => m.recommendations);
+    const domain = lastRec?.bucket_labels?.[0]?.toLowerCase().includes('vehicle') ? 'vehicles'
+      : lastRec?.recommendations?.[0]?.[0] && ('vehicle' in (lastRec.recommendations[0][0] as object)) ? 'vehicles'
+      : null;
+    const newSession: SavedSession = {
+      sessionId,
+      title,
+      domain,
+      timestamp: new Date().toISOString(),
+      messages: chatMessages,
+    };
+    setSavedSessions(prev => {
+      const filtered = prev.filter(s => s.sessionId !== sessionId);
+      const updated = [newSession, ...filtered].slice(0, 20); // keep max 20
+      try { localStorage.setItem('idss_history', JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
+  };
+
+  // New Search: save current session, then reset all state
+  const handleNewSearch = () => {
+    saveSessionSnapshot();
+    setChatMessages([]);
+    setSessionId(null);
+    setSelectedProduct(null);
+    setShowCart(false);
+    setShowFavorites(false);
+    setShowHistory(false);
+  };
+
+  // Load a saved session into the chat view
+  const handleLoadSession = (session: SavedSession) => {
+    setChatMessages(session.messages);
+    setSessionId(session.sessionId);
+    setShowHistory(false);
+    setSelectedProduct(null);
+    setShowCart(false);
+    setShowFavorites(false);
+  };
+
+  // Clear all saved history
+  const handleClearHistory = () => {
+    setSavedSessions([]);
+    try { localStorage.removeItem('idss_history'); } catch { /* ignore */ }
+  };
 
   // Load favorites when userId changes (or on mount for guest)
   // When user logs in with localStorage favorites, migrate them to Supabase first
@@ -600,13 +667,35 @@ export default function Home() {
 
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || showCart || selectedProduct ? 'pr-96' : ''}`}>
-        {/* Floating Title - IDSS */}
-        <div className="absolute top-4 left-4 z-10">
+        {/* Floating Title + History toggle - Top Left */}
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
           <h1 className="text-xl font-semibold text-black">IDSS</h1>
+          {/* History toggle button */}
+          <button
+            onClick={() => setShowHistory(v => !v)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 ml-1"
+            title="Conversation history"
+          >
+            <svg className="w-4 h-4 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
         </div>
 
-        {/* Auth + Cart + Favorites - Top Right */}
+        {/* Auth + New Search + Cart + Favorites - Top Right */}
         <div className="absolute top-4 right-4 flex items-center gap-4 z-[1000]">
+          {/* New Search button — visible once the user has sent at least one message */}
+          {!isInitialState && chatMessages.length > 1 && (
+            <button
+              onClick={handleNewSearch}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#8C1515] text-[#8C1515] rounded-full hover:bg-[#8C1515] hover:text-white transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Search
+            </button>
+          )}
           <AuthButton />
           {/* Cart Icon Button */}
           <button
@@ -875,6 +964,15 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {/* Conversation History Sidebar */}
+      <ConversationSidebar
+        open={showHistory}
+        sessions={savedSessions}
+        onLoad={handleLoadSession}
+        onClear={handleClearHistory}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 }
