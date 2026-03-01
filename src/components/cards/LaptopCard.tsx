@@ -11,6 +11,13 @@ interface LaptopCardProps {
     onAddToCart?: (product: UnifiedProduct) => void;
 }
 
+/** Shorten a CPU string to keep it scannable on a small card. */
+function shortCpu(raw: string): string {
+    // "Intel Core i7-12700H" → "i7-12700H"  |  "Apple M3 Pro" → "M3 Pro"
+    const stripped = raw.replace(/^(intel\s+core\s*|amd\s*|apple\s*)/i, '').trim();
+    return stripped.length > 22 ? stripped.slice(0, 20) + '…' : stripped;
+}
+
 export default function LaptopCard({
     data,
     onItemSelect,
@@ -21,8 +28,14 @@ export default function LaptopCard({
     const [imgError, setImgError] = useState(false);
     const { laptop, name, price, image } = data;
     const imageSrc = !imgError && image?.primary ? image.primary : null;
-
     const favorited = isFavorite ? isFavorite(data.id) : false;
+
+    // Derive up to 3 compact spec pills from specs
+    const specs = laptop?.specs;
+    const pills: string[] = [];
+    if (specs?.processor) pills.push(shortCpu(specs.processor));
+    if (specs?.ram) pills.push(specs.ram);
+    if (specs?.storage) pills.push(specs.storage);
 
     const handleToggleFavorite = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -57,218 +70,48 @@ export default function LaptopCard({
                         aria-label={favorited ? 'Unfavorite' : 'Favorite'}
                     >
                         <svg
-                            className={`w-4 h-4 transition-all duration-200 ${favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
-                                }`}
+                            className={`w-4 h-4 transition-all duration-200 ${favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'}`}
                             fill={favorited ? 'currentColor' : 'none'}
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                            />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
                 )}
             </div>
 
             {/* Content */}
-            <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 line-clamp-1">{name}</h3>
-                <p className="text-[#8C1515] font-bold text-lg mt-1">
-                    ${price.toLocaleString()}
-                </p>
+            <div className="flex-1 flex flex-col gap-1.5">
+                <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm leading-snug">{name}</h3>
 
-                {/* Star Rating + review count — always shown */}
-                <div className="flex items-center gap-1 mt-1">
-                    {Array.from({ length: 5 }).map((_, i) => {
-                        const hasRating = typeof (data.rating as number | undefined) === 'number';
-                        const filled = hasRating && i < Math.round(data.rating as number);
-                        return (
-                            <svg
-                                key={i}
-                                className={`w-3.5 h-3.5 ${filled ? 'text-yellow-400' : 'text-black/15'}`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.462a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.538 1.118l-3.388-2.462a1 1 0 00-1.175 0l-3.388 2.462c-.783.57-1.838-.197-1.538-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.049 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z" />
-                            </svg>
-                        );
-                    })}
-                    <span className="text-xs text-black/50 ml-0.5">
-                        {typeof (data.rating as number | undefined) === 'number'
-                            ? `${(data.rating as number).toFixed(1)}/5`
-                            : 'No rating yet'}
-                        {typeof data.reviews_count === 'number' && data.reviews_count > 0 && (
-                            <> · {data.reviews_count.toLocaleString()} reviews</>
-                        )}
-                    </span>
+                <div className="flex items-baseline justify-between">
+                    <p className="text-[#8C1515] font-bold text-base">${price.toLocaleString()}</p>
+                    {typeof (data.rating as number | undefined) === 'number' && (
+                        <span className="text-xs text-black/50">
+                            ⭐ {(data.rating as number).toFixed(1)}
+                            {typeof data.reviews_count === 'number' && data.reviews_count > 0 && (
+                                <> · {data.reviews_count.toLocaleString()}</>
+                            )}
+                        </span>
+                    )}
                 </div>
 
-                {/* Source / Scrape Origin — only shown when available */}
-                {(data.source as string | undefined) && (
-                  <p className="text-xs text-black/50 mt-0.5">
-                    From: <span className="font-medium">{data.source as string}</span>
-                  </p>
-                )}
-
-                {/* Brand — always shown */}
-                <div className="mt-3 space-y-1 text-sm text-gray-600">
-                    <div className="flex justify-between gap-2">
-                        <span>Brand</span>
-                        <span className="font-medium text-gray-900 text-right truncate">{data.brand || 'N/A'}</span>
-                    </div>
-                </div>
-
-                {laptop && laptop.specs && (
-                    <div className="mt-1 space-y-1 text-sm text-gray-600">
-                        {/* Brand already rendered above */}
-                        {laptop.specs.processor && (
-                            <div className="flex justify-between gap-2">
-                                <span>CPU</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.processor}</span>
-                            </div>
-                        )}
-                        {laptop.specs.ram && (
-                            <div className="flex justify-between gap-2">
-                                <span>RAM</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.ram}</span>
-                            </div>
-                        )}
-                        {laptop.specs.storage && (
-                            <div className="flex justify-between gap-2">
-                                <span>Storage</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.storage}</span>
-                            </div>
-                        )}
-                        {laptop.specs.storage_type && (
-                            <div className="flex justify-between gap-2">
-                                <span>Storage type</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.storage_type}</span>
-                            </div>
-                        )}
-                        {(laptop.specs.screen_size || laptop.specs.display) && (
-                            <div className="flex justify-between gap-2">
-                                <span>Display</span>
-                                <span className="font-medium text-gray-900 text-right truncate">
-                                    {laptop.specs.screen_size || laptop.specs.display}
-                                </span>
-                            </div>
-                        )}
-                        {laptop.specs.resolution && (
-                            <div className="flex justify-between gap-2">
-                                <span>Resolution</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.resolution}</span>
-                            </div>
-                        )}
-                        {(laptop.specs.refresh_rate_hz != null && laptop.specs.refresh_rate_hz > 0) && (
-                            <div className="flex justify-between gap-2">
-                                <span>Refresh</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.refresh_rate_hz} Hz</span>
-                            </div>
-                        )}
-                        {laptop.specs.graphics && (
-                            <div className="flex justify-between gap-2">
-                                <span>GPU</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.graphics}</span>
-                            </div>
-                        )}
-                        {laptop.specs.battery_life && (
-                            <div className="flex justify-between gap-2">
-                                <span>Battery</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.battery_life}</span>
-                            </div>
-                        )}
-                        {laptop.specs.os && (
-                            <div className="flex justify-between gap-2">
-                                <span>OS</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.os}</span>
-                            </div>
-                        )}
-                        {laptop.specs.weight && (
-                            <div className="flex justify-between gap-2">
-                                <span>Weight</span>
-                                <span className="font-medium text-gray-900 text-right truncate">{laptop.specs.weight}</span>
-                            </div>
-                        )}
-                        {/* Any extra attributes not already in specs */}
-                        {laptop.attributes && Object.keys(laptop.attributes).length > 0 && (() => {
-                            // Keys already shown in the structured spec rows above
-                            const specKeys = new Set([
-                                'processor', 'cpu', 'ram', 'ram_gb', 'storage', 'storage_gb',
-                                'storage_type', 'display', 'screen_size', 'resolution', 'graphics',
-                                'gpu', 'gpu_model', 'gpu_vendor', 'battery_life', 'battery_life_hours',
-                                'os', 'operating_system', 'weight', 'refresh_rate_hz', 'color',
-                            ]);
-                            // Metadata / condition flags that are not useful to display as raw rows
-                            const metaKeys = new Set([
-                                'refurbished', 'certified', 'renewed', 'open_box', 'condition',
-                                'good_for_creative', 'good_for_gaming', 'good_for_work', 'good_for_school',
-                                'is_used', 'norm_is_used', 'description', 'tags', 'source',
-                                'listing_url', 'link', 'merchant_product_url',
-                            ]);
-                            const entries = Object.entries(laptop.attributes).filter(([k, v]) => {
-                                if (specKeys.has(k) || metaKeys.has(k)) return false;
-                                if (v == null || String(v).trim() === '') return false;
-                                // Skip booleans — "true"/"false" as a spec row is not useful
-                                if (typeof v === 'boolean') return false;
-                                return true;
-                            });
-                            if (entries.length === 0) return null;
-                            return (
-                                <>
-                                    {entries.slice(0, 3).map(([key, value]) => (
-                                        <div key={key} className="flex justify-between gap-2">
-                                            <span className="capitalize">{key.replace(/_/g, ' ')}</span>
-                                            <span className="font-medium text-gray-900 text-right truncate">{String(value)}</span>
-                                        </div>
-                                    ))}
-                                    {entries.length > 3 && (
-                                        <div className="text-xs text-gray-500">+{entries.length - 3} more</div>
-                                    )}
-                                </>
-                            );
-                        })()}
-                    </div>
-                )}
-
-                {laptop?.tags && laptop.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                        {laptop.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                                {tag}
+                {/* Spec pills */}
+                {pills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                        {pills.map((pill, i) => (
+                            <span key={i} className="text-[10px] bg-black/5 text-black/60 px-1.5 py-0.5 rounded border border-black/8">
+                                {pill}
                             </span>
                         ))}
-                    </div>
-                )}
-
-                {/* Warranty & Return Policy */}
-                {(!!data.warranty || !!data.return_policy) && (
-                    <div className="mt-3 space-y-1">
-                        {!!data.warranty && (
-                            <div className="flex items-start gap-1.5 text-xs text-gray-600">
-                                <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                <span><span className="font-medium text-gray-700">Warranty:</span> {String(data.warranty)}</span>
-                            </div>
-                        )}
-                        {!!data.return_policy && (
-                            <div className="flex items-start gap-1.5 text-xs text-gray-600">
-                                <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                </svg>
-                                <span><span className="font-medium text-gray-700">Returns:</span> {String(data.return_policy)}</span>
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
 
             {/* Actions */}
-            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                 <button
                     onClick={() => onItemSelect && onItemSelect(data)}
                     className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f] flex items-center gap-1"
@@ -282,10 +125,10 @@ export default function LaptopCard({
                     ) : (
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
-                            className="w-9 h-9 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
+                            className="w-8 h-8 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
                             aria-label="Add to cart"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </button>
