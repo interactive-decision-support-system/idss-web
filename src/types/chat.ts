@@ -146,6 +146,15 @@ export interface UnifiedProduct {
   [key: string]: unknown;
 }
 
+// Represents a saved conversation session stored in localStorage
+export interface SavedSession {
+  sessionId: string;
+  title: string;        // First user message, truncated
+  domain: string | null;
+  timestamp: string;    // ISO date string
+  messages: ChatMessage[];
+}
+
 export type Product = UnifiedProduct | {
   id: string;
   title: string; // Display title (e.g., "2023 Toyota Camry" or "Black Long Sleeve Top")
