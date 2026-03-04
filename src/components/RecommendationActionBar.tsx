@@ -103,7 +103,7 @@ export default function RecommendationActionBar({ products, onSendMessage, quick
       {/* Dynamic follow-up chips — context-aware questions from the backend */}
       {quickReplies && quickReplies.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs text-black/35 font-medium">What&apos;s next?</p>
+          <p className="text-xs text-black/35 font-medium">Ask about these results</p>
           <div className="flex flex-wrap gap-1.5">
             {quickReplies.map((reply, idx) => (
               <button
