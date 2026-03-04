@@ -1,6 +1,6 @@
 'use client';
 
-import { Product, UnifiedProduct } from '@/types/chat';
+import { Product } from '@/types/chat';
 import Image from 'next/image';
 import RecommendationCard from './RecommendationCard';
 import { isSoldOut } from '@/utils/inventory';
