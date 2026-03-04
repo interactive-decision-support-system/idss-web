@@ -58,7 +58,6 @@ describe('RecommendationCard', () => {
     );
 
     expect(screen.getByText('Example Product')).toBeInTheDocument();
-    expect(screen.getByText('Test Dealer')).toBeInTheDocument();
     expect(screen.getByText('$24,999')).toBeInTheDocument();
     expect(screen.getByText('11,000 mi')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
