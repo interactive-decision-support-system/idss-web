@@ -9,6 +9,7 @@ interface LaptopCardProps {
     onToggleFavorite?: (product: UnifiedProduct) => void;
     isFavorite?: (productId: string) => boolean;
     onAddToCart?: (product: UnifiedProduct) => void;
+    onAskAI?: (product: UnifiedProduct) => void;
 }
 
 /** Shorten a CPU string to keep it scannable on a small card. */
@@ -24,6 +25,7 @@ export default function LaptopCard({
     onToggleFavorite,
     isFavorite,
     onAddToCart,
+    onAskAI,
 }: LaptopCardProps) {
     const [imgError, setImgError] = useState(false);
     const { laptop, name, price, image } = data;
@@ -44,7 +46,13 @@ export default function LaptopCard({
     };
 
     return (
-        <div className="card card-blue border-black/10 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
+        <div
+            className="card card-blue border-black/10 hover:border-black/20 hover:ring-2 hover:ring-blue-400/40 transition-all duration-200 h-full flex flex-col relative group cursor-pointer"
+            onClick={() => onItemSelect?.(data)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onItemSelect?.(data); } }}
+        >
             {/* Image */}
             <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative mb-3">
                 {imageSrc ? (
@@ -112,28 +120,42 @@ export default function LaptopCard({
 
             {/* Actions */}
             <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                <button
-                    onClick={() => onItemSelect && onItemSelect(data)}
-                    className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f] flex items-center gap-1"
+                <span
+                    className="text-sm font-medium text-[#8C1515] flex items-center gap-1"
                 >
                     View Details
                     <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-                </button>
-                {onAddToCart && (
-                    isSoldOut(data) ? (
-                        <span className="text-xs text-red-600 font-medium">Sold out</span>
-                    ) : (
+                </span>
+                <div className="flex items-center gap-1">
+                    {/* Ask AI button */}
+                    {onAskAI && (
                         <button
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
-                            className="w-8 h-8 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
-                            aria-label="Add to cart"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAskAI(data); }}
+                            className="w-8 h-8 flex items-center justify-center text-black/40 hover:text-[#8C1515] transition-colors shrink-0"
+                            aria-label="Ask AI about this product"
+                            title="Ask AI"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
                         </button>
-                    )
-                )}
+                    )}
+                    {onAddToCart && (
+                        isSoldOut(data) ? (
+                            <span className="text-xs text-red-600 font-medium">Sold out</span>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
+                                className="w-8 h-8 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
+                                aria-label="Add to cart"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </button>
+                        )
+                    )}
+                </div>
             </div>
         </div>
     );

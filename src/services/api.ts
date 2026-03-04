@@ -36,6 +36,29 @@ class IDSSApiService {
       throw error;
     }
   }
+
+  async shareChat(
+    messages: object[],
+    title: string,
+    sessionId: string
+  ): Promise<string> {
+    const url = API_BASE_URL ? `${API_BASE_URL}/share` : '/api/share';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, title, session_id: sessionId }),
+    });
+    if (!response.ok) throw new Error(`Share failed: ${response.status}`);
+    const data = await response.json();
+    return data.share_id as string;
+  }
+
+  async getSharedChat(shareId: string): Promise<{ title: string; messages: object[]; created_at: string }> {
+    const url = API_BASE_URL ? `${API_BASE_URL}/share/${shareId}` : `/api/share/${shareId}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Not found: ${response.status}`);
+    return response.json();
+  }
 }
 
 export const idssApiService = new IDSSApiService();

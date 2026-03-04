@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://idss.vercel.app/sitemap.xml

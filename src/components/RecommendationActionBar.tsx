@@ -6,6 +6,7 @@ import { Product } from '@/types/chat';
 interface RecommendationActionBarProps {
   products: Product[];
   onSendMessage: (message: string) => void;
+  quickReplies?: string[];
 }
 
 const COMPARE_CRITERIA = [
@@ -44,7 +45,7 @@ function StarRatingInput({ value, onChange }: { value: number; onChange: (v: num
   );
 }
 
-export default function RecommendationActionBar({ products, onSendMessage }: RecommendationActionBarProps) {
+export default function RecommendationActionBar({ products, onSendMessage, quickReplies }: RecommendationActionBarProps) {
   const [showRating, setShowRating] = useState(false);
   const [ratingValue, setRatingValue] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
@@ -98,6 +99,24 @@ export default function RecommendationActionBar({ products, onSendMessage }: Rec
       <div className="flex items-center gap-2 pt-1 pb-0.5 border-t border-black/10">
         <span className="text-xs font-semibold text-black/40 uppercase tracking-wider">Explore your options</span>
       </div>
+
+      {/* Dynamic follow-up chips — context-aware questions from the backend */}
+      {quickReplies && quickReplies.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-black/35 font-medium">What&apos;s next?</p>
+          <div className="flex flex-wrap gap-1.5">
+            {quickReplies.map((reply, idx) => (
+              <button
+                key={idx}
+                onClick={() => onSendMessage(reply)}
+                className="px-3 py-1.5 text-sm rounded-full border border-[#8C1515]/30 bg-[#8C1515]/5 text-[#8C1515] hover:bg-[#8C1515]/10 hover:border-[#8C1515]/50 font-medium transition-colors"
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action Buttons Row */}
       <div className="flex flex-wrap gap-2">

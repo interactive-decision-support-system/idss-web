@@ -31,7 +31,13 @@ export default function VehicleCard({
     };
 
     return (
-        <div className="card card-peach border-black/10 hover:border-black/20 transition-all duration-200 h-full flex flex-col relative group">
+        <div
+            className="card card-peach border-black/10 hover:border-black/20 hover:ring-2 hover:ring-orange-300/40 transition-all duration-200 h-full flex flex-col relative group cursor-pointer"
+            onClick={() => onItemSelect?.(data)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onItemSelect?.(data); } }}
+        >
             {/* Image */}
             <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative mb-3">
                 {imageSrc ? (
@@ -113,13 +119,10 @@ export default function VehicleCard({
 
             {/* Actions */}
             <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                <button
-                    onClick={() => onItemSelect && onItemSelect(data)}
-                    className="text-sm font-medium text-[#8C1515] hover:text-[#b11f1f] flex items-center gap-1"
-                >
+                <span className="text-sm font-medium text-[#8C1515] flex items-center gap-1">
                     View Details
                     <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-                </button>
+                </span>
                 {onAddToCart && (
                     isSoldOut(data) ? (
                         <span className="text-xs text-red-600 font-medium">Sold out</span>

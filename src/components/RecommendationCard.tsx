@@ -14,6 +14,7 @@ interface RecommendationCardProps {
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
   onAddToCart?: (product: Product) => void;
+  onAskAI?: (product: Product) => void;
 }
 
 export default function RecommendationCard({
@@ -22,6 +23,7 @@ export default function RecommendationCard({
   onToggleFavorite,
   isFavorite,
   onAddToCart,
+  onAskAI,
 }: RecommendationCardProps) {
   if (!product) {
     return null;
@@ -48,6 +50,7 @@ export default function RecommendationCard({
         onToggleFavorite={onToggleFavorite as ((p: UnifiedProduct) => void) | undefined}
         isFavorite={isFavorite}
         onAddToCart={onAddToCart as ((p: UnifiedProduct) => void) | undefined}
+        onAskAI={onAskAI as ((p: UnifiedProduct) => void) | undefined}
       />
     );
   }

@@ -10,6 +10,7 @@ import CartPage, { type CheckoutOptions } from '@/components/CartPage';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import ConversationSidebar from '@/components/ConversationSidebar';
+import ProductChatPanel from '@/components/ProductChatPanel';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import type { SavedSession } from '@/types/chat';
 import { idssApiService } from '@/services/api';
@@ -242,6 +243,8 @@ export default function Home() {
   const [locationDismissed, setLocationDismissed] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
+  const [productChatTarget, setProductChatTarget] = useState<Product | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
   const multiDomainDefaults = getMultiDomainDefaults();
 
@@ -311,6 +314,26 @@ export default function Home() {
   const handleClearHistory = () => {
     setSavedSessions([]);
     try { localStorage.removeItem('idss_history'); } catch { /* ignore */ }
+  };
+
+  // Share current chat — posts to backend, copies link to clipboard
+  const handleShareChat = async () => {
+    const userMessages = chatMessages.filter(m => m.role === 'user');
+    if (userMessages.length === 0) return;
+    const title = userMessages[0]?.content?.slice(0, 60) || 'IDSS Chat';
+    try {
+      const shareId = await idssApiService.shareChat(
+        chatMessages.map(m => ({ role: m.role, content: m.content })),
+        title,
+        sessionId || ''
+      );
+      const shareUrl = `${window.location.origin}/s/${shareId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      // Silently fail — non-critical feature
+    }
   };
 
   // Load favorites when userId changes (or on mount for guest)
@@ -665,35 +688,57 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${showFavorites || showCart || selectedProduct ? 'pr-96' : ''}`}>
-        {/* Floating Title + History toggle - Top Left */}
-        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-          <h1 className="text-xl font-semibold text-black">IDSS</h1>
-          {/* History toggle button */}
+      {/* Main Chat Area — offset by sidebar width on desktop */}
+      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 md:pl-60 ${showFavorites || showCart || selectedProduct || productChatTarget ? 'pr-96' : ''}`}>
+        {/* Mobile hamburger — top left, only on small screens */}
+        <div className="absolute top-4 left-4 z-10 md:hidden">
           <button
             onClick={() => setShowHistory(v => !v)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200 ml-1"
-            title="Conversation history"
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
+            aria-label="Open sidebar"
           >
-            <svg className="w-4 h-4 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg className="w-5 h-5 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
 
         {/* Auth + New Search + Cart + Favorites - Top Right */}
         <div className="absolute top-4 right-4 flex items-center gap-4 z-[1000]">
-          {/* New Search button — visible once the user has sent at least one message */}
+          {/* New Search button — only on mobile (desktop uses sidebar New Chat) */}
           {!isInitialState && chatMessages.length > 1 && (
             <button
               onClick={handleNewSearch}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#8C1515] text-[#8C1515] rounded-full hover:bg-[#8C1515] hover:text-white transition-colors"
+              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#8C1515] text-[#8C1515] rounded-full hover:bg-[#8C1515] hover:text-white transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              New Search
+              New Chat
+            </button>
+          )}
+          {/* Share button — visible once the user has had a conversation */}
+          {!isInitialState && chatMessages.length > 1 && (
+            <button
+              onClick={handleShareChat}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-black/20 text-black/70 rounded-full hover:bg-black/5 transition-colors"
+              title="Copy shareable link to this chat"
+            >
+              {shareCopied ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-green-600 font-medium">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  Share
+                </>
+              )}
             </button>
           )}
           <AuthButton />
@@ -860,6 +905,12 @@ export default function Home() {
                               onToggleFavorite={toggleFavorite}
                               isFavorite={isFavorite}
                               onAddToCart={addToCart}
+                              onAskAI={(p) => {
+                                setProductChatTarget(p);
+                                setSelectedProduct(null);
+                                setShowCart(false);
+                                setShowFavorites(false);
+                              }}
                             />
                           )}
 
@@ -868,6 +919,7 @@ export default function Home() {
                             <RecommendationActionBar
                               products={allProducts}
                               onSendMessage={handleChatMessage}
+                              quickReplies={message.quick_replies}
                             />
                           )}
 
@@ -910,7 +962,7 @@ export default function Home() {
 
         {/* Chat Input - Only show when not in initial state */}
         {!isInitialState && (
-          <div className="px-8 py-4 flex-shrink-0 pl-20">
+          <div className="px-8 py-4 flex-shrink-0">
             <div className="max-w-4xl mx-auto">
               <ChatInput
                 onSendMessage={handleChatMessage}
@@ -965,6 +1017,20 @@ export default function Home() {
         </div>
       )}
 
+      {/* Per-product Ask AI panel */}
+      {productChatTarget && (
+        <div className="absolute top-16 right-4 bottom-4 w-80 bg-white rounded-xl border border-black/10 shadow-2xl flex flex-col z-25">
+          <ProductChatPanel
+            product={productChatTarget}
+            onClose={() => setProductChatTarget(null)}
+            onSendMessage={(msg) => {
+              setProductChatTarget(null);
+              handleChatMessage(msg);
+            }}
+          />
+        </div>
+      )}
+
       {/* Conversation History Sidebar */}
       <ConversationSidebar
         open={showHistory}
@@ -972,6 +1038,7 @@ export default function Home() {
         onLoad={handleLoadSession}
         onClear={handleClearHistory}
         onClose={() => setShowHistory(false)}
+        onNewChat={handleNewSearch}
       />
     </div>
   );

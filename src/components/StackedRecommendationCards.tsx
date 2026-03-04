@@ -259,6 +259,7 @@ interface StackedRecommendationCardsProps {
   onToggleFavorite?: (product: Product) => void;
   isFavorite?: (productId: string) => boolean;
   onAddToCart?: (product: Product) => void;
+  onAskAI?: (product: Product) => void;
 }
 
 export default function StackedRecommendationCards({
@@ -269,6 +270,7 @@ export default function StackedRecommendationCards({
   onToggleFavorite,
   isFavorite,
   onAddToCart,
+  onAskAI,
 }: StackedRecommendationCardsProps) {
   if (!recommendations || recommendations.length === 0) return null;
 
@@ -323,6 +325,7 @@ export default function StackedRecommendationCards({
                 onToggleFavorite={onToggleFavorite}
                 isFavorite={isFavorite}
                 onAddToCart={onAddToCart}
+                onAskAI={onAskAI}
               />
             ))}
           </div>
