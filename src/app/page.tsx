@@ -245,6 +245,7 @@ export default function Home() {
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
   const [productChatTarget, setProductChatTarget] = useState<Product | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [shareError, setShareError] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
   const multiDomainDefaults = getMultiDomainDefaults();
 
@@ -328,11 +329,26 @@ export default function Home() {
         sessionId || ''
       );
       const shareUrl = `${window.location.origin}/s/${shareId}`;
-      await navigator.clipboard.writeText(shareUrl);
+      // Try modern clipboard API first, fall back to execCommand
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = shareUrl;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
       setShareCopied(true);
+      setShareError(false);
       setTimeout(() => setShareCopied(false), 2500);
     } catch {
-      // Silently fail — non-critical feature
+      setShareError(true);
+      setTimeout(() => setShareError(false), 3000);
     }
   };
 
@@ -731,6 +747,8 @@ export default function Home() {
                   </svg>
                   <span className="text-green-600 font-medium">Copied!</span>
                 </>
+              ) : shareError ? (
+                <span className="text-red-500 font-medium">Failed — try again</span>
               ) : (
                 <>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1023,10 +1041,6 @@ export default function Home() {
           <ProductChatPanel
             product={productChatTarget}
             onClose={() => setProductChatTarget(null)}
-            onSendMessage={(msg) => {
-              setProductChatTarget(null);
-              handleChatMessage(msg);
-            }}
           />
         </div>
       )}
