@@ -51,7 +51,6 @@ export default function ProductChatPanel({ product, onClose }: ProductChatPanelP
   const name = getProductName(product);
   const imgSrc = !imgError ? getProductImage(product) : null;
   const price = getProductPrice(product);
-  const productId = product.id ?? (product as { product_id?: string }).product_id ?? '';
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -65,16 +64,18 @@ export default function ProductChatPanel({ product, onClose }: ProductChatPanelP
     const text = message.trim();
     if (!text || loading) return;
 
-    const tagged = productId ? `${text} [ctx:${productId}]` : text;
+    // Snapshot history before adding new user message
+    const priorHistory = messages.map(m => ({ role: m.role, content: m.content }));
 
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setInput('');
     setLoading(true);
 
     try {
-      const res = await idssApiService.sendMessage(tagged);
-      const reply = res.message ?? 'Sorry, I couldn\'t get a response.';
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      // Use dedicated product Q&A endpoint — passes full product data as context,
+      // bypasses the interview flow entirely, answers directly about this product.
+      const answer = await idssApiService.productQA(text, product as object, priorHistory);
+      setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again.' }]);
     } finally {

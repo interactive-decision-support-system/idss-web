@@ -630,6 +630,7 @@ export default function Home() {
         bucket_labels: response.bucket_labels,
         diversification_dimension: response.diversification_dimension,
         quick_replies: response.quick_replies,
+        domain: response.domain ?? undefined,
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
 
@@ -938,6 +939,7 @@ export default function Home() {
                               products={allProducts}
                               onSendMessage={handleChatMessage}
                               quickReplies={message.quick_replies}
+                              domain={message.domain}
                             />
                           )}
 

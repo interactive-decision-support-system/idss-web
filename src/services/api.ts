@@ -59,6 +59,22 @@ class IDSSApiService {
     if (!response.ok) throw new Error(`Not found: ${response.status}`);
     return response.json();
   }
+
+  async productQA(
+    question: string,
+    productContext: object,
+    history: { role: string; content: string }[]
+  ): Promise<string> {
+    const url = API_BASE_URL ? `${API_BASE_URL}/product-qa` : '/api/product-qa';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, product_context: productContext, history }),
+    });
+    if (!response.ok) throw new Error(`Product QA failed: ${response.status}`);
+    const data = await response.json();
+    return data.answer as string;
+  }
 }
 
 export const idssApiService = new IDSSApiService();

@@ -35,6 +35,7 @@ export interface ChatMessage {
   bucket_labels?: string[]; // Labels for each row
   diversification_dimension?: string; // Dimension used for diversification
   quick_replies?: string[];
+  domain?: string; // 'laptops' | 'books' | 'vehicles' etc.
 }
 
 export interface UserLocation {
@@ -63,6 +64,7 @@ export interface ChatResponse {
   preferences?: Record<string, unknown>;
   question_count?: number;
   timings_ms?: Record<string, number>;
+  domain?: string;
 }
 
 export interface UnifiedProduct {
