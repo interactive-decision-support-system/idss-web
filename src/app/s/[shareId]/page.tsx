@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import IDSSLogo from '@/components/IDSSLogo';
 
 interface SharedMessage {
@@ -46,12 +47,12 @@ export default function SharedChatPage() {
           <p className="text-[10px] text-black/40 leading-none mt-0.5">Stanford LDR Lab · Shared Chat</p>
         </div>
         <div className="ml-auto">
-          <a
+          <Link
             href="/"
             className="px-3 py-1.5 text-sm rounded-lg bg-[#8C1515] text-white font-medium hover:bg-[#750013] transition-colors"
           >
             Try IDSS →
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -75,9 +76,9 @@ export default function SharedChatPage() {
         {error && (
           <div className="text-center py-20">
             <p className="text-black/50 text-sm">{error}</p>
-            <a href="/" className="mt-4 inline-block text-sm text-[#8C1515] font-medium hover:underline">
+            <Link href="/" className="mt-4 inline-block text-sm text-[#8C1515] font-medium hover:underline">
               Start a new chat
-            </a>
+            </Link>
           </div>
         )}
 
@@ -114,12 +115,12 @@ export default function SharedChatPage() {
             {/* CTA */}
             <div className="pt-4 text-center border-t border-black/8">
               <p className="text-xs text-black/40 mb-3">Want personalized recommendations?</p>
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8C1515] text-white text-sm font-medium hover:bg-[#750013] transition-colors"
               >
                 Start your own chat →
-              </a>
+              </Link>
             </div>
           </div>
         )}
