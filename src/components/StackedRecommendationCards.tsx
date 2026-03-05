@@ -153,7 +153,13 @@ function BestPickHero({
   };
 
   return (
-    <div className="rounded-xl border border-[#8C1515]/25 bg-gradient-to-br from-[#8C1515]/5 to-white p-4 sm:p-5">
+    <div
+      className="rounded-xl border border-[#8C1515]/25 bg-gradient-to-br from-[#8C1515]/5 to-white p-4 sm:p-5 cursor-pointer hover:border-[#8C1515]/40 transition-colors"
+      onClick={() => onItemSelect && onItemSelect(product)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onItemSelect?.(product); } }}
+    >
       {/* Badge */}
       <div className="flex items-center gap-1.5 mb-4">
         <svg className="w-4 h-4 text-[#8C1515]" fill="currentColor" viewBox="0 0 20 20">
@@ -222,12 +228,9 @@ function BestPickHero({
 
           {/* Actions */}
           <div className="flex items-center gap-3 mt-1">
-            <button
-              onClick={() => onItemSelect && onItemSelect(product)}
-              className="text-sm font-semibold text-[#8C1515] hover:text-[#750013] flex items-center gap-1"
-            >
+            <span className="text-sm font-semibold text-[#8C1515] flex items-center gap-1">
               View Details →
-            </button>
+            </span>
             {onAddToCart && (
               soldOut ? (
                 <span className="text-xs text-red-600 font-medium">Sold out</span>

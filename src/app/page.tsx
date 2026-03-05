@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import ChatInput from '@/components/ChatInput';
 import StackedRecommendationCards from '@/components/StackedRecommendationCards';
 import ComparisonSideBySide from '@/components/ComparisonSideBySide';
@@ -138,6 +139,23 @@ function formatRecommendationText(content: string): React.ReactNode {
             ))}
           </ul>
         );
+        continue;
+      }
+
+      // "Pros:" / "Cons:" lines — bold label + bullet
+      if (/^(pros|cons):/i.test(line)) {
+        const colonIdx = line.indexOf(':');
+        const label = line.slice(0, colonIdx);
+        const text = line.slice(colonIdx + 1).trim();
+        nodes.push(
+          <div key={key++} className="flex gap-2 text-sm leading-relaxed mt-0.5">
+            <span className="text-[#8C1515] font-bold shrink-0 mt-0.5">•</span>
+            <span className="flex-1">
+              <strong className="font-semibold">{label}:</strong>{text ? ` ${text}` : ''}
+            </span>
+          </div>
+        );
+        i++;
         continue;
       }
 
@@ -418,6 +436,7 @@ export default function Home() {
       }
       return [...p, { product, quantity: 1 }];
     });
+    setShowCart(true);
     try {
       await cartService.add(userId, product);
     } catch (e) {
@@ -734,6 +753,16 @@ export default function Home() {
               New Chat
             </button>
           )}
+          {/* Connect via messaging app — always visible */}
+          <Link
+            href="/connect"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm border border-black/15 text-black/50 rounded-full hover:bg-black/5 hover:text-black/70 transition-colors"
+            title="Use IDSS via WhatsApp, iMessage, Telegram"
+          >
+            <span className="text-base leading-none">🦞</span>
+            <span>Connect</span>
+          </Link>
+
           {/* Share button — visible once the user has had a conversation */}
           {!isInitialState && chatMessages.length > 1 && (
             <button

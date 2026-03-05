@@ -12,7 +12,7 @@ import { NextResponse } from 'next/server';
  *   - Install it:   tell OpenClaw "Install this skill from URL: https://idss.vercel.app/api/skill"
  */
 export async function GET() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend.onrender.com';
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend-production.up.railway.app';
 
   // Inline the skill content here so the build doesn't depend on reading a
   // file at runtime (Vercel serverless functions run from a read-only bundle).

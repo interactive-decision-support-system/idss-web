@@ -8,7 +8,7 @@
  */
 
 describe('GET /api/skill — OpenClaw skill endpoint', () => {
-  const DEFAULT_API_URL = 'https://idss-backend.onrender.com';
+  const DEFAULT_API_URL = 'https://idss-backend-production.up.railway.app';
 
   beforeEach(() => {
     jest.resetModules();
