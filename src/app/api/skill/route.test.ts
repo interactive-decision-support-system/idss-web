@@ -52,7 +52,7 @@ describe('GET /api/skill — OpenClaw skill endpoint', () => {
     const { GET } = await import('./route');
     const res = await GET();
     const text = await (res as unknown as Response).text();
-    expect(text).toContain(`const IDSS_API_URL = '${DEFAULT_API_URL}'`);
+    expect(text).toContain(`const IDSS_API_URL  = '${DEFAULT_API_URL}'`);
   });
 
   it('embeds NEXT_PUBLIC_API_BASE_URL when set', async () => {
@@ -60,7 +60,7 @@ describe('GET /api/skill — OpenClaw skill endpoint', () => {
     const { GET } = await import('./route');
     const res = await GET();
     const text = await (res as unknown as Response).text();
-    expect(text).toContain("const IDSS_API_URL = 'https://my-custom-backend.example.com'");
+    expect(text).toContain("const IDSS_API_URL  = 'https://my-custom-backend.example.com'");
     expect(text).not.toContain(DEFAULT_API_URL);
   });
 
