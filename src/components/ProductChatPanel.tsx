@@ -8,6 +8,7 @@ import { idssApiService } from '@/services/api';
 interface ProductChatPanelProps {
   product: Product;
   onClose: () => void;
+  sessionId?: string;
 }
 
 interface PanelMessage {
@@ -40,7 +41,7 @@ function getProductPrice(p: Product): string | null {
   return null;
 }
 
-export default function ProductChatPanel({ product, onClose }: ProductChatPanelProps) {
+export default function ProductChatPanel({ product, onClose, sessionId }: ProductChatPanelProps) {
   const [messages, setMessages] = useState<PanelMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ export default function ProductChatPanel({ product, onClose }: ProductChatPanelP
     try {
       // Use dedicated product Q&A endpoint — passes full product data as context,
       // bypasses the interview flow entirely, answers directly about this product.
-      const answer = await idssApiService.productQA(text, product as object, priorHistory);
+      const answer = await idssApiService.productQA(text, product as object, priorHistory, sessionId);
       setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again.' }]);
@@ -111,8 +112,8 @@ export default function ProductChatPanel({ product, onClose }: ProductChatPanelP
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-black truncate">{name}</p>
-          {price && <p className="text-xs text-[#8C1515] font-medium">{price}</p>}
+          <p className="text-sm font-semibold text-black truncate">{name}</p>
+          {price && <p className="text-sm text-[#8C1515] font-semibold">{price}</p>}
         </div>
 
         <button

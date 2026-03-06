@@ -63,7 +63,8 @@ class IDSSApiService {
   async productQA(
     question: string,
     productContext: object & { id?: string },
-    history: { role: string; content: string }[]
+    history: { role: string; content: string }[],
+    sessionId?: string
   ): Promise<string> {
     const url = API_BASE_URL ? `${API_BASE_URL}/product-qa` : '/api/product-qa';
     const response = await fetch(url, {
@@ -74,6 +75,7 @@ class IDSSApiService {
         product_context: productContext,
         product_id: productContext.id ?? null,
         history,
+        session_id: sessionId ?? null,
       }),
     });
     if (!response.ok) throw new Error(`Product QA failed: ${response.status}`);

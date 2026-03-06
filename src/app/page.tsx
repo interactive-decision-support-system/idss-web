@@ -1072,6 +1072,7 @@ export default function Home() {
           <ProductChatPanel
             product={productChatTarget}
             onClose={() => setProductChatTarget(null)}
+            sessionId={sessionId ?? undefined}
           />
         </div>
       )}
