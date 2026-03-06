@@ -14,7 +14,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   // siteUrl is the Vercel frontend — the skill calls our /api/* proxy routes
   // so all traffic passes through a single public entry point.
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://idss.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://idss-backend-production.up.railway.app';
   // directApiUrl is the Railway backend — used only for endpoints that don't
   // yet have a Vercel proxy (e.g. /search/ebay).
   const directApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend-production.up.railway.app';

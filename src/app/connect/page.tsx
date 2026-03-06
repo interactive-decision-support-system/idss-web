@@ -59,7 +59,7 @@ export default function ConnectPage() {
   const [activePlatform, setActivePlatform] = useState('whatsapp');
   const [activeOS, setActiveOS] = useState<'mac' | 'windows'>('mac');
 
-  const SKILL_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://idss.vercel.app'}/api/skill`;
+  const SKILL_URL = process.env.NEXT_PUBLIC_SKILL_URL || 'https://idss-backend-production.up.railway.app/skill';
   const IDSS_API  = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend.onrender.com';
 
   const installCmd = activeOS === 'mac'
