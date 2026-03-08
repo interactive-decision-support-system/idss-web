@@ -726,16 +726,17 @@ export default function Home() {
 
       {/* Main Chat Area — offset by sidebar width on desktop */}
       <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 md:pl-60 ${showFavorites || showCart || selectedProduct || productChatTarget ? 'pr-96' : ''}`}>
-        {/* Mobile hamburger — top left, only on small screens */}
-        <div className="absolute top-4 left-4 z-10 md:hidden">
+        {/* Mobile history toggle — top left, only on small screens */}
+        <div className="absolute top-3 left-3 z-10 md:hidden">
           <button
             onClick={() => setShowHistory(v => !v)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 transition-all duration-200"
-            aria-label="Open sidebar"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-black/15 shadow-sm hover:bg-black/5 transition-all duration-200"
+            aria-label="Toggle chat history"
           >
-            <svg className="w-5 h-5 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
+            <span className="text-xs font-medium text-black/60">History</span>
           </button>
         </div>
 

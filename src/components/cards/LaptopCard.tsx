@@ -28,8 +28,10 @@ export default function LaptopCard({
     onAskAI,
 }: LaptopCardProps) {
     const [imgError, setImgError] = useState(false);
+    const [imgIdx, setImgIdx] = useState(0);
     const { laptop, name, price, image } = data;
-    const imageSrc = !imgError && image?.primary ? image.primary : null;
+    const allImages = [image?.primary, ...(image?.gallery ?? [])].filter(Boolean) as string[];
+    const imageSrc = !imgError && allImages.length > 0 ? allImages[imgIdx] : null;
     const favorited = isFavorite ? isFavorite(data.id) : false;
 
     // Derive up to 3 compact spec pills from specs
@@ -54,7 +56,8 @@ export default function LaptopCard({
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onItemSelect?.(data); } }}
         >
             {/* Image */}
-            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative mb-3">
+            <div className="mb-3">
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative">
                 {imageSrc ? (
                     <Image
                         src={imageSrc}
@@ -68,6 +71,24 @@ export default function LaptopCard({
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                         No Image
                     </div>
+                )}
+
+                {/* Carousel prev/next arrows */}
+                {allImages.length > 1 && (
+                    <>
+                        <button
+                            onClick={e => { e.preventDefault(); e.stopPropagation(); setImgIdx(i => Math.max(0, i - 1)); setImgError(false); }}
+                            disabled={imgIdx === 0}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-black/50 text-white text-sm flex items-center justify-center hover:bg-black/70 disabled:opacity-0 transition-opacity"
+                            aria-label="Previous image"
+                        >‹</button>
+                        <button
+                            onClick={e => { e.preventDefault(); e.stopPropagation(); setImgIdx(i => Math.min(allImages.length - 1, i + 1)); setImgError(false); }}
+                            disabled={imgIdx === allImages.length - 1}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-black/50 text-white text-sm flex items-center justify-center hover:bg-black/70 disabled:opacity-0 transition-opacity"
+                            aria-label="Next image"
+                        >›</button>
+                    </>
                 )}
 
                 {/* Favorite Button */}
@@ -88,6 +109,21 @@ export default function LaptopCard({
                         </svg>
                     </button>
                 )}
+              </div>
+
+              {/* Dot indicators */}
+              {allImages.length > 1 && (
+                <div className="flex justify-center gap-1 pt-1.5">
+                  {allImages.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); setImgIdx(i); setImgError(false); }}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${i === imgIdx ? 'bg-[#8C1515]' : 'bg-black/20'}`}
+                      aria-label={`Image ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Content */}
