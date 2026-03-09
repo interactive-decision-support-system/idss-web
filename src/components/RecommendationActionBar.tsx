@@ -65,12 +65,11 @@ export default function RecommendationActionBar({ products, onSendMessage, quick
     return ids ? ` [ctx:${ids}]` : '';
   })();
 
-  // 6 common product questions, sent to main chat with product context
+  // Common product questions, sent to main chat with product context
   const commonQuestions = [
     { label: 'Pros & cons of each', msg: `What are the pros and cons of each of these ${noun}?${ctxTag}` },
     { label: isLaptops ? 'Good for gaming?' : 'Best use case?', msg: isLaptops ? `Which of these ${noun} is best for gaming?${ctxTag}` : `What is the best use case for each of these?${ctxTag}` },
     { label: 'Battery life', msg: `How is the battery life on these ${noun}?${ctxTag}` },
-    { label: 'Worth the price?', msg: `Is each of these ${noun} worth the price?${ctxTag}` },
     { label: 'Specs in detail', msg: `What are the detailed specs of each of these ${noun}?${ctxTag}` },
     { label: 'Best for students?', msg: `Which of these ${noun} is best for students or everyday use?${ctxTag}` },
   ];

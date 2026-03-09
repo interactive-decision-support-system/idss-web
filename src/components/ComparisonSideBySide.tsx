@@ -194,7 +194,7 @@ const CRITERIA_ROW_MAP: Record<string, string[]> = {
   'RAM':            ['RAM'],
   'Processor / CPU': ['CPU'],
   'Storage':        ['Storage', 'Storage type'],
-  'Display size':   ['Display', 'Resolution', 'Refresh rate'],
+  'Display size':   ['Display'],
   'Battery life':   ['Battery'],
   'Weight':         ['Weight'],
   'GPU':            ['GPU'],
