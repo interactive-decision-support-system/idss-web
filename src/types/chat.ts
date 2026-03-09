@@ -148,6 +148,13 @@ export interface UnifiedProduct {
   [key: string]: unknown;
 }
 
+// Represents a folder that groups saved sessions
+export interface ChatFolder {
+  id: string;
+  name: string;
+  createdAt: string;    // ISO date string
+}
+
 // Represents a saved conversation session stored in localStorage
 export interface SavedSession {
   sessionId: string;
@@ -155,6 +162,7 @@ export interface SavedSession {
   domain: string | null;
   timestamp: string;    // ISO date string
   messages: ChatMessage[];
+  folderId?: string;    // If set, session belongs to this folder
 }
 
 export type Product = UnifiedProduct | {

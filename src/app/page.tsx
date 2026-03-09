@@ -13,7 +13,7 @@ import RecommendationActionBar from '@/components/RecommendationActionBar';
 import ConversationSidebar from '@/components/ConversationSidebar';
 import ProductChatPanel from '@/components/ProductChatPanel';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
-import type { SavedSession } from '@/types/chat';
+import type { SavedSession, ChatFolder } from '@/types/chat';
 import { idssApiService } from '@/services/api';
 import { favoritesService } from '@/services/favorites';
 import { cartService, type CartItem } from '@/services/cart';
@@ -261,6 +261,7 @@ export default function Home() {
   const [locationDismissed, setLocationDismissed] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
+  const [savedFolders, setSavedFolders] = useState<ChatFolder[]>([]);
   const [productChatTarget, setProductChatTarget] = useState<Product | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareError, setShareError] = useState(false);
@@ -272,14 +273,16 @@ export default function Home() {
   const showLocationBanner =
     !locationDismissed && !userLocation && locationPermission !== 'unavailable';
 
-  // Load conversation history from localStorage on mount
+  // Load conversation history and folders from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem('idss_history');
       if (raw) setSavedSessions(JSON.parse(raw));
-    } catch {
-      // ignore corrupt data
-    }
+    } catch { /* ignore corrupt data */ }
+    try {
+      const rawFolders = localStorage.getItem('idss_folders');
+      if (rawFolders) setSavedFolders(JSON.parse(rawFolders));
+    } catch { /* ignore corrupt data */ }
   }, []);
 
   // Save current session snapshot to localStorage
@@ -333,6 +336,41 @@ export default function Home() {
   const handleClearHistory = () => {
     setSavedSessions([]);
     try { localStorage.removeItem('idss_history'); } catch { /* ignore */ }
+  };
+
+  // Folder helpers
+  const persistFolders = (folders: ChatFolder[]) => {
+    try { localStorage.setItem('idss_folders', JSON.stringify(folders)); } catch { /* ignore */ }
+  };
+  const persistSessions = (sessions: SavedSession[]) => {
+    try { localStorage.setItem('idss_history', JSON.stringify(sessions)); } catch { /* ignore */ }
+  };
+
+  const handleCreateFolder = (name: string) => {
+    const folder: ChatFolder = { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() };
+    setSavedFolders(prev => { const next = [...prev, folder]; persistFolders(next); return next; });
+  };
+
+  const handleDeleteFolder = (folderId: string) => {
+    // Remove folder and unassign its sessions
+    setSavedFolders(prev => { const next = prev.filter(f => f.id !== folderId); persistFolders(next); return next; });
+    setSavedSessions(prev => {
+      const next = prev.map(s => s.folderId === folderId ? { ...s, folderId: undefined } : s);
+      persistSessions(next);
+      return next;
+    });
+  };
+
+  const handleRenameFolder = (folderId: string, newName: string) => {
+    setSavedFolders(prev => { const next = prev.map(f => f.id === folderId ? { ...f, name: newName } : f); persistFolders(next); return next; });
+  };
+
+  const handleMoveToFolder = (sessionId: string, folderId: string | null) => {
+    setSavedSessions(prev => {
+      const next = prev.map(s => s.sessionId === sessionId ? { ...s, folderId: folderId ?? undefined } : s);
+      persistSessions(next);
+      return next;
+    });
   };
 
   // Share current chat — posts to backend, copies link to clipboard
@@ -1082,10 +1120,15 @@ export default function Home() {
       <ConversationSidebar
         open={showHistory}
         sessions={savedSessions}
+        folders={savedFolders}
         onLoad={handleLoadSession}
         onClear={handleClearHistory}
         onClose={() => setShowHistory(false)}
         onNewChat={handleNewSearch}
+        onCreateFolder={handleCreateFolder}
+        onDeleteFolder={handleDeleteFolder}
+        onRenameFolder={handleRenameFolder}
+        onMoveToFolder={handleMoveToFolder}
       />
     </div>
   );
