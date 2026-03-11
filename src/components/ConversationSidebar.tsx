@@ -34,6 +34,7 @@ interface Props {
   onDeleteFolder: (folderId: string) => void;
   onRenameFolder: (folderId: string, newName: string) => void;
   onMoveToFolder: (sessionId: string, folderId: string | null) => void;
+  onDeleteSession: (sessionId: string) => void;
 }
 
 export default function ConversationSidebar({
@@ -48,6 +49,7 @@ export default function ConversationSidebar({
   onDeleteFolder,
   onRenameFolder,
   onMoveToFolder,
+  onDeleteSession,
 }: Props) {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -197,6 +199,17 @@ export default function ConversationSidebar({
                 Create a folder first using the folder+ button above.
               </p>
             )}
+            <div className="border-t border-black/8 my-1" />
+            <button
+              data-menu
+              onClick={() => { onDeleteSession(session.sessionId); setOpenSessionMenu(null); }}
+              className="w-full text-left px-3 py-1.5 hover:bg-red-50 flex items-center gap-2 text-red-600"
+            >
+              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete chat
+            </button>
           </div>
         )}
       </div>

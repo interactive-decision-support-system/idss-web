@@ -373,6 +373,14 @@ export default function Home() {
     });
   };
 
+  const handleDeleteSession = (sessionId: string) => {
+    setSavedSessions(prev => {
+      const next = prev.filter(s => s.sessionId !== sessionId);
+      persistSessions(next);
+      return next;
+    });
+  };
+
   // Share current chat — posts to backend, copies link to clipboard
   const handleShareChat = async () => {
     const userMessages = chatMessages.filter(m => m.role === 'user');
@@ -998,6 +1006,7 @@ export default function Home() {
                                 setShowCart(false);
                                 setShowFavorites(false);
                               }}
+                              onSendMessage={handleChatMessage}
                             />
                           )}
 
@@ -1129,6 +1138,7 @@ export default function Home() {
         onDeleteFolder={handleDeleteFolder}
         onRenameFolder={handleRenameFolder}
         onMoveToFolder={handleMoveToFolder}
+        onDeleteSession={handleDeleteSession}
       />
     </div>
   );
