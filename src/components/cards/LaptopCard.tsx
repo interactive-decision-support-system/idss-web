@@ -152,6 +152,18 @@ export default function LaptopCard({
                         ))}
                     </div>
                 )}
+
+                {/* Description bullets */}
+                {data.description_bullets && data.description_bullets.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                        {data.description_bullets.slice(0, 3).map((bullet, i) => (
+                            <li key={i} className="text-[11px] text-black/55 leading-snug flex gap-1">
+                                <span className="text-[#8C1515] mt-0.5 shrink-0">·</span>
+                                <span className="line-clamp-1">{bullet}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
             {/* Actions */}
@@ -162,18 +174,18 @@ export default function LaptopCard({
                     View Details
                     <span className="group-hover:translate-x-0.5 transition-transform">→</span>
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                     {/* Ask AI button */}
                     {onAskAI && (
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAskAI(data); }}
-                            className="w-8 h-8 flex items-center justify-center text-black/40 hover:text-[#8C1515] transition-colors shrink-0"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-black/15 text-black/60 hover:border-[#8C1515] hover:text-[#8C1515] transition-colors"
                             aria-label="Ask AI about this product"
-                            title="Ask AI"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
+                            Ask AI
                         </button>
                     )}
                     {onAddToCart && (
@@ -182,12 +194,13 @@ export default function LaptopCard({
                         ) : (
                             <button
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(data); }}
-                                className="w-8 h-8 flex items-center justify-center text-[#8C1515] hover:text-[#750013] transition-colors shrink-0"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#8C1515] text-white hover:bg-[#750013] transition-colors"
                                 aria-label="Add to cart"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
+                                Add to Cart
                             </button>
                         )
                     )}
