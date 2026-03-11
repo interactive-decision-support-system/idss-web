@@ -10,19 +10,26 @@ export const metadata: Metadata = {
   description:
     "IDSS is an AI-powered interactive decision support system that helps you find the best laptops, books, and products through natural conversation. Built by Stanford LDR Lab.",
   keywords: [
+    // Brand / product
     "AI shopping assistant",
-    "laptop recommendations",
-    "interactive decision support",
+    "IDSS",
+    "interactive decision support system",
     "Stanford LDR Lab",
-    "product comparison AI",
-    "best laptop finder",
+    // High-intent buyer keywords
+    "best laptop for students",
+    "best laptop for programming",
+    "best gaming laptop 2026",
+    "best laptop under 1000",
+    "best lightweight laptop",
+    "laptop comparison AI",
+    "macbook air vs dell xps",
+    // Technical / research
     "agentic commerce",
     "MCP merchant backend",
     "Model Context Protocol shopping",
     "Universal Commerce Protocol",
     "knowledge graph e-commerce",
     "multi-agent shopping system",
-    "agentic e-commerce research",
     "LLM product recommendation",
     "Stanford AI research",
   ],
