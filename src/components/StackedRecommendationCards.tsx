@@ -263,6 +263,7 @@ interface StackedRecommendationCardsProps {
   isFavorite?: (productId: string) => boolean;
   onAddToCart?: (product: Product) => void;
   onAskAI?: (product: Product) => void;
+  onSendMessage?: (message: string) => void;
 }
 
 export default function StackedRecommendationCards({
@@ -274,6 +275,7 @@ export default function StackedRecommendationCards({
   isFavorite,
   onAddToCart,
   onAskAI,
+  onSendMessage,
 }: StackedRecommendationCardsProps) {
   if (!recommendations || recommendations.length === 0) return null;
 
@@ -332,6 +334,30 @@ export default function StackedRecommendationCards({
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Post-recommendation action buttons */}
+      {onSendMessage && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            onClick={() => onSendMessage('Show me more options')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border border-black/15 text-black/60 hover:border-[#8C1515] hover:text-[#8C1515] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+            Show more
+          </button>
+          <button
+            onClick={() => onSendMessage('Show me something similar to the best pick')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border border-black/15 text-black/60 hover:border-[#8C1515] hover:text-[#8C1515] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            See similar
+          </button>
         </div>
       )}
     </div>
