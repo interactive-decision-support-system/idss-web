@@ -142,6 +142,7 @@ export interface UnifiedProduct {
   // Misc display
   source?: string;        // Scrape origin e.g. 'System76', 'Framework'
   description?: string;
+  description_bullets?: string[];  // Parsed description as 3-5 clean bullet points (server-generated)
   category?: string;
 
   // Allow for existing fields to coexist for now if needed, or strictly index signature
