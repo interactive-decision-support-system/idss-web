@@ -209,8 +209,13 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
           const attrs = (product as { attributes?: Record<string, unknown> }).attributes
             ?? (product as { metadata?: Record<string, unknown> }).metadata;
           if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return null;
+          // Exclude non-spec fields that have dedicated sections elsewhere
+          const EXCLUDE_KEYS = new Set([
+            'description', 'gallery', 'title', 'name', 'price', 'price_cents',
+            'image', 'image_url', 'listing_url', 'reviews',
+          ]);
           const entries = Object.entries(attrs).filter(
-            ([, v]) => v !== undefined && v !== null && String(v).trim() !== ''
+            ([k, v]) => !EXCLUDE_KEYS.has(k) && v !== undefined && v !== null && String(v).trim() !== ''
           );
           if (entries.length === 0) return null;
 
@@ -238,7 +243,7 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
                 {entries.map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between gap-2">
                     <span className="text-xs text-black/70 font-medium">{labelFor(key)}</span>
-                    <span className="text-xs text-black font-semibold text-right">
+                    <span className="text-xs text-black font-semibold text-right max-w-[60%]">
                       {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                     </span>
                   </div>
@@ -248,15 +253,72 @@ export default function ProductDetailView({ product, onClose, onAddToCart }: Pro
           );
         })()}
 
-        {/* Description */}
-        {(product as { description?: string }).description && (
-          <div className="bg-black/3 rounded-lg p-3">
-            <h3 className="text-xs font-semibold text-black mb-1.5">Description</h3>
-            <p className="text-black/70 text-xs leading-relaxed whitespace-pre-line">
-              {(product as { description?: string }).description}
-            </p>
-          </div>
-        )}
+        {/* Gallery — parse JSON string or array, render actual images */}
+        {(() => {
+          const attrs = (product as { attributes?: Record<string, unknown> }).attributes ?? {};
+          const rawGallery = (attrs as Record<string, unknown>).gallery
+            ?? (product as { gallery?: unknown }).gallery;
+          if (!rawGallery) return null;
+
+          let urls: string[] = [];
+          if (typeof rawGallery === 'string') {
+            try { urls = JSON.parse(rawGallery); } catch { urls = [rawGallery]; }
+          } else if (Array.isArray(rawGallery)) {
+            urls = rawGallery.map(String);
+          }
+          urls = urls.filter(u => /^https?:\/\//i.test(u));
+          if (urls.length === 0) return null;
+
+          return (
+            <div>
+              <h3 className="text-xs font-semibold text-black mb-2">Gallery</h3>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {urls.map((url, i) => (
+                  <div key={i} className="relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-black/5 border border-black/8">
+                    <Image
+                      src={url}
+                      alt={`Product image ${i + 1}`}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Description — as bullet points, not a wall of text */}
+        {(() => {
+          const desc = (product as { description?: string }).description;
+          if (!desc) return null;
+          // Split on ". " or "- " to extract individual facts; take first 5
+          const raw = desc.trim();
+          const sentences = raw
+            .split(/(?<=\.)\s+|(?:^|\.\s+)-\s+/g)
+            .map(s => s.replace(/^[-•]\s*/, '').trim())
+            .filter(s => s.length > 20);
+          const bullets = sentences.slice(0, 5);
+          return (
+            <div className="bg-black/3 rounded-lg p-3">
+              <h3 className="text-xs font-semibold text-black mb-1.5">Description</h3>
+              {bullets.length > 1 ? (
+                <ul className="space-y-1">
+                  {bullets.map((b, i) => (
+                    <li key={i} className="flex gap-1.5 text-xs text-black/70 leading-relaxed">
+                      <span className="text-black/30 mt-0.5 flex-shrink-0">·</span>
+                      <span>{b.endsWith('.') ? b : `${b}.`}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-black/70 text-xs leading-relaxed">{raw.slice(0, 300)}{raw.length > 300 ? '…' : ''}</p>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Ratings & Reviews */}
         {(() => {
