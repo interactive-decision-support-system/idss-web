@@ -292,6 +292,13 @@ export default function StackedRecommendationCards({
   // All products in first row used for relative comparisons in hero
   const allFirstRow = firstRow.slice(0, 3);
 
+  // Only show "lighter alternatives" if weight data is present on any visible product
+  const allVisible = bestPick ? [bestPick, ...altProducts] : altProducts;
+  const hasWeightData = allVisible.some((p) => {
+    const up = p as import('@/types/chat').UnifiedProduct;
+    return up?.laptop?.specs?.weight;
+  });
+
   return (
     <div className="space-y-6 mt-4">
       {/* Optional diversification header */}
@@ -358,6 +365,17 @@ export default function StackedRecommendationCards({
             </svg>
             See similar
           </button>
+          {hasWeightData && (
+            <button
+              onClick={() => onSendMessage('Show me lighter alternatives under 4 lbs')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border border-black/15 text-black/60 hover:border-[#8C1515] hover:text-[#8C1515] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              Lighter options
+            </button>
+          )}
         </div>
       )}
     </div>
