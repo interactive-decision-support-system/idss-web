@@ -34,12 +34,14 @@ export default function LaptopCard({
     const imageSrc = !imgError && allImages.length > 0 ? allImages[imgIdx] : null;
     const favorited = isFavorite ? isFavorite(data.id) : false;
 
-    // Derive up to 3 compact spec pills from specs
+    // Derive up to 5 compact spec pills from specs
     const specs = laptop?.specs;
     const pills: string[] = [];
     if (specs?.processor) pills.push(shortCpu(specs.processor));
     if (specs?.ram) pills.push(specs.ram);
     if (specs?.storage) pills.push(specs.storage);
+    if (specs?.battery_life) pills.push(`🔋 ${specs.battery_life}`);
+    if (specs?.weight) pills.push(`⚖️ ${specs.weight}`);
 
     const handleToggleFavorite = (e: React.MouseEvent) => {
         e.preventDefault();
