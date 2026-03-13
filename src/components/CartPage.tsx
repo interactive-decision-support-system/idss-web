@@ -325,6 +325,7 @@ export default function CartPage({
                           src={primaryImage(product)!}
                           alt={getDisplayTitle(product)}
                           fill
+                          sizes="80px"
                           className="object-cover"
                         />
                       ) : (
