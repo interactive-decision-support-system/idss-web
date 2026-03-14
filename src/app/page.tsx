@@ -245,6 +245,13 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [thinkingPhase, setThinkingPhase] = useState(0);
+  const THINKING_PHASES = [
+    "Analyzing your request...",
+    "Searching products...",
+    "Generating recommendations...",
+    "Almost there...",
+  ];
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -648,6 +655,18 @@ export default function Home() {
     }
   }, [chatMessages, isLoading, isInitialState]);
 
+  // Cycle thinking phase messages while loading
+  useEffect(() => {
+    if (!isLoading) {
+      setThinkingPhase(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setThinkingPhase(prev => Math.min(prev + 1, THINKING_PHASES.length - 1));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
   const handleChatMessage = async (message: string) => {
     // Strip hidden [ctx:...] context tag before displaying in chat.
     // The full message (with tag) is still sent to the backend for routing.
@@ -1050,7 +1069,7 @@ export default function Home() {
                     <div className="w-2 h-2 bg-[#8C1515] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-[#8b959e]">Thinking...</span>
+                  <span className="text-sm text-[#8b959e]">{THINKING_PHASES[thinkingPhase]}</span>
                 </div>
               )}
             </div>
