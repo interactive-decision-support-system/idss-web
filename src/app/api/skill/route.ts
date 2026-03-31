@@ -8,16 +8,17 @@ import { NextResponse } from 'next/server';
  * deployed backend URL from environment variables.
  *
  * OpenClaw users can:
- *   - Download it:  curl https://idss.vercel.app/api/skill -o idss-shopping.js
- *   - Install it:   tell OpenClaw "Install this skill from URL: https://idss.vercel.app/api/skill"
+ *   - Download it:  curl https://idss-web.vercel.app/api/skill -o idss-shopping.js
+ *   - Install it:   tell OpenClaw "Install this skill from URL: https://idss-web.vercel.app/api/skill"
  */
 export async function GET() {
   // siteUrl is the Vercel frontend — the skill calls our /api/* proxy routes
   // so all traffic passes through a single public entry point.
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://idss.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://idss-web.vercel.app';
   // directApiUrl is the Railway backend — used only for endpoints that don't
-  // yet have a Vercel proxy (e.g. /search/ebay).
-  const directApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend-production.up.railway.app';
+  // yet have a Vercel proxy (e.g. /search/ebay). Leave it blank if unset so
+  // the generated skill fails safely instead of calling a stale host.
+  const directApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
   // Inline the skill content here so the build doesn't depend on reading a
   // file at runtime (Vercel serverless functions run from a read-only bundle).
@@ -105,6 +106,11 @@ export default {
         .replace(/\\bebay\\b|best deal|cheapest listing|under\\s*\\$?\\d+/gi, '')
         .replace(/\\b(find|search|look for|get me)\\b/gi, '')
         .trim();
+
+      if (!IDSS_API_URL) {
+        await send(\`Live eBay search is temporarily unavailable. Search eBay here: \${ebayUrl(query, maxPrice)}\`);
+        return;
+      }
 
       // Try our backend eBay endpoint first
       try {

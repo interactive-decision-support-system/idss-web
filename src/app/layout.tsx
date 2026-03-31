@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://idss-web.vercel.app";
+
 export const metadata: Metadata = {
   title: {
     default: "IDSS — AI Shopping Assistant | Stanford LDR Lab",
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
     title: "IDSS — AI Shopping Assistant",
     description:
       "Find the best products through natural conversation. Powered by AI, built by Stanford LDR Lab.",
-    url: "https://idss.vercel.app",
+    url: siteUrl,
     siteName: "IDSS",
     locale: "en_US",
     type: "website",
@@ -63,7 +65,7 @@ const jsonLd = {
     "Protocol-compatible agentic e-commerce system supporting MCP, UCP, and ACP for multi-agent shopping with knowledge graph reasoning. Built at Stanford LDR Lab.",
   applicationCategory: "AI Shopping Assistant",
   operatingSystem: "Web",
-  url: "https://idss.vercel.app",
+  url: siteUrl,
   author: [
     {
       "@type": "Person",

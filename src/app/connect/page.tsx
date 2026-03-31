@@ -59,8 +59,9 @@ export default function ConnectPage() {
   const [activePlatform, setActivePlatform] = useState('whatsapp');
   const [activeOS, setActiveOS] = useState<'mac' | 'windows'>('mac');
 
-  const SKILL_URL = process.env.NEXT_PUBLIC_SKILL_URL || 'https://idss-backend-production.up.railway.app/skill';
-  const IDSS_API  = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://idss-backend.onrender.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://idss-web.vercel.app';
+  const SKILL_URL = process.env.NEXT_PUBLIC_SKILL_URL || `${SITE_URL}/api/skill`;
+  const IDSS_API = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
   const installCmd = activeOS === 'mac'
     ? 'curl -fsSL https://openclaw.ai/install.sh | bash'
@@ -222,10 +223,18 @@ export default function ConnectPage() {
             </div>
           </div>
           <div className="pl-10 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
-            <p className="text-xs text-amber-800">
-              <strong>Note:</strong> The skill needs the API URL for our backend. Tell OpenClaw:<br />
-              <span className="font-mono">&quot;Set IDSS_API_URL to {IDSS_API}&quot;</span>
-            </p>
+            {IDSS_API ? (
+              <p className="text-xs text-amber-800">
+                <strong>Note:</strong> The skill needs the API URL for our backend. Tell OpenClaw:<br />
+                <span className="font-mono">&quot;Set IDSS_API_URL to {IDSS_API}&quot;</span>
+              </p>
+            ) : (
+              <p className="text-xs text-amber-800">
+                <strong>Note:</strong> The install URL above works now, but live eBay search depends on{' '}
+                <code className="font-mono">NEXT_PUBLIC_API_BASE_URL</code> being configured in Vercel.
+                A maintainer with Vercel access needs to set that value before this flow is fully operational.
+              </p>
+            )}
           </div>
         </div>
 

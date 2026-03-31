@@ -319,7 +319,7 @@ export default async function ComparisonPage({
           <p>
             IDSS — Interactive Decision Support System · Stanford LDR Lab ·{" "}
             <Link href="/" className="hover:text-[#8C1515]">
-              idss.vercel.app
+              idss-web.vercel.app
             </Link>
           </p>
         </footer>

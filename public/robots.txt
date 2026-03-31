@@ -50,4 +50,4 @@ Allow: /
 User-agent: cohere-ai
 Allow: /
 
-Sitemap: https://idss.vercel.app/sitemap.xml
+Sitemap: https://idss-web.vercel.app/sitemap.xml

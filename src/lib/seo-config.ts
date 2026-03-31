@@ -10,7 +10,7 @@
  * to look up one object.
  */
 
-export const BASE_URL = "https://idss.vercel.app";
+export const BASE_URL = "https://idss-web.vercel.app";
 
 // ============================================================================
 // Best-of pages: /best-laptops-for-[usecase]

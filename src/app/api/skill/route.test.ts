@@ -8,7 +8,7 @@
  */
 
 describe('GET /api/skill — OpenClaw skill endpoint', () => {
-  const DEFAULT_API_URL = 'https://idss-backend-production.up.railway.app';
+  const DEFAULT_API_URL = '';
 
   beforeEach(() => {
     jest.resetModules();
@@ -48,7 +48,7 @@ describe('GET /api/skill — OpenClaw skill endpoint', () => {
 
   // ── API URL substitution ───────────────────────────────────────────────────
 
-  it('embeds the default backend URL when env var is not set', async () => {
+  it('leaves the direct backend URL blank when env var is not set', async () => {
     const { GET } = await import('./route');
     const res = await GET();
     const text = await (res as unknown as Response).text();
