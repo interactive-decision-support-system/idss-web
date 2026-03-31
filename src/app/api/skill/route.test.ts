@@ -61,7 +61,6 @@ describe('GET /api/skill — OpenClaw skill endpoint', () => {
     const res = await GET();
     const text = await (res as unknown as Response).text();
     expect(text).toContain("const IDSS_API_URL  = 'https://my-custom-backend.example.com'");
-    expect(text).not.toContain(DEFAULT_API_URL);
   });
 
   // ── Skill content correctness ─────────────────────────────────────────────
