@@ -12,6 +12,7 @@ import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import ConversationSidebar from '@/components/ConversationSidebar';
 import ProductChatPanel from '@/components/ProductChatPanel';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import type { SavedSession, ChatFolder } from '@/types/chat';
 import { idssApiService } from '@/services/api';
@@ -273,6 +274,7 @@ export default function Home() {
   const [shareCopied, setShareCopied] = useState(false);
   const [shareError, setShareError] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const multiDomainDefaults = getMultiDomainDefaults();
 
   // Check if this is the initial state (only welcome message)
@@ -667,6 +669,12 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isLoading]);
 
+  const handleCancelRequest = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+  }, []);
+
   const handleChatMessage = async (message: string) => {
     // Strip hidden [ctx:...] context tag before displaying in chat.
     // The full message (with tag) is still sent to the backend for routing.
@@ -679,6 +687,10 @@ export default function Home() {
     };
     setChatMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Create AbortController for cancellation support
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     // --- Latency logging ---
     const tRequest = performance.now();
@@ -734,6 +746,8 @@ export default function Home() {
         }, 0);
       }
     } catch (error) {
+      // Don't show error if user cancelled the request
+      if (controller.signal.aborted) return;
       console.error('Error sending message:', error);
 
       // Add error message
@@ -745,6 +759,7 @@ export default function Home() {
       };
       setChatMessages((prev) => [...prev, errorMessage]);
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
   };
@@ -886,7 +901,7 @@ export default function Home() {
               title={showFavorites ? "Hide Favorites" : "View Favorites"}
             >
               <svg
-                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black'}`}
+                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#8C1515] fill-[#8C1515]' : 'text-black'}`}
                 fill={favorites.length > 0 ? 'currentColor' : 'none'}
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1061,16 +1076,13 @@ export default function Home() {
                 </div>
               ))}
 
-              {/* Loading indicator */}
+              {/* Loading skeleton — shows progress + cancel (Nielsen H1 & H3) */}
               {isLoading && (
-                <div className="flex items-center space-x-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[#8C1515] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                  <span className="text-sm text-[#8b959e]">{THINKING_PHASES[thinkingPhase]}</span>
-                </div>
+                <LoadingSkeleton
+                  phase={thinkingPhase}
+                  phases={THINKING_PHASES}
+                  onCancel={handleCancelRequest}
+                />
               )}
             </div>
           )}

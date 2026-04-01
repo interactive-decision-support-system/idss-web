@@ -59,7 +59,7 @@ export default function BookCard({
                         aria-label={favorited ? 'Unfavorite' : 'Favorite'}
                     >
                         <svg
-                            className={`w-3.5 h-3.5 transition-all duration-200 ${favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
+                            className={`w-3.5 h-3.5 transition-all duration-200 ${favorited ? 'text-[#8C1515] fill-[#8C1515]' : 'text-black/50'
                                 }`}
                             fill={favorited ? 'currentColor' : 'none'}
                             stroke="currentColor"
