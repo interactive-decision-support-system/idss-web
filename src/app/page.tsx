@@ -20,7 +20,7 @@ import { favoritesService } from '@/services/favorites';
 import { cartService, type CartItem } from '@/services/cart';
 import { useAuth } from '@/hooks/useAuth';
 import { getMultiDomainDefaults } from '@/config/domain-config';
-import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
+import { convertAPIVehiclesToProducts, convertAPIVehicleToProduct } from '@/utils/product-converter';
 
 // --- Parse **bold** markdown into <strong> elements ---
 function parseBold(text: string): React.ReactNode {
@@ -729,6 +729,12 @@ export default function Home() {
         domain: response.domain ?? undefined,
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
+
+      // Sync cart when backend confirms an add-to-cart action
+      if (response.cart_action?.action === 'add_to_cart' && response.cart_action.product) {
+        const cartProduct = convertAPIVehicleToProduct(response.cart_action.product);
+        addToCart(cartProduct);
+      }
 
       // --- Log render time after products are rendered ---
       if (productRecommendations) {
