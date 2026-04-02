@@ -732,7 +732,16 @@ export default function Home() {
 
       // Sync cart when backend confirms an add-to-cart action
       if (response.cart_action?.action === 'add_to_cart' && response.cart_action.product) {
-        const cartProduct = convertAPIVehicleToProduct(response.cart_action.product);
+        // cart_action.product may be raw Supabase dict or UnifiedProduct — normalise
+        const p = response.cart_action.product as unknown as Record<string, unknown>;
+        const img = p.image as Record<string, unknown> | undefined;
+        const cartProduct = {
+          id: String(p.id ?? p.product_id ?? ''),
+          title: String(p.name ?? p.title ?? 'Product'),
+          price: Number(p.price ?? 0),
+          image_url: String(img?.primary ?? p.imageurl ?? p.image_url ?? ''),
+          brand: String(p.brand ?? ''),
+        } as Product;
         addToCart(cartProduct);
       }
 
