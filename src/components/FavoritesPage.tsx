@@ -102,7 +102,7 @@ export default function FavoritesPage({ favorites, onToggleFavorite, onItemSelec
                     className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
                     aria-label="Remove from favorites"
                   >
-                    <svg className="w-4 h-4 text-[#ff1323] fill-[#ff1323]" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[#8C1515] fill-[#8C1515]" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </button>

@@ -12,6 +12,7 @@ import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import ConversationSidebar from '@/components/ConversationSidebar';
 import ProductChatPanel from '@/components/ProductChatPanel';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { ChatMessage, Product, UserLocation } from '@/types/chat';
 import type { SavedSession, ChatFolder } from '@/types/chat';
 import { idssApiService } from '@/services/api';
@@ -19,7 +20,7 @@ import { favoritesService } from '@/services/favorites';
 import { cartService, type CartItem } from '@/services/cart';
 import { useAuth } from '@/hooks/useAuth';
 import { getMultiDomainDefaults } from '@/config/domain-config';
-import { convertAPIVehiclesToProducts } from '@/utils/product-converter';
+import { convertAPIVehiclesToProducts, convertAPIVehicleToProduct } from '@/utils/product-converter';
 
 // --- Parse **bold** markdown into <strong> elements ---
 function parseBold(text: string): React.ReactNode {
@@ -273,6 +274,7 @@ export default function Home() {
   const [shareCopied, setShareCopied] = useState(false);
   const [shareError, setShareError] = useState(false);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const multiDomainDefaults = getMultiDomainDefaults();
 
   // Check if this is the initial state (only welcome message)
@@ -667,6 +669,12 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isLoading]);
 
+  const handleCancelRequest = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+  }, []);
+
   const handleChatMessage = async (message: string) => {
     // Strip hidden [ctx:...] context tag before displaying in chat.
     // The full message (with tag) is still sent to the backend for routing.
@@ -679,6 +687,10 @@ export default function Home() {
     };
     setChatMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Create AbortController for cancellation support
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     // --- Latency logging ---
     const tRequest = performance.now();
@@ -718,6 +730,21 @@ export default function Home() {
       };
       setChatMessages((prev) => [...prev, assistantMessage]);
 
+      // Sync cart when backend confirms an add-to-cart action
+      if (response.cart_action?.action === 'add_to_cart' && response.cart_action.product) {
+        // cart_action.product may be raw Supabase dict or UnifiedProduct — normalise
+        const p = response.cart_action.product as unknown as Record<string, unknown>;
+        const img = p.image as Record<string, unknown> | undefined;
+        const cartProduct = {
+          id: String(p.id ?? p.product_id ?? ''),
+          title: String(p.name ?? p.title ?? 'Product'),
+          price: Number(p.price ?? 0),
+          image_url: String(img?.primary ?? p.imageurl ?? p.image_url ?? ''),
+          brand: String(p.brand ?? ''),
+        } as Product;
+        addToCart(cartProduct);
+      }
+
       // --- Log render time after products are rendered ---
       if (productRecommendations) {
         setTimeout(() => {
@@ -734,6 +761,8 @@ export default function Home() {
         }, 0);
       }
     } catch (error) {
+      // Don't show error if user cancelled the request
+      if (controller.signal.aborted) return;
       console.error('Error sending message:', error);
 
       // Add error message
@@ -745,6 +774,7 @@ export default function Home() {
       };
       setChatMessages((prev) => [...prev, errorMessage]);
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
   };
@@ -886,7 +916,7 @@ export default function Home() {
               title={showFavorites ? "Hide Favorites" : "View Favorites"}
             >
               <svg
-                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black'}`}
+                className={`w-5 h-5 transition-all duration-200 ${favorites.length > 0 ? 'text-[#8C1515] fill-[#8C1515]' : 'text-black'}`}
                 fill={favorites.length > 0 ? 'currentColor' : 'none'}
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1061,16 +1091,13 @@ export default function Home() {
                 </div>
               ))}
 
-              {/* Loading indicator */}
+              {/* Loading skeleton — shows progress + cancel (Nielsen H1 & H3) */}
               {isLoading && (
-                <div className="flex items-center space-x-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[#8C1515] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-[#8b959e] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                  <span className="text-sm text-[#8b959e]">{THINKING_PHASES[thinkingPhase]}</span>
-                </div>
+                <LoadingSkeleton
+                  phase={thinkingPhase}
+                  phases={THINKING_PHASES}
+                  onCancel={handleCancelRequest}
+                />
               )}
             </div>
           )}

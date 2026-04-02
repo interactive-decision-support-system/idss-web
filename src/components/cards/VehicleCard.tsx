@@ -63,7 +63,7 @@ export default function VehicleCard({
                         aria-label={favorited ? 'Unfavorite' : 'Favorite'}
                     >
                         <svg
-                            className={`w-4 h-4 transition-all duration-200 ${favorited ? 'text-[#ff1323] fill-[#ff1323]' : 'text-black/50'
+                            className={`w-4 h-4 transition-all duration-200 ${favorited ? 'text-[#8C1515] fill-[#8C1515]' : 'text-black/50'
                                 }`}
                             fill={favorited ? 'currentColor' : 'none'}
                             stroke="currentColor"

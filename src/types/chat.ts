@@ -65,6 +65,7 @@ export interface ChatResponse {
   question_count?: number;
   timings_ms?: Record<string, number>;
   domain?: string;
+  cart_action?: { action: string; product: APIVehicle };
 }
 
 export interface UnifiedProduct {
