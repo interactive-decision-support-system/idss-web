@@ -8,6 +8,7 @@ import ComparisonSideBySide from '@/components/ComparisonSideBySide';
 import ProductDetailView from '@/components/ProductDetailView';
 import FavoritesPage from '@/components/FavoritesPage';
 import CartPage, { type CheckoutOptions } from '@/components/CartPage';
+import AgentBadge from '@/components/AgentBadge';
 import AuthButton from '@/components/AuthButton';
 import RecommendationActionBar from '@/components/RecommendationActionBar';
 import ConversationSidebar from '@/components/ConversationSidebar';
@@ -751,6 +752,7 @@ export default function Home() {
 
   return (
     <div className={`h-screen bg-[var(--color-bg)] flex overflow-hidden relative ${showLocationBanner ? 'pt-12' : ''}`}>
+      <AgentBadge />
       {/* Location permission alert — compact chip below header, clear of top-right icons */}
       {showLocationBanner && (
         <div className="fixed top-[60px] left-1/2 -translate-x-1/2 z-50 pointer-events-none">
